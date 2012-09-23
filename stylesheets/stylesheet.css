@@ -51,7 +51,7 @@ table {
 
 body {
   font-size: 15px;
-  font-family: Arial, Arial, Helvetica, sans-serif;
+  font-family: Georgia, Arial, Helvetica, sans-serif;
   line-height: 1.5;
   background: #D1D1D1;
 }
@@ -70,14 +70,15 @@ a:hover {
 h1.title {
   margin: 30px 20px 10px;
   font-size: 60px;
-  font-weight: bold;
+ /* font-weight: bold; */
   font-style: italic;
-  font-family:Georgia, serif;
+  font-family:Impact, serif;
   text-align: center;
 }
 
+
 .wrapper {
-  width: 675px;
+  width: 1250px;
   margin: 0 auto;
 }
 
@@ -94,7 +95,7 @@ p.tagline {
 }
 
 #main {
-  margin-top: 20px;
+  margin-top: 10px;
   padding: 0 20px 90px;
   background-color: #fff;
 }
@@ -508,7 +509,7 @@ footer .owner p a {
   height: 90px;
   margin-left: -60px;
   margin-top: -25px;
-  content: "‟";
+  content: "â€Ÿ";
   display: block;
   float: left;
 }
