@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script type="text/javascript">
+var painted;
+var content; 
+var winningCombinations;
+var turn = 0;
+var canvas;
+var cxt;
+var squaresFilled = 0;
+var move = 0;
+
+function init(){
+	painted = new Array();
+	content = new Array();
+			
+	winningCombinations =  [
+	[0,1,2], [3,4,5], [6,7,8],
+	[0,3,6], [1,4,7], [2,5,8],
+	[0,4,8], [2,4,6],
+	[2,1,0], [5,4,3], [8,7,6],
+	[6,3,0], [7,4,1], [8,5,2],
+	[8,4,0], [6,4,2]];
+				
+	for(var i = 0; i <= 8; i++) {
+		painted[i] = false;
+		content[i] = '';
+	}
+	alert("INITIALIAZED AND READY TO PLAY!");
+  }
+  
+  function canvasClicked(canvasNumber) {
+	canvas = document.getElementById("canvas" + canvasNumber); //grab the canvas from HTML
+	if(canvas.getContext) {
+		cxt = canvas.getContext('2d');
+	}
+	else {
+		alert("Update your browser, stupid."); }
+	if(painted[canvasNumber-1] == false) { //is the space already occupied?
+		cxt.beginPath(); //ready to draw
+		cxt.moveTo(10,10); //move the imaginary cursor to a specific location
+		cxt.lineTo(40,40);
+		cxt.moveTo(40,10);
+		cxt.lineTo(10,40);
+		cxt.closePath();
+		cxt.stroke();
+		content[canvasNumber-1] = 'X';
+		painted[canvasNumber-1] = true;
+		squaresFilled++;
+		var win = Xwon();
+		if(win == 1) {
+			alert("You win!");
+			playAgain(); }
+		else {			
+			move = generateMove() + 1;
+			canvas = document.getElementById("canvas" + move);
+			cxt = canvas.getContext('2d');
+			cxt.beginPath();
+			cxt.arc(25,25,20,0,Math.PI*2,true);
+			cxt.closePath();
+			cxt.stroke();
+			squaresFilled++;
+			var win2 = Owon();
+			if(win2 == 1) {
+				alert("The computer won!");
+				playAgain(); }
+		}
+	}
+	else {
+		alert("THAT SPACE IS ALREADY OCCUPIED WITH YOUR HEART!");
+	}
+  }
+  
+  function Xwon() {
+   var returnVal = 0;
+ 	 for(var a = 0; a < 16; a++) { 
+		if(content[winningCombinations[a][0]] == 'X' &&
+		content[winningCombinations[a][1]] == 'X' &&
+		content[winningCombinations[a][2]] == 'X') {
+		   returnVal = 1;
+	}
+     }
+     return returnVal;
+  }
+  
+   function Owon() {
+ 
+   	var returnVal2 = 0;
+ 	 for(var a = 0; a < 16; a++) { 
+		if(content[winningCombinations[a][0]] == 'O' &&
+		content[winningCombinations[a][1]] == 'O' &&
+		content[winningCombinations[a][2]] == 'O') {
+		   returnVal2 = 1;
+	}
+     }
+     return returnVal2;
+  }
+  
+function playAgain() {
+	if(confirm("PLAY AGAIN?") == true) {
+		alert("LET'S DO THIS!!");
+		location.reload(true);
+	}
+	else
+		alert("WHATEVER YOU QUITTER!");
+}
+
+function generateMove() {
+	var returnVal;
+	
+	//find the first empty space
+	for(var i = 0; i < painted.length; i++) {
+		if (painted[i] == false) {
+			returnVal = i;
+		}
+	}
+	
+	//loop through winning combinations
+	for(var i = 0; i < 16; i++) {
+		if(content[winningCombinations[i][0]] == 'X'
+			&& content[winningCombinations[i][1]] == 'X'
+			&& painted[winningCombinations[i][2]] == false) {
+				returnVal = winningCombinations[i][2];
+		}
+	}
+	painted[returnVal] = true;
+	content[returnVal] = 'O';
+	return returnVal;
+}
+
+</script>
+</head>
+<body onload="init();">
+
+<h1> Try to beat the computer (evil laugh) </h1>
+
+   <canvas id="canvas1"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(1);"></canvas>
+    <canvas id="canvas2"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(2);"></canvas>
+    <canvas id="canvas3"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(3);"></canvas> <br>
+    <canvas id="canvas4"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(4);"></canvas>
+    <canvas id="canvas5"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(5);"></canvas>
+    <canvas id="canvas6"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(6);"></canvas> <br>
+    <canvas id="canvas7"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(7);"></canvas>
+    <canvas id="canvas8"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(8);"></canvas>
+    <canvas id="canvas9"  width = "100" height = "100"
+		style = "border:1px solid black"
+		onclick = "canvasClicked(9);"></canvas> <br>
+		
+</body>
+</html>
+
