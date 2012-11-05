@@ -57,7 +57,7 @@ var Circle = function(xPos, yPos, rad) {
 	that.draw = function() { // I think that ideally you pass it ctx, but since ctx is global here...
 		ctx.save();
 		ctx.fillStyle = that.color;
-		ctx.strokeStyle = '#000';
+		ctx.strokeStyle = '#fff';
 		ctx.lineWidth = 3;
 		ctx.beginPath(); // You NEED THIS for it to draw successfully
 		
@@ -74,6 +74,7 @@ var Circle = function(xPos, yPos, rad) {
 		ctx.closePath();
 		ctx.restore();
 	};
+
 };
 
 // This just generates a bunch of random circles. ~~ --> Math.Floor().
@@ -85,21 +86,40 @@ for (var i = 0; i < 200; i++) {
 	circles[i] = new Circle(x, y, rad);
 }
 
-
 // *** Functions for allowing you to drag the camera around. ***
+// Gets the mouse position. Cross-browser for your convenience!
+var getMouse = function(e) {
+	var posx = 0, posy = 0;
+	if (!e) var e = window.event;
+	if (e.pageX || e.pageY) {
+		posx = e.pageX;
+		posy = e.pageY;
+	}
+	else if (e.clientX || e.clientY) {
+		posx = e.clientX + document.body.scrollLeft
+			+ document.documentElement.scrollLeft;
+		posy = e.clientY + document.body.scrollTop
+			+ document.documentElement.scrollTop;
+	}
+	return { x:posx, y:posy };
+};
+
 // When the mouse is clicked, the camera starts following it.
 c.onmousedown = function(e) {
-	c.mX = e.x;
-	c.mY = e.y;
+	mouse = getMouse(e);
+	c.mX = mouse.x;
+	c.mY = mouse.y;
+	// Start tracking
 	c.onmousemove = function(e){ goMouse(e); };
 };
 
 // This function runs while the mouse is held down and moving.
 function goMouse(e) {
-	view.offsetX += c.mX - e.x;
-	view.offsetY += c.mY - e.y;
-	c.mX = e.x;
-	c.mY = e.y;
+	mouse = getMouse(e);
+	view.offsetX += c.mX - mouse.x;
+	view.offsetY += c.mY - mouse.y;
+	c.mX = mouse.x;
+	c.mY = mouse.y;
 	
 	// Keeps the camera within the world.
 	if (view.offsetX > world.width - view.width)
@@ -114,20 +134,32 @@ function goMouse(e) {
 
 // When the mouse is let up, the camera stops following it.
 c.onmouseup = function(e) {
-	c.onmousemove = function() {};
+	c.onmousemove = function() {}; // i.e. do nothing
 };
-// Also if the entire canvas loses focus.
-c.onblur = function(e) {
-	c.onmousemove = function() {};
-};
+
+var waffle = 0,
+	pancake = 1;
 
 // Clears the canvas by drawing a big white rectangle over everything.
 var clear = function() {
 	ctx.save();
+//	ctx.fillStyle = '#fff';
+//	ctx.fillRect(0, 0, view.width, view.height);
 	
-	ctx.fillStyle = '#fff';
-	ctx.fillRect(0, 0, view.width, view.height);
-	
+	try {  
+		var img = new Image();   // Create new img element
+		img.src = 'starfield.jpg'; // Set source path
+		ctx.drawImage(img, -waffle, 0);
+		waffle += pancake;
+		if (waffle > 100)
+			pancake = -1;
+		else if (waffle < 0)
+			pancake = 1;
+        } catch (e) { // If the image isn't found, color everything red.
+        	ctx.fillStyle = '#f00';
+        	ctx.fillRect(0, 0, view.width, view.height);
+        };
+
 	ctx.restore();
 }
 
@@ -136,6 +168,7 @@ var GameLoop = function() {
 	clear();
 	for (var i = 0; i < 200; i++) {
 		circles[i].draw();
+		//document.write(i + ", ");
 	}
 	gLoop = setTimeout(GameLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
 };
