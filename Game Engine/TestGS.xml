@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Gamestate>
+	<Players numPlayers="4" activePlayer="1" />
+	<PlanetList>
+		<Planet
+			idNum="1"
+			name="Florida"
+			owner="1"
+			numFleets="10"
+			color="#ffee33"
+			position="35,25"
+			radius="30"
+		/>
+		<Planet
+			idNum="2"
+			name="Aruba"
+			owner="3"
+			numFleets="15"
+			color="#aabbcc"
+			position="300,50"
+			radius="35"
+		/>
+		<Planet
+			idNum="3"
+			name="Manitoba"
+			owner="1"
+			numFleets="5"
+			color="#00ffaa"
+			position="50,150"
+			radius="25"
+		/>
+		<Planet
+			idNum="4"
+			name="Sparta"
+			owner="2"
+			numFleets="20"
+			color="#aa00ee"
+			position="75,300"
+			radius="25"
+		/>
+		<Planet
+			idNum="5"
+			name="Akihabara"
+			owner="0"
+			numFleets="0"
+			color="#55cc11"
+			position="300,350"
+			radius="30"
+		/>
+	</PlanetList>
+	<ConnectionList>
+		<connection>1,2</connection>
+		<connection>1,4</connection>
+		<connection>1,5</connection>
+		<connection>2,4</connection>
+		<connection>3,4</connection>
+		<connection>3,5</connection>
+	</ConnectionList>
+	<!--Note that each planet should be in exactly one region.-->
+	<RegionList>
+		<Region
+			idNum="1"
+			name="Eastern U.S."
+			value="5"
+			owner="0"
+			color="#44aadd">
+			<memberList>
+				<member>1</member>
+				<member>2</member>
+				<member>3</member>
+			</memberList>
+		</Region>
+		<Region idNum="2"
+			name="Spaintugal"
+			value="2"
+			owner="0"
+			color="#ffaa77">
+			<memberList>
+				<member>4</member>
+				<member>5</member>
+			</memberList>
+		</Region>
+	</RegionList>
+</Gamestate>

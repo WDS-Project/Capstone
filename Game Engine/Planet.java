@@ -1,3 +1,5 @@
+import org.w3c.dom.*;
+
 /**
  * This class contains all data and methods associated with
  * one planet object. There are two main sets of data: graphical
@@ -19,18 +21,22 @@ public class Planet {
 	private int idNum,
 				numFleets,
 				owner = 0;
-	private int[] connections;
 	
 	/*** Functions ***/
 	// Constructor
 	/** Default constructor. */
-	public Planet(int idNum, String color, int xPos, int yPos, int radius, int[] connections) {
+	public Planet(int idNum, String color, String name, int xPos, int yPos, int radius) {
 		this.idNum = idNum;
 		this.color = color;
+		this.name = name;
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.radius = radius;
-		this.connections = connections;
+	}
+	
+	/** Constructor to load a planet from XML. */
+	public Planet(Node n) {	
+		loadXML(n);
 	}
 	
 	// Getters & Setters
@@ -46,8 +52,6 @@ public class Planet {
 	public int getXPos() { return xPos; }
 	/** Returns the y position of this planet. */
 	public int getYPos() { return yPos; }
-	/** Returns the list of connected planets. */
-	public int[] getConnections() { return connections; }
 	
 	/** Changes the owner of this planet. Note that this method will not
 	 * check whether the new owner is a valid player ID or not.
@@ -57,38 +61,59 @@ public class Planet {
 	public void setOwner(int o) { owner = o; }
 	
 	/** Sets the number of fleets on this planet to a specific number.
-	 * 
-	 * @param newFleets new total amount of fleets on this planet 
-	 * @return true if newFleets is a valid number of fleets
-	 */
-	public boolean setFleets(int newFleets) { 
-		numFleets = newFleets;
-		return numFleets > 0;
-	}
+	 * @param newFleets new total number of fleets on this planet  */
+	public void setFleets(int newFleets) { numFleets = newFleets; }
 	
 	/** Adds a given number of fleets to this planet. To subtract,
-	 * add a negative number of fleets.
+	 * add a negative number of fleets. Note that if numFleets has
+	 * a minimum value of 1.
 	 * 
 	 * @param plusFleets the number of fleets to add
-	 * @return true if the new total is greater than 0
 	 */
-	public boolean addFleets(int plusFleets) {
+	public void addFleets(int plusFleets) {
 		numFleets += plusFleets;
-		return numFleets > 0;
+		if (numFleets < 1)
+			numFleets = 1;
 	}
 	
 	// Other
-	/** Checks if this planet is connected to some neighbor.
+	/** Returns a string representation of this object, including all attributes. */
+	@Override
+	public String toString() {
+		return "Planet " + idNum + ", " + name + ". Position: ("+xPos+", "+yPos+"); color: "+color
+			+"; radius: "+radius+"; owner: "+owner+"; number of fleets: "+numFleets
+			+".";
+		//return "Hi I am a planet.";
+	}
+	
+	/**
+	 * This method creates a Planet from an XML Node according to specifications.
+	 * For more information, see Gamestate.loadXML().
 	 * 
-	 * @param neighborID ID number of potential neighbor planet
-	 * @return true if this planet is connected to given planet
+	 * @param n the Planet node to be read
 	 */
-	public boolean isConnected (int neighborID) {
-		for (int i = 0; i > connections.length; i++)
-			if (connections[i] == neighborID)
-				return true;
-		
-		// neighbor not found
-		return false;
+	public void loadXML(Node n) {
+		this.idNum = Integer.parseInt(getNodeAttr("idNum", n));
+		this.color = getNodeAttr("color", n);
+		this.name = getNodeAttr("name", n);
+		String position = getNodeAttr("position", n);
+		int mPos = position.indexOf(',');
+		this.xPos = Integer.parseInt(position.substring(0, mPos));
+		this.yPos = Integer.parseInt(position.substring(mPos+1));
+		this.owner = Integer.parseInt(getNodeAttr("owner", n));
+		this.numFleets = Integer.parseInt(getNodeAttr("numFleets", n));
+		this.radius = Integer.parseInt(getNodeAttr("radius", n));
+	}
+	// There are more efficient ways to do this, but by using this
+	// method, this code is immune to changes in the order of the XML
+	protected String getNodeAttr(String attrName, Node node ) {
+	    NamedNodeMap attrs = node.getAttributes();
+	    for (int y = 0; y < attrs.getLength(); y++ ) {
+	        Node attr = attrs.item(y);
+	        if (attr.getNodeName().equalsIgnoreCase(attrName)) {
+	            return attr.getNodeValue();
+	        }
+	    }
+	    return "";
 	}
 }
