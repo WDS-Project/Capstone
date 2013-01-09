@@ -8,4 +8,13 @@ public class GamestateTest {
 		Gamestate gs = new Gamestate("src/TestGS.xml");
 		System.out.println(gs.toString());
 	}
+	
+	@Test
+	public void testWrite01() {
+		Gamestate gs = new Gamestate("src/TestGS.xml");
+		System.out.println(gs.writeToXML());
+	}
+	// Here's an interesting test: run gs.writeToXML() and save the resulting
+	// string as an XML file. Then run another test to see if that XML file
+	// can be successfully read into an equivalent Gamestate.
 }

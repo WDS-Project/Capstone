@@ -1,7 +1,11 @@
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.io.StringWriter;
+import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
 
 /** 
@@ -15,7 +19,8 @@ public class Gamestate {
 	/*** Fields ***/
 	private int[] playerList;
 	private int activePlayer,
-				turnNumber;
+				turnNumber = 0,
+				cycleNumber = 0;
 	private Planet[] pList;
 	private Region[] rList;
 	private TreeSet<Connection> cList = new TreeSet<Connection>();
@@ -35,11 +40,10 @@ public class Gamestate {
 		   outside of testing purposes. You can't actually directly use the
 		   pList or rList because none of the objects are initialized, but
 		   it seemed like too much work to implement a whole suite of new
-		   methods to build them remotely. Just wait for the XML constructor
-		   to be done, really. */
+		   methods to build them remotely. Just use the XML constructor. */
 		playerList = new int[numPlayers];
-		for (int i = 0 ; i < numPlayers; i++)
-			playerList[i] = i + 1; // because player 0 = neutral
+		for (int i = 1 ; i < numPlayers; i++) // because player 0 = neutral
+			playerList[i] = 1; // 1 = active; 0 = inactive
 		
 		pList = new Planet[numPlanets];
 		rList = new Region[numRegions];
@@ -77,8 +81,26 @@ public class Gamestate {
 			if (playerList[playerID] != 0)
 				activePlayer = playerID;
 	}
-	/** Increments the turn counter by one. */
-	public void nextTurn() { turnNumber++; }
+	/** Increments turn counters in preparation for the next turn. */
+	public void nextTurn() { 
+		// 1. activePlayer moves to the next player
+		do {
+			activePlayer++;
+			activePlayer %= playerList.length; // wrap around
+		} while (playerList[activePlayer] != 0);
+		
+		// 2. turnNumber increments
+		turnNumber++;
+		
+		// 3. cycleNumber increments only if it has been a full cycle
+		int leadPlayer = 1; // assume the lead player is player 1
+		while (playerList[leadPlayer] == 0)
+			leadPlayer++; // search for the first active player
+		// Note that if there are no active players (which shouldn't happen),
+		// this will throw an exception.
+		if (activePlayer == leadPlayer)
+			cycleNumber++;
+	}
 	
 	// Inner class storing the information about a connection.
 	private class Connection implements Comparable{
@@ -114,6 +136,13 @@ public class Gamestate {
 		public String toString() {
 			return "(" + start + ", " + end + ")";
 		}
+
+		public void saveToXML(Element parentNode) {
+			Document doc = parentNode.getOwnerDocument();
+			Element connectionNode = doc.createElement("connection");
+			connectionNode.setTextContent(start + "," + end);
+			parentNode.appendChild(connectionNode);			
+		}
 	}
 	
 	// Other methods
@@ -128,8 +157,9 @@ public class Gamestate {
 	}
 	
 	/** 
-	 * For all regions, checks to make sure that the current owner
-	 * of that region does, in fact, own all the planets in the region.
+	 * Updates the owners of all regions to reflect the current state of
+	 * the planets (i.e. a region is owned if and only if a player owns
+	 * all planets in that region).
 	 */
 	public void updateRegions() {
 		for (int i = 0; i < rList.length; i++) {
@@ -155,18 +185,22 @@ public class Gamestate {
 		// Gamestate
 		String gsDescript = "Current Gamestate is as follows:\n" +
 						    "--------------------------------\n" +
-						    "Turn Number: " + turnNumber + "\n" +
+						    "Turn Number: " + turnNumber +
+						    ", Cycle Number: " + cycleNumber + "\n" +
 						    "Active Player: " + activePlayer + "\n";
+		
 		// Planets
 		String planetDescript = "\nList of Planets:\n" +
 								"--------------------------------\n";
 		for (int i = 0; i < pList.length; i++)
 			planetDescript += pList[i].toString() + "\n";
+		
 		// Connections
 		String connectionsDescript = "\nList of Connections:\n" +
 									 "--------------------------------\n";
 		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); )
 			connectionsDescript += i.next().toString() + "\n";
+		
 		// Regions
 		String regionDescript = "\nList of Regions:\n" +
 								"--------------------------------\n";
@@ -183,11 +217,50 @@ public class Gamestate {
 	 * - All planets belong to one and only one region
 	 * - All planets are owned by players that are active
 	 * - All planets have fleets > 0
+	 * - Turn & Cycle numbers match
 	 * 
 	 * @return true if the Gamestate is properly built.
 	 */
 	public boolean verify() {
-		// TODO implement
+		int[] pTest = new int[pList.length]; // Counts the number of regions
+											 // to which this planet belongs
+		for (int i = 0; i < pList.length; i++) {
+			// 1. All planets belong to exactly one region
+			for (int j = 0; j < rList.length; j++)
+				if (rList[j].hasMember(i+1)) // Indexing. Bah.
+					pTest[i]++;
+		
+			if (pList[i].getOwner() == 0)
+				continue; // We don't need to check unowned planets
+			
+			// 2. All planets are owned by active players
+			if (playerList[pList[i].getOwner()] == 0) {
+				System.out.println("Issue 2: Planet "+i+" is owned by player "+
+						pList[i].getOwner()+", who is not active.");
+				return false;
+			}
+		
+			// 3. All planets have fleets > 0
+			if (pList[i].getFleets() <= 0) {
+				System.out.println("Issue 3: Planet "+i+" has "+pList[i].getFleets()+" fleets.");
+				return false;
+			}
+		}
+		
+		// Check #1
+		for (int i = 0; i < pTest.length; i++)
+			if (pTest[i] != 1) {
+				System.out.println("Issue 1: Planet "+(i+1)+" is in "+pTest[i]+" regions.");
+				return false;
+			}
+		
+		// 4. Turn & Cycle number match (as best we can tell)
+		// Minimal case: 2 players, in which case cycle = turn / 2 (ish)
+		if (turnNumber / 2 < cycleNumber)  { System.out.println("Issue 4a"); return false; }
+		// Maximal case: n players, in which case cycle = turn / n (ish)
+		if (turnNumber / playerList.length > cycleNumber + 1) { System.out.println("Issue 4b"); return false; }
+		
+		// If all cases above have passed, then Gamestate is valid.
 		return true;
 	}
 
@@ -208,13 +281,15 @@ public class Gamestate {
 			Document doc = dBuilder.parse(xmlPath);
 			NodeList root = doc.getChildNodes().item(0).getChildNodes(); // root = <Gamestate>
 			
-			// 2. Players
+			// 2. Players & Turns
 			Node playerNode = getNode("Players", root);
 			activePlayer = Integer.parseInt(getNodeAttr("activePlayer", playerNode));
 			int numPlayers = Integer.parseInt(getNodeAttr("numPlayers", playerNode));
 			playerList = new int[numPlayers + 1]; // because player 0 = neutral
 			for (int i = 1; i < numPlayers; i++)
 				playerList[i] = 1; // 1 = normal player; 0 = inactive player
+			turnNumber = Integer.parseInt(getNodeAttr("turnNumber", playerNode));
+			cycleNumber = Integer.parseInt(getNodeAttr("cycleNumber", playerNode));
 			
 			// 3. Planets
 			Node planetNode = getNode("PlanetList", root);
@@ -254,8 +329,74 @@ public class Gamestate {
 					rList[rCount++] = new Region(kid); // and the regions build themselves too
 		
 		} catch (Exception e) { e.printStackTrace(); } // end of the DocumentBuilder try/catch blocks
+		
+		// Done building, cleanup.
 		updateRegions();
+		if (!verify()) {
+			System.out.println(this.toString());
+			throw new RuntimeException("Warning: Bad XML gamestate.");
+		}
 	} // end loadXML()
+	
+	/**
+	 * Returns this Gamestate as an XML-formatted String.
+	 * 
+	 * @return this Gamestate as an XML-formatted String.
+	 */
+	public String writeToXML() {
+		StringWriter sb = new StringWriter();
+		
+		try {
+			// This part is silly
+			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            //domFactory.setNamespaceAware(true);
+			DocumentBuilder builder = domFactory.newDocumentBuilder();
+			Document doc = builder.newDocument();
+			
+			// The root is the start of the document
+			Element root = doc.createElement("root");
+			doc.appendChild(root);
+			Element gsRoot = doc.createElement("Gamestate");
+			root.appendChild(gsRoot);
+			
+			// 1. First we add information about the Players (& turns).
+			Element playerNode = doc.createElement("Players");
+			gsRoot.appendChild(playerNode);
+			playerNode.setAttribute("numPlayers", playerList.length+"");
+			playerNode.setAttribute("activePlayer", activePlayer+"");
+			playerNode.setAttribute("turnNumber", turnNumber+"");
+			playerNode.setAttribute("cycleNumber", cycleNumber+"");
+			
+			// 2. Then we add information about planets...
+			Element pListEl = doc.createElement("PlanetList");
+			gsRoot.appendChild(pListEl);
+			for (int i = 0; i < pList.length; i ++) {
+				pList[i].saveToXML(pListEl);
+			}
+			
+			// 3. ... connections...
+			Element cListEl = doc.createElement("ConnectionList");
+			gsRoot.appendChild(cListEl);
+			for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
+				i.next().saveToXML(cListEl);
+			}
+			
+			// 4. ... and regions.
+			Element rListEl = doc.createElement("RegionList");
+			gsRoot.appendChild(rListEl);
+			for (int i = 0; i < rList.length; i ++) {
+				rList[i].saveToXML(rListEl);
+			}
+			
+			// Then we work a little magic and turn this mess into a readable string.
+			DOMSource domSource = new DOMSource(root.getFirstChild());
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer magic = tf.newTransformer();
+			magic.transform(domSource, new StreamResult(sb));
+		} catch (Exception e) { e.printStackTrace(); } // We're effectively not handling errors here
+		
+		return sb.toString();
+	}
 	
 	// XML Helper methods
 	// These helper methods came from http://www.drdobbs.com/jvm/easy-dom-parsing-in-java/231002580

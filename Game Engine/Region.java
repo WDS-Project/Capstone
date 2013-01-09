@@ -1,5 +1,4 @@
 import java.util.Arrays;
-
 import org.w3c.dom.*;
 
 /**
@@ -46,7 +45,7 @@ public class Region {
 	
 	// Other
 	/** Returns true if the given planet is a member of this region. */
-	public boolean isMember(int planetID) {
+	public boolean hasMember(int planetID) {
 		for (int i = 0; i < members.length; i++)
 			if (planetID == members[i])
 				return true;
@@ -100,5 +99,32 @@ public class Region {
 	        }
 	    }
 	    return "";
+	}
+	
+	/**
+	 * Given a node of an XML document, saves this Region as an
+	 * XML element.
+	 * 
+	 * @param parentNode root node on which to save this Planet
+	 */
+	public void saveToXML(Node parentNode) {
+		Document doc = parentNode.getOwnerDocument();
+		
+		Element regionNode = doc.createElement("Region");
+		regionNode.setAttribute("idNum", idNum+"");
+		regionNode.setAttribute("name", name);
+		regionNode.setAttribute("value", value+"");
+		regionNode.setAttribute("owner", owner+"");
+		regionNode.setAttribute("color", color);
+		
+		// Create one child element for each member.
+		Element membList = doc.createElement("memberList");
+	    for (int i = 0; i < members.length; i++) {
+	    	Element membEl = doc.createElement("member");
+	    	membEl.setTextContent(members[i]+"");
+	    	membList.appendChild(membEl);
+	    }
+	    regionNode.appendChild(membList);
+		parentNode.appendChild(regionNode);
 	}
 }

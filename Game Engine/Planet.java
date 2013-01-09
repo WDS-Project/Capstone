@@ -116,4 +116,25 @@ public class Planet {
 	    }
 	    return "";
 	}
+	
+	/**
+	 * Given a node of an XML document, saves this Planet as an
+	 * XML element.
+	 * 
+	 * @param parentNode root node on which to save this Planet
+	 */
+	public void saveToXML(Node parentNode) {
+		Document doc = parentNode.getOwnerDocument();
+		
+		Element planetNode = doc.createElement("Planet");
+		planetNode.setAttribute("idNum", idNum+"");
+		planetNode.setAttribute("color", color);
+		planetNode.setAttribute("name", name);
+		planetNode.setAttribute("position", xPos + "," + yPos);
+		planetNode.setAttribute("owner", owner+"");
+		planetNode.setAttribute("numFleets", numFleets+"");
+		planetNode.setAttribute("radius", radius+"");
+		
+		parentNode.appendChild(planetNode);
+	}
 }
