@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GameChange>
-    <NextTurnID nextTurnID="2"/>
+    <Players activePlayer="2" cycleNumber = "5" turnNumber = "5"/>
     <Planets>
         <Planet
             idNum="2"

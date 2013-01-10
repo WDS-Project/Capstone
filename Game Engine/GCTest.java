@@ -12,7 +12,7 @@ public class GCTest {
     
     @Before
     public void setUp() {
-            gc = new GameChange(5, "2");
+            gc = new GameChange(5, 2, 5, 5);
             Planet x = new Planet(2, "blue", "name", 2,3,4);
             x.setOwner(1);
             x.setFleets(4);
@@ -27,7 +27,7 @@ public class GCTest {
    public void testXML() {
        String gcXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<GameChange>" + 
-                    "<NextTurnID nextTurnID=\"2\"/>" + 
+                    "<Players activePlayer=\"2\" cycleNumber=\"5\" turnNumber=\"5\"/>" + 
                         "<Planets>" +
                         "<Planet" + 
                             " idNum=\"2\"" + 
@@ -41,6 +41,6 @@ public class GCTest {
                         "/>"+
                         "</Planets>"+
                 "</GameChange>";
-       assertEquals(gcXML, gc.getXML());
+       assertEquals(gcXML, gc.writeToXML());
    }
 }

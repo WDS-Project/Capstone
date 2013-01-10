@@ -22,9 +22,10 @@ import org.w3c.dom.Node;
  */
 public class GameChange {
     
-    private String nextTurnID;
+    private int activePlayer, turnNumber, cycleNumber; //these should come from
+    //the GameEngine after it determines whose turn it is
     private int[][] changes;
-    private int stopPosition;
+    private int stopPosition; // the place in the matrix for the next change to be added
     
     /**
      * Constructor for GameChange. It receives the information
@@ -34,10 +35,12 @@ public class GameChange {
      *              of planets.
      * @param turnID        The player ID of the player whose turn is next
      */
-    public GameChange(int numPlanets, String turnID) {
+    public GameChange(int numPlanets, int active, int turn, int cycle) {
         changes = new int[numPlanets][3];
-        nextTurnID = turnID;
-        stopPosition = 0; //the place in the matrix for the next change to be added
+        activePlayer = active;
+        turnNumber = turn;
+        cycleNumber = cycle;
+        stopPosition = 0;
     }
     
     /**
@@ -70,43 +73,18 @@ public class GameChange {
     }
     
     /**
-     * Puts the changes into XML form beginning at the parent given.
-     * Helper method for getXML()
-     * @param parent    The root of the XML document to which to write the changes
+     * Getter for changes[][] matrix
+     * @return  The current state of the changes[][] matrix
      */
-    public void makeXML(Node parent) {
-       Document doc = parent.getOwnerDocument(); //grab the Document we're working on
-       
-       //create the GameChange element (which is root)
-       //it looks like this: <GameChange> ... </GameChange>
-       Element gameChange = doc.createElement("GameChange");
-       
-       //put the next turn ID in the doc
-       Element turn = doc.createElement("NextTurnID");
-       turn.setAttribute("nextTurnID", nextTurnID);
-       gameChange.appendChild(turn);   
-       
-       Element planetList = doc.createElement("Planets");
-       
-       //put each planet changed in the doc
-       for(int i = 0; i < stopPosition; i++) {
-           Element planet = doc.createElement("Planet");
-           planet.setAttribute("idNum", ""+changes[i][0]);
-           planet.setAttribute("owner", ""+changes[i][1]);
-           planet.setAttribute("numFleets", ""+changes[i][2]);
-           planetList.appendChild(planet);
-       }
-        
-       gameChange.appendChild(planetList);
-       parent.appendChild(gameChange);
-    }
+    public int[][] getChanges() { return changes; }
     
-    /**
-     * Get the XML document created in a String format.
-     * @return  XML doc as String
-     */
-    public String getXML() {
-        StringWriter sw = new StringWriter();
+   /**
+    * Writes this GameChange to a String XML format.
+    * @return   The XML as a String
+    */
+    public String writeToXML() {
+        
+       StringWriter sw = new StringWriter();
         try {
             //start building the document
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
@@ -117,10 +95,32 @@ public class GameChange {
             //create the root of the Document as a starting place
             Element root = doc.createElement("root");
             doc.appendChild(root);
+       
+            //create the GameChange element (which is root)
+            //it looks like this: <GameChange> ... </GameChange>
+            Element gameChange = doc.createElement("GameChange");
+       
+            //put the next turn ID in the doc
+            Element turn = doc.createElement("Players");
+            turn.setAttribute("activePlayer", ""+activePlayer);
+            turn.setAttribute("turnNumber", ""+turnNumber);
+            turn.setAttribute("cycleNumber", ""+cycleNumber);
+            gameChange.appendChild(turn);   
+       
+            Element planetList = doc.createElement("Planets");
+       
+            //put each planet changed in the doc
+            for(int i = 0; i < stopPosition; i++) {
+                Element planet = doc.createElement("Planet");
+                planet.setAttribute("idNum", ""+changes[i][0]);
+                planet.setAttribute("owner", ""+changes[i][1]);
+                planet.setAttribute("numFleets", ""+changes[i][2]);
+                planetList.appendChild(planet);
+             }
+        
+            gameChange.appendChild(planetList);
+            root.appendChild(gameChange);
             
-            //add all the planets with changes using the helper method
-            makeXML(root);
-                
             //magically transforms the XML document into a readable String format
             DOMSource domSource = new DOMSource(root.getFirstChild());
             TransformerFactory tf = TransformerFactory.newInstance();
@@ -132,5 +132,5 @@ public class GameChange {
             System.out.println("REALLY bad stuff happened.");
         }
         return sw.toString();
-    }
+        }
 }
