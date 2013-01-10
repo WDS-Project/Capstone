@@ -18,7 +18,7 @@ public class Move {
      */
     
     private int playerID;
-    private ArrayList<ArrayList> moves;
+    private ArrayList<ArrayList<Integer>> moves = new ArrayList<ArrayList<Integer>>();;
     /*
      * This 2D array looks like this:
      *        sourcePlanetID   destPlanetID   numberOfFleets
@@ -38,7 +38,6 @@ public class Move {
      */
     public Move(int player, int[][] mves) {
         playerID = player;
-        moves = new ArrayList<ArrayList>();
         for(int i = 0; i < mves.length; i++) {
             moves.add(new ArrayList<Integer>());
             for(int j = 0; j < 3; j++)
@@ -55,7 +54,6 @@ public class Move {
      */
     public Move(String move) throws NumberFormatException {
         //load the moves from the String into the 2D ArrayList
-        moves = new ArrayList<ArrayList>();
         String[] miniMoves = move.split("/");
         playerID = Integer.parseInt(miniMoves[0]);
         for(int i = 1; i < miniMoves.length; i++) {
@@ -77,15 +75,15 @@ public class Move {
         if(!hasNext())        
             throw new NoSuchElementException();
         
-        //for some reason it wouldn't let me cast the Integer[] to int[],
-        //so here's this nonsense. This has got to be terrible code.
-        Object[] currentMove = moves.get(currentMoveIndex).toArray();
-        int[] currMove = new int[currentMove.length];
+        //This is happening because ArrayList.toArray returns Object[]
+        //So this is how we avoid casting
+        int[] currentMove = new int[moves.get(currentMoveIndex).size()];
+        //this size will always be 3 incidentally
         for(int i = 0; i < currentMove.length; i++)
-            currMove[i] = (int)(Integer)currentMove[i];
+            currentMove[i] = (int)moves.get(currentMoveIndex).get(i);
         currentMoveIndex++;
         
-        return currMove;
+        return currentMove;
     }
     
     /**
@@ -133,7 +131,6 @@ public class Move {
         }
         
         return sb.toString();
-    }
-    
+    }   
     
 }

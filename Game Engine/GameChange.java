@@ -1,5 +1,6 @@
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,23 +25,21 @@ public class GameChange {
     
     private int activePlayer, turnNumber, cycleNumber; //these should come from
     //the GameEngine after it determines whose turn it is
-    private int[][] changes;
-    private int stopPosition; // the place in the matrix for the next change to be added
+    private ArrayList<ArrayList<Integer>> changes;
+    private int numChanges; //place in the matrix for the next change to be added
+    private final int CHANGE_LENGTH = 3;
     
     /**
      * Constructor for GameChange. It receives the information
      * from the GameEngine.
-     * @param numPlanets    This is used for allocation of space in the matrix.
-     *              The maximum number of planets that can change is the number
-     *              of planets.
      * @param turnID        The player ID of the player whose turn is next
      */
-    public GameChange(int numPlanets, int active, int turn, int cycle) {
-        changes = new int[numPlanets][3];
+    public GameChange(int active, int turn, int cycle) {
+        changes = new ArrayList<ArrayList<Integer>>();
         activePlayer = active;
         turnNumber = turn;
         cycleNumber = cycle;
-        stopPosition = 0;
+        numChanges = 0;
     }
     
     /**
@@ -48,10 +47,11 @@ public class GameChange {
      * @param p     Planet object that changed     
      */
     public void addChange(Planet p) {
-        changes[stopPosition][0] = p.getIDNum();
-        changes[stopPosition][1] = p.getOwner();
-        changes[stopPosition][2] = p.getFleets();
-        stopPosition++;
+        changes.add(new ArrayList<Integer>());
+        changes.get(numChanges).add(p.getIDNum());
+        changes.get(numChanges).add(p.getOwner());
+        changes.get(numChanges).add(p.getFleets());
+        numChanges++;
     }
     
     /**
@@ -62,10 +62,13 @@ public class GameChange {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("ActivePlayer: " + activePlayer + "\n" +
+            "TurnNumber: " + turnNumber + "\n" +
+            "CycleNumber: " + cycleNumber + "\n" + "Changes:\n");
         
-        for(int i = 0; i < stopPosition; i++) {
-            for(int j = 0; j < 3; j++)
-                sb.append(changes[i][j] + " ");
+        for(int i = 0; i < numChanges; i++) {
+            for(int j = 0; j < CHANGE_LENGTH; j++)
+                sb.append(changes.get(i).get(j) + " ");
             sb.append("\n");
         }
         
@@ -76,7 +79,17 @@ public class GameChange {
      * Getter for changes[][] matrix
      * @return  The current state of the changes[][] matrix
      */
-    public int[][] getChanges() { return changes; }
+    public int[][] getChanges() { 
+        //ArrayList.toArray returns Object[], so we have to do this nonsense
+        //to avoid casting from Object
+        int[][] currentChanges = new int[changes.size()][CHANGE_LENGTH];
+        for(int i = 0; i < currentChanges.length; i++) {
+            for(int j = 0; j < CHANGE_LENGTH; j++)
+                currentChanges[i][j] = (int)changes.get(i).get(j);
+        }
+        
+        return currentChanges;
+    }
     
    /**
     * Writes this GameChange to a String XML format.
@@ -110,11 +123,11 @@ public class GameChange {
             Element planetList = doc.createElement("Planets");
        
             //put each planet changed in the doc
-            for(int i = 0; i < stopPosition; i++) {
+            for(int i = 0; i < numChanges; i++) {
                 Element planet = doc.createElement("Planet");
-                planet.setAttribute("idNum", ""+changes[i][0]);
-                planet.setAttribute("owner", ""+changes[i][1]);
-                planet.setAttribute("numFleets", ""+changes[i][2]);
+                planet.setAttribute("idNum", ""+changes.get(i).get(0));
+                planet.setAttribute("owner", ""+changes.get(i).get(1));
+                planet.setAttribute("numFleets", ""+changes.get(i).get(2));
                 planetList.appendChild(planet);
              }
         

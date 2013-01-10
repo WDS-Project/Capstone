@@ -12,7 +12,7 @@ public class GCTest {
     
     @Before
     public void setUp() {
-            gc = new GameChange(5, 2, 5, 5);
+            gc = new GameChange(2, 5, 5);
             Planet x = new Planet(2, "blue", "name", 2,3,4);
             x.setOwner(1);
             x.setFleets(4);
@@ -42,5 +42,19 @@ public class GCTest {
                         "</Planets>"+
                 "</GameChange>";
        assertEquals(gcXML, gc.writeToXML());
+   }
+   
+   @Test
+   public void testGetChanges() {
+       String gamec = "";
+       int[][] changes = gc.getChanges();
+       for(int i = 0; i < changes.length; i++) {
+           for(int j = 0; j < 3; j++) {
+               gamec += changes[i][j] + " ";
+           }
+           gamec += "\n";
+       }
+       String compare = "2 1 4 \n5 3 356 \n";
+       assertEquals(gamec, compare);
    }
 }
