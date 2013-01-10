@@ -35,7 +35,7 @@ public class Planet {
 	}
 	
 	/** Constructor to load a planet from XML. */
-	public Planet(Node n) {	
+	public Planet(Element n) {	
 		loadXML(n);
 	}
 	
@@ -92,29 +92,17 @@ public class Planet {
 	 * 
 	 * @param n the Planet node to be read
 	 */
-	public void loadXML(Node n) {
-		this.idNum = Integer.parseInt(getNodeAttr("idNum", n));
-		this.color = getNodeAttr("color", n);
-		this.name = getNodeAttr("name", n);
-		String position = getNodeAttr("position", n);
+	public void loadXML(Element n) {
+		this.idNum = Integer.parseInt(n.getAttribute("idNum"));
+		this.color = n.getAttribute("color");
+		this.name = n.getAttribute("name");
+		String position = n.getAttribute("position");
 		int mPos = position.indexOf(',');
 		this.xPos = Integer.parseInt(position.substring(0, mPos));
 		this.yPos = Integer.parseInt(position.substring(mPos+1));
-		this.owner = Integer.parseInt(getNodeAttr("owner", n));
-		this.numFleets = Integer.parseInt(getNodeAttr("numFleets", n));
-		this.radius = Integer.parseInt(getNodeAttr("radius", n));
-	}
-	// There are more efficient ways to do this, but by using this
-	// method, this code is immune to changes in the order of the XML
-	protected String getNodeAttr(String attrName, Node node ) {
-	    NamedNodeMap attrs = node.getAttributes();
-	    for (int y = 0; y < attrs.getLength(); y++ ) {
-	        Node attr = attrs.item(y);
-	        if (attr.getNodeName().equalsIgnoreCase(attrName)) {
-	            return attr.getNodeValue();
-	        }
-	    }
-	    return "";
+		this.owner = Integer.parseInt(n.getAttribute("owner"));
+		this.numFleets = Integer.parseInt(n.getAttribute("numFleets"));
+		this.radius = Integer.parseInt(n.getAttribute("radius"));
 	}
 	
 	/**
