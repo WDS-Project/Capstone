@@ -29,7 +29,7 @@ public class Region {
 	}
 	
 	/** Constructor to load a region from XML. */
-	public Region(Node n) {
+	public Region(Element n) {
 		loadXML(n);
 	}
 
@@ -67,12 +67,12 @@ public class Region {
 	 * 
 	 * @param n the Region node to be read
 	 */
-	public void loadXML(Node n) {
-		this.idNum = Integer.parseInt(getNodeAttr("idNum", n));
-		this.color = getNodeAttr("color", n);
-		this.name = getNodeAttr("name", n);
+	public void loadXML(Element n) {
+		this.idNum = Integer.parseInt(n.getAttribute("idNum"));
+		this.color = n.getAttribute("color");
+		this.name = n.getAttribute("name");
 		// owner is checked elsewhere
-		this.value = Integer.parseInt(getNodeAttr("value", n));
+		this.value = Integer.parseInt(n.getAttribute("value"));
 		
 		// Now we build the members list.
 		Node mList = n.getFirstChild();
@@ -89,16 +89,6 @@ public class Region {
 			// Repeat, this time actually recording the members.
 			if (kid.getNodeType() == Node.ELEMENT_NODE)
 				members[mCount++] = Integer.parseInt(kid.getTextContent());
-	}
-	protected String getNodeAttr(String attrName, Node node ) {
-	    NamedNodeMap attrs = node.getAttributes();
-	    for (int y = 0; y < attrs.getLength(); y++ ) {
-	        Node attr = attrs.item(y);
-	        if (attr.getNodeName().equalsIgnoreCase(attrName)) {
-	            return attr.getNodeValue();
-	        }
-	    }
-	    return "";
 	}
 	
 	/**

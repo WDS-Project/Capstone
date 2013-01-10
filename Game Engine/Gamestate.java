@@ -167,10 +167,9 @@ public class Gamestate {
 			
 			// Checks the owner of the first planet in the region.
 			int regionOwner = pList[members[0]].getOwner();
-			for (int j = 1; j < members.length; j++) {
+			for (int j = 1; j < members.length; j++)
 				if (pList[members[j]-1].getOwner() != regionOwner)
 					regionOwner = 0;
-			}
 			
 			// If all were owned by the same player, then the region is owned
 			// by that player; if not, then it is unowned (player 0).
@@ -263,6 +262,30 @@ public class Gamestate {
 		// If all cases above have passed, then Gamestate is valid.
 		return true;
 	}
+	
+	/** Updates the current Gamestate based on a GameChange.
+	 * 
+	 * @param gc the GameChange with which to update this Gamestate
+	 */
+	public void update(GameChange gc) {
+		int[][] changeList = gc.getChanges();
+		// [idNum, numFleets, owner]
+		
+		for (int i = 0; i < changeList.length; i++) {
+			int[] change = changeList[i];
+			if (change[0] >= pList.length)
+				throw new RuntimeException("Error: invalid planet in Gamechange.");
+			Planet currPlan = pList[change[0]];
+			if (change[1] <= 0)
+				throw new RuntimeException("Error: can't have negative fleets.");
+			currPlan.setFleets(change[1]);
+			if (change[2] >= playerList.length)
+				throw new RuntimeException("Error: invalid owner in Gamechange.");
+			currPlan.setOwner(change[2]);			
+		}
+		
+		updateRegions();
+	}
 
 	// *** XML Methods ***	
 	/**
@@ -282,17 +305,17 @@ public class Gamestate {
 			NodeList root = doc.getChildNodes().item(0).getChildNodes(); // root = <Gamestate>
 			
 			// 2. Players & Turns
-			Node playerNode = getNode("Players", root);
-			activePlayer = Integer.parseInt(getNodeAttr("activePlayer", playerNode));
-			int numPlayers = Integer.parseInt(getNodeAttr("numPlayers", playerNode));
+			Element playerNode = (Element)getNode("Players", root);
+			activePlayer = Integer.parseInt(playerNode.getAttribute("activePlayer"));
+			int numPlayers = Integer.parseInt(playerNode.getAttribute("numPlayers"));
 			playerList = new int[numPlayers + 1]; // because player 0 = neutral
 			for (int i = 1; i < numPlayers; i++)
 				playerList[i] = 1; // 1 = normal player; 0 = inactive player
-			turnNumber = Integer.parseInt(getNodeAttr("turnNumber", playerNode));
-			cycleNumber = Integer.parseInt(getNodeAttr("cycleNumber", playerNode));
+			turnNumber = Integer.parseInt(playerNode.getAttribute("turnNumber"));
+			cycleNumber = Integer.parseInt(playerNode.getAttribute("cycleNumber"));
 			
 			// 3. Planets
-			Node planetNode = getNode("PlanetList", root);
+			Element planetNode = getNode("PlanetList", root);
 			int pCount = 0;
 			for (Node kid = planetNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				// For each child of the PlanetList node (i.e. for each Planet)...
@@ -303,10 +326,10 @@ public class Gamestate {
 			for (Node kid = planetNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				// Repeat, this time actually building the planets.
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
-					pList[pCount++] = new Planet(kid); // Let the Planet build itself
+					pList[pCount++] = new Planet((Element) kid); // Let the Planet build itself
 			
 			// 4. Connections
-			Node connectNode = getNode("ConnectionList", root);
+			Element connectNode = getNode("ConnectionList", root);
 			for (Node kid = connectNode.getFirstChild(); kid != null; kid = kid.getNextSibling()) {
 				if (kid.getNodeType() == Node.ELEMENT_NODE) {
 					String s = kid.getTextContent();
@@ -317,7 +340,7 @@ public class Gamestate {
 			}
 			
 			// 5. Regions - almost exactly the same as #3
-			Node regionNode = getNode("RegionList", root);
+			Element regionNode = getNode("RegionList", root);
 			int rCount = 0;
 			for (Node kid = regionNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
@@ -326,7 +349,7 @@ public class Gamestate {
 			rCount = 0;
 			for (Node kid = regionNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
-					rList[rCount++] = new Region(kid); // and the regions build themselves too
+					rList[rCount++] = new Region((Element) kid); // and the regions build themselves too
 		
 		} catch (Exception e) { e.printStackTrace(); } // end of the DocumentBuilder try/catch blocks
 		
@@ -366,6 +389,7 @@ public class Gamestate {
 			playerNode.setAttribute("activePlayer", activePlayer+"");
 			playerNode.setAttribute("turnNumber", turnNumber+"");
 			playerNode.setAttribute("cycleNumber", cycleNumber+"");
+			// playerNode.getAttribute(arg0);
 			
 			// 2. Then we add information about planets...
 			Element pListEl = doc.createElement("PlanetList");
@@ -398,23 +422,14 @@ public class Gamestate {
 		return sb.toString();
 	}
 	
-	// XML Helper methods
-	// These helper methods came from http://www.drdobbs.com/jvm/easy-dom-parsing-in-java/231002580
-	protected Node getNode(String tagName, NodeList nodes) {
+	// XML Helper method
+	// This came from http://www.drdobbs.com/jvm/easy-dom-parsing-in-java/231002580
+	protected Element getNode(String tagName, NodeList nodes) {
 	    for (int i = 0; i < nodes.getLength(); i++) {
 	        Node node = nodes.item(i);
 	        if (node.getNodeName().equalsIgnoreCase(tagName))
-	            return node;
+	            return (Element) node;
 	    }
 	    return null;
-	}
-	protected String getNodeAttr(String attrName, Node n) {
-	    NamedNodeMap attrs = n.getAttributes();
-	    for (int i = 0; i < attrs.getLength(); i++ ) {
-	        Node attr = attrs.item(i);
-	        if (attr.getNodeName().equalsIgnoreCase(attrName))
-	            return attr.getNodeValue();
-	    }
-	    return "";
 	}
 }
