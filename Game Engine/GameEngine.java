@@ -185,7 +185,12 @@ public class GameEngine {
                     continue;
                 }
                 Planet source = gs.getPlanetByID(miniMove[0]); // Safe to find source Planet
-                              
+                
+                // Check that the two planets in question are, in fact, connected.
+                if (!gs.isConnected(source.getIDNum(), dest.getIDNum()))
+                	throw new RuntimeException("Invalid move: planet "+source.getIDNum()+" and "+
+                				dest.getIDNum()+" are not connected.");
+                
                 // 2. If Source owner == Dest owner --> Reinforcement
                 if(source.getOwner() == dest.getOwner()) {
                     source.addFleets((-1)*numFleets);
