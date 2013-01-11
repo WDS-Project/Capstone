@@ -101,6 +101,37 @@ public class Gamestate {
 		if (activePlayer == leadPlayer)
 			cycleNumber++;
 	}
+	/** Returns a list of all Planets connected to a given Planet.
+	 *
+	 * @param planetID the ID of the Planet in question
+	 * @return an int array of Planet ID's that are connected to
+	 * the specified planet
+	 */
+	public int[] getConnections(int planetID) {
+		// Build an Arraylist of the connections
+		ArrayList<Integer> resultList = new ArrayList<Integer>();
+		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
+			Connection c = i.next();
+			if (c.end == planetID)
+				resultList.add(c.start);
+			else if (c.start == planetID)
+				resultList.add(c.end);
+		}
+		if (resultList.size() == 0)
+			throw new RuntimeException("Error: Planet "+planetID+" has no connections.\n"
+									 + "It may not be a valid planet ID.");
+		
+		// Transform that Arraylist into an int[]
+		int j = 0; // array index
+		int[] result = new int[resultList.size()]; // Arraylist iterator
+		for (Iterator<Integer> i = resultList.iterator(); i.hasNext(); j++)
+			result[j] = i.next();
+		return result;
+	}
+	/** Returns true if p1 and p2 are connected. */
+	public boolean isConnected(int p1, int p2) {
+		return cList.contains(new Connection(p1, p2));
+	}
 	
 	// Inner class storing the information about a connection.
 	private class Connection implements Comparable{
