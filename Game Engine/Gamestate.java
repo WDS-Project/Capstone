@@ -59,6 +59,25 @@ public class Gamestate {
 		loadXML(xmlPath);
 	}
 	
+	/** 
+	 * Returns a deep copy of this object.
+	 * @return a Gamestate identical in content to this one
+	 */
+	public Gamestate copy() {
+		Gamestate copyGS = new Gamestate(pList.length, rList.length, playerList.length);
+		copyGS.activePlayer = this.activePlayer;
+		copyGS.turnNumber = this.turnNumber;
+		copyGS.cycleNumber = this.cycleNumber;
+		copyGS.playerList = Arrays.copyOf(this.playerList, this.playerList.length);
+		copyGS.pList = Arrays.copyOf(this.pList, this.pList.length);
+		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
+			Connection c = i.next();
+			copyGS.cList.add(new Connection(c.start, c.end));
+		} // Connections are messy.
+		copyGS.rList = Arrays.copyOf(this.rList, this.rList.length);
+		return copyGS;
+	}
+	
 	// Getters & Setters
 	/** Returns the complete list of planets in this game. */
 	public Planet[] getPlanets() { return pList; }
@@ -80,6 +99,8 @@ public class Gamestate {
 	public int getActivePlayer() { return activePlayer; }
 	/** Returns the current turn number. */
 	public int getTurnNumber() { return turnNumber; }
+	/** Returns the current cycle number. */
+	public int getCycleNumber() { return cycleNumber; }
 	/** Sets the player ID of the current active player. Note that this 
 	 * method will fail if the given ID is not on the list of players. */
 	public void setActivePlayer(int playerID) { 

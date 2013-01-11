@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 public class Player {
   
   private int ID;
+  private int status;
   private Semaphore requestSemaphore = new Semaphore(1);
   
   private String request = "";  // Current request
@@ -31,6 +32,8 @@ public class Player {
   public void setRequest(String req) {  request = req;  }
   public String getResponse() {  return response;  }
   public void setResponse(String resp) {  response = resp;  }
+  public int getStatus() { return status; }
+  public void setStatus(int i) { status = i; } // TODO: what if player is being eliminated?
   
   /**
    * Give requests to Engine one at a time.

@@ -1,4 +1,5 @@
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.CyclicBarrier;
 
 /** 
  * Contains methods and data pertaining to running a game. As you might
@@ -9,10 +10,89 @@ import java.util.Random;
  */
 public class GameEngine {
 	/*** Fields ***/
-	private Gamestate gs;
-	// Other things go here...
+	private Gamestate gs,
+					  originalGS;
+	private GameChange change;
+	// For players, it's an <ipAddress, Player object> map
+	private TreeMap<String, Player> players;
+	private CyclicBarrier roundBegin,
+						  roundEnd;
 	
 	/*** Methods ***/
+	// Constructor, I guess? Also related init methods.
+	public GameEngine() {
+		// TODO Figure out what we need to go here.
+		init();
+	}
+	
+	/** Initialize (or reinitialize) the engine. */
+	private void init() {
+		players = new TreeMap<String, Player>();
+		// Note that the engine is unusable until players are defined.
+	}
+	
+	/** Loads a Gamestate into memory for this game. */
+	public void loadGamestate(String xmlPath) {
+		gs = new Gamestate(xmlPath);
+		originalGS = gs.copy();
+	}
+	/** Resets the current Gamestate to the last Gamestate that was loaded. */ 
+	public void resetGame() { gs = originalGS.copy(); }
+	
+	// Getters & Setters
+	/**
+	 * Defines a Player based on an IP address. This adds the player to the Player
+	 * pool with a given status and increments the player pool. Note that if you
+	 * try to add a duplicate, it return null.
+	 * 
+	 * @return the Player object that was added; null otherwise
+	 */
+	public Player definePlayer(String ipAddress, int status) {
+		// Ignore duplicate entries
+		if (players.containsKey(ipAddress)) return null;
+		
+		// Otherwise, add a new Player. The new Player's ID is the next one in line.
+		Player newP = new Player(players.size());
+		newP.setStatus(status);
+		players.put(ipAddress, newP);
+		changePlayerPopulation(players.size());
+		return newP;		
+	}
+	
+	/** Returns the Player associated with a given IP address, or null if there
+	 * is no player associated with that address.
+	 * 
+	 * @param ipAddress the address of the Player for which to search
+	 * @return the Player object if found; null otherwise
+	 */
+	public Player findPlayer(String ipAddress) {
+		if (players.containsKey(ipAddress))
+			return players.get(ipAddress);
+		else
+			return null;
+	}
+	/** Returns the player with the given ID number, which is a primary key like
+	 * IP address. It returns null if there is no such player.
+	 * @param idNum
+	 * @return
+	 */
+	public Player findPlayer(int idNum) {
+		if (players.size() > idNum) return null;
+		
+		Set<String> keys = players.keySet();
+	    for(Iterator<String> i = keys.iterator(); i.hasNext(); ) {
+	    	String s = i.next();
+	    	if (players.get(s).getID() == idNum)
+	    		return players.get(s);
+	    }
+	    
+	    // If we get here, there's a problem with our player ID numbers.
+	    throw new RuntimeException("Error: Player ID not found... but should have been.");
+	}
+	/** Returns the latest GameChange. */
+	public GameChange getChange() { return change; }
+	
+	// Game-related methods	
 	/**
 	 * Calculates the result of combat between two opposing forces.
 	 * 
@@ -65,6 +145,7 @@ public class GameEngine {
         	else return -1;
         }
 	
+        // Server-related methods
         /**
          * Process a move coming from a Player. Note that this is in its preliminary stages.
          * This method is really long.
@@ -72,24 +153,14 @@ public class GameEngine {
          * @param move the move from some player
          * @return a GameChange describing the changes made by the Move
          */
-        public GameChange processMove(Move move) {
-            GameChange gc = new GameChange(0,0,0); //TODO Replace these 0's with the turn variables
+        public void processMove(Move move) {
+            GameChange gc = new GameChange(gs.getActivePlayer(),
+            		gs.getTurnNumber(), gs.getCycleNumber());
             
-            // make sure the Player ID is valid
-            /* boolean validPlayer = false;
-            for(int p : gs.getActivePlayers()) {
-                if (move.getPlayerID() == p && move.getPlayerID() != 0)
-                    validPlayer = true;
-            }
-            if(!validPlayer)
-                throw new RuntimeException("Invalid player."); */
-            // Actually, let's just check that the player who submitted the move is the active
-            // player. Then, as long as activePlayer is right, the player must be active.
+            // Check that the player who submitted the move is the active player.
+            // Then, as long as activePlayer is right, the playerID must be valid.
             if (move.getPlayerID() != gs.getActivePlayer())
             	throw new RuntimeException("That isn't the active player!");
-            
-            //TODO make sure that it is indeed that player's turn
-            
                     
            // loop through the mini Moves
             while(move.hasNext()) {
@@ -143,9 +214,75 @@ public class GameEngine {
             int winner = checkWin();
             //TODO what to do if someone has won? Call some sort of endGame() method
             
+            // Store the new GameChange
+            change = gc;
             // update the Gamestate
-            gs.update(gc);
+            gs.update(change);
+        } // end processMove()
+        
+        /**
+         * Process the request for a player, synchronizing with the other players in the round.
+         * This is intended to be called only from Player.synchronizedRequest();
+         */
+        protected void synchronizedRequest() throws Exception{
+        	// Wait for all the players to enter requests for this round (turn).
+        	roundBegin.await();
+        	// This method call sits and waits until all players have submitted their
+        	// requests. If the code moves beyond that line, then all players are on the
+        	// same page.
+        	
+        	// When all players have submitted their moves, executeRequests() is called
+        	// according to the declaration of the roundBegin barrier.
+        	
+        	// With that done, we wait for all the Players to report that they're finished
+        	// processing the last move.
+        	roundEnd.await();
+        	// Once the roundEnd barrier is overcome, we move onto the next round (turn).
+        }
+        
+        /** Executes the requests of all the players. This method is highly preliminary. */
+        private void executeRequests() {
+        	// TODO implement error handling and request checking or whatever
+        	// First we process the move of the active player. We should probably validate this stuff somewhere.
+        	Player actor = findPlayer(gs.getActivePlayer());
+        	String request = actor.getRequest(); // This ought to be a Move.
+        	Move m = new Move(request); // If it isn't a move, we'll get an exception.
+        	processMove(m); // results are available via change
+        	
+        	// For the moment this ignores the requests of the other players. We're just assuming they
+        	// all sent in GET requests.
+        	
+        	// Now we let everyone know what happened.
+        	Set<String> keys = players.keySet();
+            for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
+              String key = itKey.next();
+              Player player = players.get(key);
+              
+              // Process the request for this player.
+              // This would be where we process the players' requests...
+              player.setResponse(change.toString());
+            }
             
-            return gc;
+            // Now everyone's threads are released and they all move on to roundEnd.
+            // The next thing to happen should be finalResultsAvailable().
+        }
+        
+        /** Do whatever needs to be done to get ready for the next round (turn). */
+        private void finalResultsAvailable() {
+        	// I don't think we actually want it to do this every time, but it's a good temporary thing.
+        	// If/when we start writing things to a log, this would be the place to do it.
+        	System.out.println(gs.toString());
+        	
+        	// Final part: setup for the next round.
+        	gs.nextTurn();
+        }
+        
+        /** Adjusts the player population for players being eliminated and whatnot. */
+        private void changePlayerPopulation(int count) {
+        	// I thought we didn't need this, but we do. It just makes two new barriers with appropriate size.
+        	// The CyclicBarrier constructor defines what method is run when all (count) players have submitted
+        	// their requests - in this case, executeRequests() and finalResultsAvailable(), respectively.
+        	roundBegin = new CyclicBarrier(count, new Runnable() { public void run() { executeRequests(); }});
+            roundEnd = new CyclicBarrier(count, new Runnable() { public void run() { finalResultsAvailable(); }});
         }
 }
