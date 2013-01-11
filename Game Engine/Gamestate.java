@@ -63,11 +63,17 @@ public class Gamestate {
 	/** Returns the complete list of planets in this game. */
 	public Planet[] getPlanets() { return pList; }
 	/** Returns a specific Planet object. */
-	public Planet getPlanetByID(int planetID) { return pList[planetID]; }
+	public Planet getPlanetByID(int planetID) {
+		// Returns [ID - 1] because Planet 1 is at index 0 
+		return pList[planetID - 1];
+	}
 	/** Returns the complete list of regions in this game. */
 	public Region[] getRegions() { return rList; }
 	/** Returns a specific Region object. */
-	public Region getRegionByID(int regionID) { return rList[regionID]; }
+	public Region getRegionByID(int regionID) {
+		// Returns [ID - 1] because Region 1 is at index 0
+		return rList[regionID - 1];
+	}
 	/** Returns the list of valid player ID's. */
 	public int[] getPlayerList() { return playerList; }
 	/** Returns the ID of the currently active player. */
@@ -292,6 +298,48 @@ public class Gamestate {
 		
 		// If all cases above have passed, then Gamestate is valid.
 		return true;
+	}
+	
+	/** Updates all players' statuses. */
+	public void checkPlayerStatus() {
+		for (int i : playerList)
+			checkPlayerStatus(i);
+	}
+	
+	/** 
+	 * Updates the status of one player. Mostly this means setting that
+	 * player to inactive (0) if that player has no planets.
+	 * 
+	 * @param i ID of player to be checked
+	 * @return the new status of the player
+	 */
+	public int checkPlayerStatus(int playerID) {
+		int pCount = 0;
+		for (Planet p : pList)
+			if (p.getOwner() == playerID)
+				pCount++;
+		
+		if (pCount == 0) // A player with no planets...
+			playerList[playerID] = 0; // ... is now inactive
+		return playerList[playerID];
+	}
+	
+	/** Returns a list of all players with status "active" (1). */
+	public int[] getActivePlayers() {
+		// Count active players
+		int activeCount = 0;
+		for (int i : playerList)
+			if (playerList[i] == 1)
+				activeCount++;
+		
+		// Build a list of the ID's of all active players
+		int[] result = new int[activeCount];
+		int index = 0;
+		for (int i : playerList)
+			if (playerList[i] == 1)
+				result[index++] = i;
+		
+		return result;
 	}
 	
 	/** Updates the current Gamestate based on a GameChange.

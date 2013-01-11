@@ -1,9 +1,10 @@
 import java.util.Random;
 
 /** 
- * Contains methods and data pertaining to running a game.
+ * Contains methods and data pertaining to running a game. As you might
+ * expect, there are a lot of them.
  * 
- * @author Tycherin
+ * @author WDS Project
  *
  */
 public class GameEngine {
@@ -49,10 +50,7 @@ public class GameEngine {
 			}
 		} // end combat loop
 		
-		int[] result = new int[2];
-		result[0] = sourceFleets;
-		result[1] = destFleets;
-		return result;
+		return new int[] {sourceFleets, destFleets};
 	}
         
         /**
@@ -60,95 +58,92 @@ public class GameEngine {
          * @return  ID of the player who has won, or -1 if no one has
          */
         public int checkWin() {
-            int winner = -1;
-            
-            //check to see if one Player owns all the Planets
-            int candidate = gs.getPlanets()[0].getOwner(); //grab the ID of the owner of the first planet
-            for(Planet p : gs.getPlanets()) {
-                if (p.getOwner() == candidate) winner = candidate; //check to see if all other planets
-                else winner = -1;                                   //are owned by this player
-            }
-            
-            return winner;
-            //Is there any other way someone can win??
+        	// Special case: if only one player is left, that player wins by default.
+        	// As long as players are turned inactive when they lose all their planets,
+        	// this method is completely reliable. (Use Gamestate.checkPlayerStatus(); )
+        	if (gs.getActivePlayers().length <= 1) return gs.getActivePlayers()[0];
+        	else return -1;
         }
 	
         /**
          * Process a move coming from a Player. Note that this is in its preliminary stages.
          * This method is really long.
-         * @param move  The move from the User
-         * @return 
+         * 
+         * @param move the move from some player
+         * @return a GameChange describing the changes made by the Move
          */
         public GameChange processMove(Move move) {
             GameChange gc = new GameChange(0,0,0); //TODO Replace these 0's with the turn variables
             
-            //make sure the Player ID is valid
-            boolean validPlayer = false;
-            for(int p : gs.getPlayerList()) {
+            // make sure the Player ID is valid
+            /* boolean validPlayer = false;
+            for(int p : gs.getActivePlayers()) {
                 if (move.getPlayerID() == p && move.getPlayerID() != 0)
                     validPlayer = true;
             }
             if(!validPlayer)
-                throw new RuntimeException("Invalid player.");
+                throw new RuntimeException("Invalid player."); */
+            // Actually, let's just check that the player who submitted the move is the active
+            // player. Then, as long as activePlayer is right, the player must be active.
+            if (move.getPlayerID() != gs.getActivePlayer())
+            	throw new RuntimeException("That isn't the active player!");
             
             //TODO make sure that it is indeed that player's turn
+            
                     
-           //loop through the mini Moves
+           // loop through the mini Moves
             while(move.hasNext()) {
                 int[] miniMove = move.next();
                 
-                //validate the mini-Move
+                // validate the mini-Move
                 if(miniMove.length != 3)
-                    throw new RuntimeException("Invalid move.");
+                    throw new RuntimeException("Invalid Move format.");
+                if (miniMove[2] <= 0)
+                	throw new RuntimeException("Can't move zero troops");
                 
-                //name variables for ease of use
-                //TODO check for invalid Planet IDs
-                Planet source = gs.getPlanetByID(miniMove[0]);
+                // Grab these two, but before we can get source, we have to check case #1
                 Planet dest = gs.getPlanetByID(miniMove[1]);
                 int numFleets = miniMove[2];
-                int player = move.getPlayerID();
                 
-                //Source = Dest: Deployment
-                if(source.getIDNum() == dest.getIDNum()) {
-                    //for right now, check that the Planet is neutral
-                    if(source.getOwner() != 0)
-                        throw new RuntimeException("Invalid move. Attempt to deploy to non-neutral Planet.");
-                    source.addFleets(numFleets);
-                    source.setOwner(player);
-                    gc.addChange(source);
-                }                
-                //Source owner = Dest owner: Reinforcement
-                else if(source.getOwner() == dest.getOwner()) {
+                // 1. If Source == 0 --> Deployment (because planet ID's are indexed at 1,
+                // so 0 means deployment because it comes from nowhere)
+                if(miniMove[0] == 0) {
+                	// TODO rules for deployments, like checking a player's quota
+                	dest.addFleets(numFleets);
+                    gc.addChange(dest);
+                    continue;
+                }
+                Planet source = gs.getPlanetByID(miniMove[0]); // Safe to find source Planet
+                              
+                // 2. If Source owner == Dest owner --> Reinforcement
+                if(source.getOwner() == dest.getOwner()) {
                     source.addFleets((-1)*numFleets);
                     dest.addFleets(numFleets);
                     gc.addChange(source);
                     gc.addChange(dest);
                 }
-                //Source != planet: Attack
-                //Assume a defender victory is never possible because of the retreat policy
+                // 3. Otherwise --> Attack. Two cases: attacker victory, or not.
                 else {
                     int[] results = processAttack(numFleets, dest.getFleets());
-                    if(results[1] == 0) {//the attacker has won
+                    if(results[1] == 0) { // the attacker has won
                         dest.setOwner(source.getOwner());
                         dest.setFleets(results[0]);
                         source.addFleets((-1)*numFleets);
                         gc.addChange(source);
                         gc.addChange(dest);
-                    }
-                    else { //the attacker retreated
-                        source.setFleets(results[0]);
+                    } else { // the attacker retreated (or all died, I suppose)
+                        source.addFleets(results[0] - numFleets);
                         dest.setFleets(results[1]);
                         gc.addChange(source);
                         gc.addChange(dest);
                     }
                 }
-                
-            }
+            } // end miniMove loop
             
             int winner = checkWin();
             //TODO what to do if someone has won? Call some sort of endGame() method
             
-            //update the Gamestate
+            // update the Gamestate
             gs.update(gc);
             
             return gc;
