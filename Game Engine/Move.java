@@ -14,10 +14,11 @@ public class Move {
     /*
      * Note: This is what a Move looks like when it is received
      * from the user's HTTP POST request:
-     * <playerID>/<source>:<dest>:<numFleets>/<source>:<dest>:<numFleets>/etc
+     * <playerID>/<playerIPaddr>/<source>:<dest>:<numFleets>/<source>:<dest>:<numFleets>/etc
      */
     
     private int playerID;
+    private String ipAddr;
     private ArrayList<ArrayList<Integer>> moves = new ArrayList<ArrayList<Integer>>();;
     /*
      * This 2D array looks like this:
@@ -30,17 +31,19 @@ public class Move {
      * So it's essentially an n x 3 matrix
      */
     private int currentMoveIndex = -1; //which part of the move we're on
+    private final int MOVE_LENGTH = 3;
     
     /**
      * Constructor for Move. Creates a move from a 2D int array
      * @param player    ID of the player
      * @param mves      Mini moves
      */
-    public Move(int player, int[][] mves) {
+    public Move(int player, String ipAdd, int[][] mves) {
         playerID = player;
+        ipAddr = ipAdd;
         for(int i = 0; i < mves.length; i++) {
             moves.add(new ArrayList<Integer>());
-            for(int j = 0; j < 3; j++)
+            for(int j = 0; j < MOVE_LENGTH; j++)
                 moves.get(i).add(mves[i][j]);
         }
         currentMoveIndex = 0;
@@ -53,15 +56,30 @@ public class Move {
      *                              formatted correctly
      */
     public Move(String move) throws NumberFormatException {
+        /*Some checks to account for network anomalies.*/
+        //I'm not sure if the first character in the request will be /
+        // or the ID number
+        if(move.length() < 1)
+            throw new RuntimeException("Empty move.");
+        if(move.charAt(0) == '/')
+            move = move.substring(1);
+        
         //load the moves from the String into the 2D ArrayList
         String[] miniMoves = move.split("/");
         playerID = Integer.parseInt(miniMoves[0]);
-        for(int i = 1; i < miniMoves.length; i++) {
+        ipAddr = miniMoves[1];
+        for(int i = 2; i < miniMoves.length; i++) {
             String[] sourceDestFleets = miniMoves[i].split(":");
+            
+            //if the move is not formatted correctly
+            if (sourceDestFleets.length != MOVE_LENGTH)
+                throw new RuntimeException("Incorrectly formatted move. Must contain " +
+                        "source, destination, and fleets.");
+            
             moves.add(new ArrayList<Integer>());
-            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[0]));
-            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[1]));
-            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[2]));
+            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[0]));
+            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[1]));
+            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[2]));
         }
         currentMoveIndex = 0;
     }
@@ -104,6 +122,12 @@ public class Move {
     public int getPlayerID(){ return playerID; }
     
     /**
+     * Return IP address of player making the move
+     * @return 
+     */
+    public String getIP() { return ipAddr; }
+    
+    /**
      * Getter for the next index.  Not sure why this is useful.
      * @return      Index of the next move in the 2D ArrayList (that is,
      * the next row in the matrix.)
@@ -124,7 +148,7 @@ public class Move {
         StringBuilder sb = new StringBuilder();
         sb.append("Player ID: " + playerID + "\n");
         for(int i = 0; i < moves.size(); i++) {
-            for(int j = 0; j < 3; j++) {
+            for(int j = 0; j < MOVE_LENGTH; j++) {
                 sb.append(""+moves.get(i).get(j) + " ");
             }
             sb.append("\n");

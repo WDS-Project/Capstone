@@ -1,17 +1,11 @@
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
 /**
  *  This class is a description of a GameChange.
@@ -47,11 +41,25 @@ public class GameChange {
      * @param p     Planet object that changed     
      */
     public void addChange(Planet p) {
-        changes.add(new ArrayList<Integer>());
-        changes.get(numChanges).add(p.getIDNum());
-        changes.get(numChanges).add(p.getOwner());
-        changes.get(numChanges).add(p.getFleets());
-        numChanges++;
+        
+        //check to see if there is already a change pertaining to that Planet
+        boolean found = false;
+        for(ArrayList<Integer> a : changes) {
+            if(a.get(0) == p.getIDNum()) {
+                a.set(1, p.getOwner());
+                a.set(2, p.getFleets());
+                found = true;
+            }
+        }
+        
+        //otherwise, add the Planet
+        if (!found) {
+            changes.add(new ArrayList<Integer>());
+            changes.get(numChanges).add(p.getIDNum());
+            changes.get(numChanges).add(p.getOwner());
+            changes.get(numChanges).add(p.getFleets());
+            numChanges++;
+        }
     }
     
     /**
@@ -87,18 +95,19 @@ public class GameChange {
             for(int j = 0; j < CHANGE_LENGTH; j++)
                 currentChanges[i][j] = (int)changes.get(i).get(j);
         }
-        
         return currentChanges;
     }
     
    /**
     * Writes this GameChange to a String XML format.
     * @return   The XML as a String
+    * @throws TransformerException, ParserConfigurationException
+    *       If bad stuff happened while performing the magic that makes
+    *       the XML into a String, the Exceptions are thrown upward
     */
-    public String writeToXML() {
+    public String writeToXML() throws TransformerException, ParserConfigurationException {
         
        StringWriter sw = new StringWriter();
-        try {
             //start building the document
             DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
             domFactory.setNamespaceAware(true);
@@ -139,11 +148,7 @@ public class GameChange {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer magic = tf.newTransformer();
             magic.transform(domSource, new StreamResult(sw));
-        } catch (TransformerException ex) {
-            System.out.println("Bad stuff happened.");
-        } catch (ParserConfigurationException ex) {
-            System.out.println("REALLY bad stuff happened.");
-        }
+            
         return sw.toString();
         }
 }

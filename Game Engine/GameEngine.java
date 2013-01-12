@@ -22,6 +22,8 @@ public class GameEngine {
 	// Constructor, I guess? Also related init methods.
 	public GameEngine() {
 		// TODO Figure out what we need to go here.
+            //Not much really ... The Players and Gamestate will be defined after
+           //the Engine is initialized by calling methods.
 		init();
 	}
 	
@@ -147,8 +149,7 @@ public class GameEngine {
 	
         // Server-related methods
         /**
-         * Process a move coming from a Player. Note that this is in its preliminary stages.
-         * This method is really long.
+         * Process a move coming from a Player.
          * 
          * @param move the move from some player
          * @return a GameChange describing the changes made by the Move
@@ -161,6 +162,11 @@ public class GameEngine {
             // Then, as long as activePlayer is right, the playerID must be valid.
             if (move.getPlayerID() != gs.getActivePlayer())
             	throw new RuntimeException("That isn't the active player!");
+            
+            //Hacker check: Make sure no one submitted a Move with the correct
+            //ID and the wrong IP.
+            if(findPlayer(move.getIP()).getID() != move.getPlayerID())
+                throw new RuntimeException("Who are you?!");
                     
            // loop through the mini Moves
             while(move.hasNext()) {
@@ -217,7 +223,8 @@ public class GameEngine {
             } // end miniMove loop
             
             int winner = checkWin();
-            //TODO what to do if someone has won? Call some sort of endGame() method
+            if(winner > 0)
+                endGame(winner);
             
             // Store the new GameChange
             change = gc;
@@ -289,5 +296,10 @@ public class GameEngine {
         	// their requests - in this case, executeRequests() and finalResultsAvailable(), respectively.
         	roundBegin = new CyclicBarrier(count, new Runnable() { public void run() { executeRequests(); }});
             roundEnd = new CyclicBarrier(count, new Runnable() { public void run() { finalResultsAvailable(); }});
+        }
+        
+        public void endGame(int winner) {
+            //TODO decide on the protocol for ending the game.
+            //This is most likely integrated with server.
         }
 }
