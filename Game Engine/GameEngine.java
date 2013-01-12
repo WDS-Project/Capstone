@@ -165,8 +165,8 @@ public class GameEngine {
             
             //Hacker check: Make sure no one submitted a Move with the correct
             //ID and the wrong IP.
-            if(findPlayer(move.getIP()).getID() != move.getPlayerID())
-                throw new RuntimeException("Who are you?!");
+            if(findPlayer(move.getIP()) != findPlayer(move.getPlayerID()))
+                throw new RuntimeException("Who are you and why are you submitting moves?!");
                     
            // loop through the mini Moves
             while(move.hasNext()) {
