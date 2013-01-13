@@ -103,25 +103,27 @@ public class Gamestate {
 	public int getCycleNumber() { return cycleNumber; }
 	/** Sets the player ID of the current active player. Note that this 
 	 * method will fail if the given ID is not on the list of players. */
-	public void setActivePlayer(int playerID) { 
-		for (int i = 0; i < playerList.length; i++)
-			if (playerList[playerID] != 0)
-				activePlayer = playerID;
+	public void setActivePlayer(int playerID) {
+		if (playerID > playerList.length || playerID < 1)
+			throw new RuntimeException("Error: That isn't a valid player number.");
+		playerList[activePlayer-1] = 0; // old active player is now inactive
+		activePlayer = playerID;
+		playerList[activePlayer-1] = 1;
 	}
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
 		// 1. activePlayer moves to the next player
 		do {
 			activePlayer++;
-			activePlayer %= playerList.length; // wrap around
-		} while (playerList[activePlayer] != 0);
+			activePlayer %= playerList.length + 1; // wrap around
+		} while (playerList[activePlayer-1] != 0);
 		
 		// 2. turnNumber increments
 		turnNumber++;
 		
 		// 3. cycleNumber increments only if it has been a full cycle
 		int leadPlayer = 1; // assume the lead player is player 1
-		while (playerList[leadPlayer] == 0)
+		while (playerList[leadPlayer-1] == 0)
 			leadPlayer++; // search for the first active player
 		// Note that if there are no active players (which shouldn't happen),
 		// this will throw an exception.
@@ -157,6 +159,8 @@ public class Gamestate {
 	}
 	/** Returns true if p1 and p2 are connected. */
 	public boolean isConnected(int p1, int p2) {
+		if (p1 > pList.length || p2 > pList.length)
+			throw new RuntimeException("Not a valid planet.");
 		return cList.contains(new Connection(p1, p2));
 	}
 	
@@ -209,7 +213,7 @@ public class Gamestate {
 	 * @param newOwner new owner ID
 	 */
 	public void updatePlanet(int planetID, int newFleets, int newOwner) {
-		Planet p = pList[planetID];
+		Planet p = pList[planetID-1];
 		p.setFleets(newFleets);
 		p.setOwner(newOwner);
 	}
@@ -224,7 +228,7 @@ public class Gamestate {
 			int[] members = rList[i].getMembers();
 			
 			// Checks the owner of the first planet in the region.
-			int regionOwner = pList[members[0]].getOwner();
+			int regionOwner = pList[members[0]-1].getOwner();
 			for (int j = 1; j < members.length; j++)
 				if (pList[members[j]-1].getOwner() != regionOwner)
 					regionOwner = 0;
@@ -291,15 +295,15 @@ public class Gamestate {
 				continue; // We don't need to check unowned planets
 			
 			// 2. All planets are owned by active players
-			if (playerList[pList[i].getOwner()] == 0) {
+			if (playerList[pList[i].getOwner()-1] == 0) {
 				System.out.println("Issue 2: Planet "+i+" is owned by player "+
-						pList[i].getOwner()+", who is not active.");
+						(pList[i].getOwner()-1)+", who is not active.");
 				return false;
 			}
 		
 			// 3. All planets have fleets > 0
 			if (pList[i].getFleets() <= 0) {
-				System.out.println("Issue 3: Planet "+i+" has "+pList[i].getFleets()+" fleets.");
+				System.out.println("Issue 3: Planet "+(i+1)+" has "+pList[i].getFleets()+" fleets.");
 				return false;
 			}
 		}
@@ -324,7 +328,7 @@ public class Gamestate {
 	/** Updates all players' statuses. */
 	public void checkPlayerStatus() {
 		for (int i : playerList)
-			checkPlayerStatus(i);
+			checkPlayerStatus(i+1);
 	}
 	
 	/** 
@@ -341,8 +345,8 @@ public class Gamestate {
 				pCount++;
 		
 		if (pCount == 0) // A player with no planets...
-			playerList[playerID] = 0; // ... is now inactive
-		return playerList[playerID];
+			playerList[playerID-1] = 0; // ... is now inactive
+		return playerList[playerID-1];
 	}
 	
 	/** Returns a list of all players with status "active" (1). */
@@ -358,9 +362,18 @@ public class Gamestate {
 		int index = 0;
 		for (int i : playerList)
 			if (playerList[i] == 1)
-				result[index++] = i;
+				result[index++] = i+1;
 		
 		return result;
+	}
+	
+	/** Returns the number of fleets the specified player can deploy this turn. */
+	public int getPlayerQuota(int playerID) {
+		int quota = 5;
+		for (Region r : rList)
+			if (r.getOwner() == playerID)
+				quota += r.getValue();
+		return quota;
 	}
 	
 	/** Updates the current Gamestate based on a GameChange.

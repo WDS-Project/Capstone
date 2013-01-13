@@ -40,6 +40,10 @@ public class Region {
 	public int[] getMembers() { return members; }
 	/** Returns the value (number of bonus fleets) for this region. */
 	public int getValue() { return value; }
+	/** Returns a String containing the name of this region. */
+	public String getName() { return name; }
+	/** Returns the ID of the player who owns this region. (Note: 0 = unowned.) */
+	public int getOwner() { return owner; }
 	/** Sets the owner of this region. (Note: 0 = unowned.) */
 	public void setOwner(int owner) { this.owner = owner; } 
 	

@@ -16,13 +16,14 @@ public class GamestateTest {
 	
 	@Test
 	public void testRead01() {
-		System.out.println(gs.toString());
+		//System.out.println(gs.toString());
 	}
 	
 	@Test
 	public void testWrite01() {
 		Gamestate gs = new Gamestate("src/TestGS.xml");
-		System.out.println(gs.writeToXML());
+		gs.writeToXML();
+		//System.out.println(gs.writeToXML());
 	}
 	// Here's an interesting test: run gs.writeToXML() and save the resulting
 	// string as an XML file. Then run another test to see if that XML file
@@ -54,5 +55,29 @@ public class GamestateTest {
 		assertFalse(gs.isConnected(1, 3));
 		assertFalse(gs.isConnected(2, 3));
 		assertFalse(gs.isConnected(4, 5));
+	}
+	@Test (expected = RuntimeException.class)
+	public void testIsConnected02() {
+		assertTrue(gs.isConnected(10, 11));
+	}
+	
+	@Test
+	public void testCopy01() {
+		Gamestate gs2 = gs.copy();
+		assertEquals(gs2.toString(), gs.toString());
+	}
+	
+	@Test
+	public void testIndexing() {
+		// Tests to make sure that planets are indexed in the proper places.
+		assertEquals("Florida", gs.getPlanetByID(1).getName());
+		assertTrue(Arrays.equals(new int[] {2, 4, 5}, gs.getConnections(1)));
+		
+		// Then regions
+		assertEquals("Spaintugal", gs.getRegionByID(2).getName());
+		
+		// And finally players
+		gs.setActivePlayer(3);
+		assertEquals(3, gs.getActivePlayer());
 	}
 }
