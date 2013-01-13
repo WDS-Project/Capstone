@@ -17,6 +17,8 @@ public class GamestateTest {
 	@Test
 	public void testRead01() {
 		//System.out.println(gs.toString());
+		gs = new Gamestate("src/TestGS2.xml");
+		System.out.println(gs.toString());
 	}
 	
 	@Test

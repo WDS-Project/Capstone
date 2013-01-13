@@ -82,17 +82,11 @@ public class Gamestate {
 	/** Returns the complete list of planets in this game. */
 	public Planet[] getPlanets() { return pList; }
 	/** Returns a specific Planet object. */
-	public Planet getPlanetByID(int planetID) {
-		// Returns [ID - 1] because Planet 1 is at index 0 
-		return pList[planetID - 1];
-	}
+	public Planet getPlanetByID(int planetID) {	return pList[planetID]; }
 	/** Returns the complete list of regions in this game. */
 	public Region[] getRegions() { return rList; }
 	/** Returns a specific Region object. */
-	public Region getRegionByID(int regionID) {
-		// Returns [ID - 1] because Region 1 is at index 0
-		return rList[regionID - 1];
-	}
+	public Region getRegionByID(int regionID) {	return rList[regionID];	}
 	/** Returns the list of valid player ID's. */
 	public int[] getPlayerList() { return playerList; }
 	/** Returns the ID of the currently active player. */
@@ -213,7 +207,7 @@ public class Gamestate {
 	 * @param newOwner new owner ID
 	 */
 	public void updatePlanet(int planetID, int newFleets, int newOwner) {
-		Planet p = pList[planetID-1];
+		Planet p = pList[planetID];
 		p.setFleets(newFleets);
 		p.setOwner(newOwner);
 	}
@@ -224,11 +218,11 @@ public class Gamestate {
 	 * all planets in that region).
 	 */
 	public void updateRegions() {
-		for (int i = 0; i < rList.length; i++) {
+		for (int i = 1; i < rList.length; i++) {
 			int[] members = rList[i].getMembers();
 			
 			// Checks the owner of the first planet in the region.
-			int regionOwner = pList[members[0]-1].getOwner();
+			int regionOwner = pList[members[0]].getOwner();
 			for (int j = 1; j < members.length; j++)
 				if (pList[members[j]-1].getOwner() != regionOwner)
 					regionOwner = 0;
@@ -253,7 +247,7 @@ public class Gamestate {
 		// Planets
 		String planetDescript = "\nList of Planets:\n" +
 								"--------------------------------\n";
-		for (int i = 0; i < pList.length; i++)
+		for (int i = 1; i < pList.length; i++)
 			planetDescript += pList[i].toString() + "\n";
 		
 		// Connections
@@ -265,7 +259,7 @@ public class Gamestate {
 		// Regions
 		String regionDescript = "\nList of Regions:\n" +
 								"--------------------------------\n";
-		for (int i = 0; i < rList.length; i++)
+		for (int i = 1; i < rList.length; i++)
 			regionDescript += rList[i].toString() + "\n";
 		
 		// return everything
@@ -285,33 +279,34 @@ public class Gamestate {
 	public boolean verify() {
 		int[] pTest = new int[pList.length]; // Counts the number of regions
 											 // to which this planet belongs
-		for (int i = 0; i < pList.length; i++) {
+		for (int i = 1; i < pList.length; i++) {
 			// 1. All planets belong to exactly one region
-			for (int j = 0; j < rList.length; j++)
-				if (rList[j].hasMember(i+1)) // Indexing. Bah.
+			for (int j = 1; j < rList.length; j++)
+				if (rList[j].hasMember(i)) // Indexing. Bah.
 					pTest[i]++;
 		
 			if (pList[i].getOwner() == 0)
 				continue; // We don't need to check unowned planets
 			
 			// 2. All planets are owned by active players
-			if (playerList[pList[i].getOwner()-1] == 0) {
+			if (playerList[pList[i].getOwner()] == 0) {
 				System.out.println("Issue 2: Planet "+i+" is owned by player "+
-						(pList[i].getOwner()-1)+", who is not active.");
+						(pList[i].getOwner())+", who is not active.");
+				System.out.println(pList[i].toString());
 				return false;
 			}
 		
 			// 3. All planets have fleets > 0
 			if (pList[i].getFleets() <= 0) {
-				System.out.println("Issue 3: Planet "+(i+1)+" has "+pList[i].getFleets()+" fleets.");
+				System.out.println("Issue 3: Planet "+i+" has "+pList[i].getFleets()+" fleets.");
 				return false;
 			}
 		}
 		
 		// Check #1
-		for (int i = 0; i < pTest.length; i++)
+		for (int i = 1; i < pTest.length; i++)
 			if (pTest[i] != 1) {
-				System.out.println("Issue 1: Planet "+(i+1)+" is in "+pTest[i]+" regions.");
+				System.out.println("Issue 1: Planet "+i+" is in "+pTest[i]+" regions.");
 				return false;
 			}
 		
@@ -328,7 +323,7 @@ public class Gamestate {
 	/** Updates all players' statuses. */
 	public void checkPlayerStatus() {
 		for (int i : playerList)
-			checkPlayerStatus(i+1);
+			checkPlayerStatus(i);
 	}
 	
 	/** 
@@ -339,14 +334,18 @@ public class Gamestate {
 	 * @return the new status of the player
 	 */
 	public int checkPlayerStatus(int playerID) {
+		if (playerID == 0) return 0;
 		int pCount = 0;
-		for (Planet p : pList)
+		for (int i = 1; i < pList.length; i++) {
+			Planet p = pList[i];
 			if (p.getOwner() == playerID)
 				pCount++;
+		}
+			
 		
 		if (pCount == 0) // A player with no planets...
-			playerList[playerID-1] = 0; // ... is now inactive
-		return playerList[playerID-1];
+			playerList[playerID] = 0; // ... is now inactive
+		return playerList[playerID];
 	}
 	
 	/** Returns a list of all players with status "active" (1). */
@@ -422,7 +421,7 @@ public class Gamestate {
 			activePlayer = Integer.parseInt(playerNode.getAttribute("activePlayer"));
 			int numPlayers = Integer.parseInt(playerNode.getAttribute("numPlayers"));
 			playerList = new int[numPlayers + 1]; // because player 0 = neutral
-			for (int i = 1; i < numPlayers; i++)
+			for (int i = 1; i <= numPlayers; i++)
 				playerList[i] = 1; // 1 = normal player; 0 = inactive player
 			turnNumber = Integer.parseInt(playerNode.getAttribute("turnNumber"));
 			cycleNumber = Integer.parseInt(playerNode.getAttribute("cycleNumber"));
@@ -434,12 +433,12 @@ public class Gamestate {
 				// For each child of the PlanetList node (i.e. for each Planet)...
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
 					pCount++; // If it's a planet, increment our planet count by one
-			pList = new Planet[pCount];
+			pList = new Planet[pCount + 1]; // because planet 0 does not exist
 			pCount = 0;
 			for (Node kid = planetNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				// Repeat, this time actually building the planets.
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
-					pList[pCount++] = new Planet((Element) kid); // Let the Planet build itself
+					pList[++pCount] = new Planet((Element) kid); // Let the Planet build itself
 			
 			// 4. Connections
 			Element connectNode = getNode("ConnectionList", root);
@@ -458,11 +457,11 @@ public class Gamestate {
 			for (Node kid = regionNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
 					rCount++;
-			rList = new Region[rCount];
+			rList = new Region[rCount + 1]; // because region 0 does not exist
 			rCount = 0;
 			for (Node kid = regionNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
-					rList[rCount++] = new Region((Element) kid); // and the regions build themselves too
+					rList[++rCount] = new Region((Element) kid); // and the regions build themselves too
 		
 		} catch (Exception e) { e.printStackTrace(); } // end of the DocumentBuilder try/catch blocks
 		
@@ -507,7 +506,7 @@ public class Gamestate {
 			// 2. Then we add information about planets...
 			Element pListEl = doc.createElement("PlanetList");
 			gsRoot.appendChild(pListEl);
-			for (int i = 0; i < pList.length; i ++) {
+			for (int i = 1; i < pList.length; i++) {
 				pList[i].saveToXML(pListEl);
 			}
 			
@@ -521,7 +520,7 @@ public class Gamestate {
 			// 4. ... and regions.
 			Element rListEl = doc.createElement("RegionList");
 			gsRoot.appendChild(rListEl);
-			for (int i = 0; i < rList.length; i ++) {
+			for (int i = 1; i < rList.length; i++) {
 				rList[i].saveToXML(rListEl);
 			}
 			
