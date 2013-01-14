@@ -17,6 +17,7 @@ public class GameEngine {
 	private TreeMap<String, Player> players;
 	private CyclicBarrier roundBegin,
 						  roundEnd;
+	private boolean randomize = true; // Flag to disable RNG for testing 
 	
 	/*** Methods ***/
 	// Constructor, I guess? Also related init methods.
@@ -93,6 +94,8 @@ public class GameEngine {
 	}
 	/** Returns the latest GameChange. */
 	public GameChange getChange() { return change; }
+	/** Sets random combat calculation mode. */
+	public void setRandomize(boolean r) { randomize = r; }
 	
 	// Game-related methods	
 	/**
@@ -104,7 +107,17 @@ public class GameEngine {
 	 *    dest]. Note that (source + dest) > 0, and if dest = 0, then the
 	 *    planet in question changes ownership.
 	 */
-	public static int[] processAttack(int sourceFleets, int destFleets) {
+	public static int[] processAttack(int sourceFleets, int destFleets, boolean randomize) {
+		// Special settings for testing purposes: subtraction only
+		if (!randomize) {
+			if (sourceFleets > destFleets)
+				return new int[] {(sourceFleets - destFleets), 0};
+			else if (sourceFleets < destFleets)
+				return new int[] {0, (destFleets - sourceFleets)};
+			else
+				return new int[] {1, 1}; // a draw
+		}
+		
 		boolean retreating = false; // flag for attackers to retreat
 		int smaller;
 		Random rand = new Random();
@@ -206,7 +219,7 @@ public class GameEngine {
                 }
                 // 3. Otherwise --> Attack. Two cases: attacker victory, or not.
                 else {
-                    int[] results = processAttack(numFleets, dest.getFleets());
+                    int[] results = processAttack(numFleets, dest.getFleets(), randomize);
                     if(results[1] == 0) { // the attacker has won
                         dest.setOwner(source.getOwner());
                         dest.setFleets(results[0]);

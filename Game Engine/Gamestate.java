@@ -100,9 +100,7 @@ public class Gamestate {
 	public void setActivePlayer(int playerID) {
 		if (playerID > playerList.length || playerID < 1)
 			throw new RuntimeException("Error: That isn't a valid player number.");
-		playerList[activePlayer-1] = 0; // old active player is now inactive
 		activePlayer = playerID;
-		playerList[activePlayer-1] = 1;
 	}
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
@@ -110,14 +108,14 @@ public class Gamestate {
 		do {
 			activePlayer++;
 			activePlayer %= playerList.length + 1; // wrap around
-		} while (playerList[activePlayer-1] != 0);
+		} while (playerList[activePlayer] != 0);
 		
 		// 2. turnNumber increments
 		turnNumber++;
 		
 		// 3. cycleNumber increments only if it has been a full cycle
 		int leadPlayer = 1; // assume the lead player is player 1
-		while (playerList[leadPlayer-1] == 0)
+		while (playerList[leadPlayer] == 0)
 			leadPlayer++; // search for the first active player
 		// Note that if there are no active players (which shouldn't happen),
 		// this will throw an exception.
