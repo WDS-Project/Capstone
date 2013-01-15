@@ -10,11 +10,11 @@ public class MoveTest {
     
     Move move;
     StringBuilder sb;
-    String mve = "2/000.000.000/1:2:3/4:5:6/7:8:9/";
+    String mve = "2/1:2:3/4:5:6/7:8:9/";
     
     @Before
     public void setUp() {
-        move = new Move(mve);
+        move = new Move(mve, "000.000.000");
         
         sb = new StringBuilder();
         sb.append(move.getPlayerID() + "\n");
@@ -39,8 +39,8 @@ public class MoveTest {
     
     @Test
     public void testEmptyMove2() {
-        String mov = "2/000.000.000/";
-        Move m = new Move(mov);
+        String mov = "2/";
+        Move m = new Move(mov, "000.000.000");
         assertFalse(m.hasNext());
     }
 }

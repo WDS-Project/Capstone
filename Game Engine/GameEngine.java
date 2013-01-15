@@ -1,5 +1,7 @@
 import java.util.*;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** 
  * Contains methods and data pertaining to running a game. As you might
@@ -17,15 +19,20 @@ public class GameEngine {
 	private TreeMap<String, Player> players;
 	private CyclicBarrier roundBegin,
 						  roundEnd;
-	private boolean randomize = true; // Flag to disable RNG for testing 
+	private boolean randomize = true; // Flag to disable RNG for testing
+        
+        private int ID = -1;
+        
+        private boolean inProgress = false; 
 	
 	/*** Methods ***/
 	// Constructor, I guess? Also related init methods.
-	public GameEngine() {
+	public GameEngine(int id) {
 		// TODO Figure out what we need to go here.
             //Not much really ... The Players and Gamestate will be defined after
            //the Engine is initialized by calling methods.
 		init();
+                ID = id;
 	}
 	
 	/** Initialize (or reinitialize) the engine. */
@@ -61,6 +68,10 @@ public class GameEngine {
 		changePlayerPopulation(players.size());
 		return newP;		
 	}
+        
+        public int getID() { return ID; }
+        
+        public String getGameStateAsXML() { return gs.writeToXML(); }
 	
 	/** Returns the Player associated with a given IP address, or null if there
 	 * is no player associated with that address.
@@ -185,12 +196,6 @@ public class GameEngine {
             while(move.hasNext()) {
                 int[] miniMove = move.next();
                 
-                // validate the mini-Move
-                if(miniMove.length != 3)
-                    throw new RuntimeException("Invalid Move format.");
-                if (miniMove[2] <= 0)
-                	throw new RuntimeException("Can't move zero troops");
-                
                 // Grab these two, but before we can get source, we have to check case #1
                 Planet dest = gs.getPlanetByID(miniMove[1]);
                 int numFleets = miniMove[2];
@@ -266,27 +271,36 @@ public class GameEngine {
         }
         
         /** Executes the requests of all the players. This method is highly preliminary. */
-        private void executeRequests() {
+        private void executeRequests() throws Exception {
         	// TODO implement error handling and request checking or whatever
-        	// First we process the move of the active player. We should probably validate this stuff somewhere.
+        	
+            /* This should actually be happening in the HandleMove handler.
+             * // First we process the move of the active player. We should probably validate this stuff somewhere.
         	Player actor = findPlayer(gs.getActivePlayer());
         	String request = actor.getRequest(); // This ought to be a Move.
         	Move m = new Move(request); // If it isn't a move, we'll get an exception.
-        	processMove(m); // results are available via change
+        	processMove(m); // results are available via change */
         	
-        	// For the moment this ignores the requests of the other players. We're just assuming they
-        	// all sent in GET requests.
-        	
-        	// Now we let everyone know what happened.
-        	Set<String> keys = players.keySet();
+           Set<String> keys = players.keySet();
+                //If the game hasn't started yet, send everyone a Gamestate
+            if(!inProgress) {
+            for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
+              String key = itKey.next();
+              Player player = players.get(key);
+              player.setResponse(gs.writeToXML()); } 
+              inProgress = true; 
+            }
+            
+            else {
+        	// If it has, send a GameChange
             for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
               String key = itKey.next();
               Player player = players.get(key);
               
               // Process the request for this player.
               // This would be where we process the players' requests...
-              player.setResponse(change.toString());
-            }
+              player.setResponse(change.writeToXML());
+            } }
             
             // Now everyone's threads are released and they all move on to roundEnd.
             // The next thing to happen should be finalResultsAvailable().
@@ -303,11 +317,15 @@ public class GameEngine {
         }
         
         /** Adjusts the player population for players being eliminated and whatnot. */
-        private void changePlayerPopulation(int count) {
+        private void changePlayerPopulation(int count){
         	// I thought we didn't need this, but we do. It just makes two new barriers with appropriate size.
         	// The CyclicBarrier constructor defines what method is run when all (count) players have submitted
         	// their requests - in this case, executeRequests() and finalResultsAvailable(), respectively.
-        	roundBegin = new CyclicBarrier(count, new Runnable() { public void run() { executeRequests(); }});
+        	roundBegin = new CyclicBarrier(count, new Runnable() { public void run() {try {
+                    executeRequests();
+                } catch (Exception ex) {
+                    System.out.println("So there was an Exception in changePlayerPopulation.");
+                } }});
             roundEnd = new CyclicBarrier(count, new Runnable() { public void run() { finalResultsAvailable(); }});
         }
         

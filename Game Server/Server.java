@@ -8,8 +8,7 @@
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 public class Server {
@@ -17,15 +16,23 @@ public class Server {
     	private int port;
 	private Scanner keyboard;
 	private HttpServer server;
-	GameEngine engine = new GameEngine();
+        
+	private TreeMap<String, GameEngine> playersInSessions; //so this maps IP addresses to GameEngines
+        private ArrayList<GameEngine> gameSessions; //And this is a list of current sessions
+        private int nextAvailableID = -1;
+        private String xmlPath; //so for right now the server is always going to
+                                //look at the same file to get the Gamestate
 
         /**
          * Constructor for Server. Sets the port.
          * @param newPort   Port for the server to listen on.
          */
-        private Server(int newPort) {
+        private Server(int newPort, String xml) {
             port = newPort;
             keyboard = new Scanner(System.in);
+            playersInSessions = new TreeMap<String, GameEngine>();
+            gameSessions = new ArrayList<GameEngine>();
+            xmlPath = xml;
         }
 	
         /**
@@ -39,11 +46,13 @@ public class Server {
 			server = HttpServer.create(new InetSocketAddress(port), 20);
                         
                         //context for defining a game
-			server.createContext("/definegame/", new HandleDefineGame(engine));
+			server.createContext("/definegame/", new HandleDefineGame(this, xmlPath));
                         //context for passing out game changes
-			server.createContext("/gamechange/", new HandleGameChange(engine));
+			server.createContext("/gamechange/", new HandleGameChange(this));
                         //context for moves
-                        server.createContext("/move/", new HandleMove(engine));
+                        server.createContext("/move/", new HandleMove(this));
+                        //context for joining a Game
+                        server.createContext("/move/", new HandleJoin(this));
 			
                         //assign Executor to take care of the tasks using a 
                         //cached thread pool
@@ -73,6 +82,40 @@ public class Server {
 		server.stop(5);	
                 System.exit(0);
 	}
+        
+        /**
+         * So this gives out IDs in a very simplistic manner. It will only
+         * become a problem if we have so many games that the next available
+         * ID exceeds the digit limit of an int.
+         * @return 
+         */
+        public int getNextAvailableID() { return nextAvailableID++;   }
+        
+        /**
+         * Finds the session according to ID.
+         * @param sessionID
+         * @return 
+         */
+        public GameEngine findSession(int sessionID) {
+            for(GameEngine ge : gameSessions) {
+                if(ge.getID() == sessionID)
+                    return ge;
+            }
+            return null;
+        }
+        
+        /**
+         * Finds the session associated with that players IP.
+         * @param IP
+         * @return 
+         */
+        public GameEngine findSession(String IP) {
+            return playersInSessions.get(IP);
+        }
+        
+        public void addPlayerToSession(String IP, GameEngine ge) {
+            playersInSessions.put(IP, ge);
+        }
 	
 	/**
          * Main method for Server.
@@ -100,7 +143,7 @@ public class Server {
                     }
                 }
                     
-                server = new Server(portNumber);
+                server = new Server(portNumber, ""); //ADD XML PATH
 		server.run();
 	}
 

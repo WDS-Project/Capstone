@@ -14,7 +14,7 @@ public class Move {
     /*
      * Note: This is what a Move looks like when it is received
      * from the user's HTTP POST request:
-     * <playerID>/<playerIPaddr>/<source>:<dest>:<numFleets>/<source>:<dest>:<numFleets>/etc
+     * <playerID>/<source>:<dest>:<numFleets>/<source>:<dest>:<numFleets>/etc
      */
     
     private int playerID;
@@ -55,7 +55,7 @@ public class Move {
      * @throws NumberFormatException    If the move is not
      *                              formatted correctly
      */
-    public Move(String move) throws NumberFormatException {
+    public Move(String move, String IP) throws NumberFormatException {
         /*Some checks to account for network anomalies.*/
         //I'm not sure if the first character in the request will be /
         // or the ID number
@@ -64,11 +64,12 @@ public class Move {
         if(move.charAt(0) == '/')
             move = move.substring(1);
         
+        ipAddr = IP;
+        
         //load the moves from the String into the 2D ArrayList
         String[] miniMoves = move.split("/");
         playerID = Integer.parseInt(miniMoves[0]);
-        ipAddr = miniMoves[1];
-        for(int i = 2; i < miniMoves.length; i++) {
+        for(int i = 1; i < miniMoves.length; i++) {
             String[] sourceDestFleets = miniMoves[i].split(":");
             
             //if the move is not formatted correctly
@@ -77,9 +78,13 @@ public class Move {
                         "source, destination, and fleets.");
             
             moves.add(new ArrayList<Integer>());
-            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[0]));
-            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[1]));
-            moves.get(i-2).add(Integer.parseInt(sourceDestFleets[2]));
+            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[0]));
+            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[1]));
+            
+            if(Integer.parseInt(sourceDestFleets[2]) <= 0)
+                throw new RuntimeException("You can't move 0 or fewer fleets.");
+            
+            moves.get(i-1).add(Integer.parseInt(sourceDestFleets[2]));
         }
         currentMoveIndex = 0;
     }

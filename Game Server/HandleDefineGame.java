@@ -10,17 +10,22 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HandleDefineGame implements HttpHandler {
 	
 	GameEngine engine;
+        Server server;
+        String xmlGsPath;
 	
         /**
          * Constructor for HandleDefineGame. Sets the GameEngine.
          * @param eng   The GameEngine for the handler to work with.
          */
-	public HandleDefineGame(GameEngine eng) {
-		engine = eng;	
+	public HandleDefineGame(Server svr, String xmlPath) {
+		server = svr;
+                xmlGsPath = xmlPath;
 	}
 
         /**
@@ -31,8 +36,16 @@ public class HandleDefineGame implements HttpHandler {
          */
         @Override
 	public void handle(HttpExchange exchange) {
-		String req = exchange.getRequestMethod();
-		if(req.equalsIgnoreCase("POST")) {
+                String req = exchange.getRequestMethod();
+		if(req.equalsIgnoreCase("OPTIONS")) {
+			Headers header = exchange.getResponseHeaders();
+			header.add("Access-Control-Allow-Origin", "*");
+			header.add("Access-Control-Allow-Methods", "POST");
+			header.add("Access-Control-Allow-Methods", "GET");
+			header.add("Access-Control-Allow-Methods", "OPTIONS");
+			header.add("Access-Control-Allow-Headers", "Content-Type");
+		}
+                else if(req.equalsIgnoreCase("POST")) {
             try {
                 //for browser portability, if the request method is POST,
                 //the headers must be adjusted to allow all types of requests
@@ -44,17 +57,36 @@ public class HandleDefineGame implements HttpHandler {
                 header.add("Access-Control-Allow-Methods", "OPTIONS");
                 header.add("Access-Control-Allow-Headers", "Content-Type");
                 
-                //requst format: <number of AI players>/<difficulty of AI1>/<difficulty of AI 2>/etc"
+                //request format: <number of human players>/<number of AI players>/
+                //<difficulty of AI1>/<difficulty of AI 2>/etc"
                 InputStream stream = exchange.getRequestBody();
-                byte[] inbuf = new byte[1000];
+                byte[] inbuf = new byte[1000]; //so the max is 1000 characters
                 stream.read(inbuf);
                 String definition = new String(inbuf).trim();			
                 String[] definitions = definition.split("/");
                 
-                //setup the engine with the appropriate number of players
-                int numPlayers = Integer.parseInt(definitions[0]);
-                engine.setup(numPlayers);
+                //setup the Engine starting with this Player (1)
+                engine = new GameEngine(server.getNextAvailableID());
+                engine.loadGamestate(xmlGsPath);
                 
+                /*
+                 * I'm prett sure this gets the IP in a String format.
+                 * getRemoteAddress() returns an InetSocketAddress, and getAddress()
+                 * returns an InetAddress from that.  From that you can get
+                 * the IP in a String format using getHostAddress().
+                 */
+                String player1IP = exchange.getRemoteAddress().getAddress().getHostAddress();
+                Player playerOne = engine.definePlayer(player1IP, 1); //active status
+                server.addPlayerToSession(player1IP, engine);
+                
+                try {
+                    playerOne.synchronizedRequest("gamestate", engine);
+                } catch (Exception ex) {
+                    System.out.println("Could not start the game.");
+                }
+                
+                //Then the engine waits for the others to join before sending out Gamestate
+
                 //start up the AI processes with the given difficulties
                 /* Use this when we get to the AI part
                 for(int i = 1; i < numPlayers; i++) {
@@ -62,12 +94,12 @@ public class HandleDefineGame implements HttpHandler {
                 }*/
                 
                 //200 indicates successful processing of the request
+                //GameState sent to Player 1
                 exchange.sendResponseHeaders(200,0);
                 OutputStream response = exchange.getResponseBody();	
-                //TODO get the XML gamestate and send it
-                //String res = "0_move";
-                //response.write(res.getBytes());
-                //response.close();
+                response.write(playerOne.getResponse().getBytes());
+                response.close();
+                
             } catch (IOException ex) {
                 //TODO have the client display bad request
             }
