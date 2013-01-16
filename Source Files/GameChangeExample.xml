@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GameChange>
+    <Players activePlayer="2" cycleNumber = "5" turnNumber = "5"/>
+    <Planets>
+        <Planet
+            idNum="2"
+            numFleets="4"
+            owner="1"
+        />
+        <Planet
+            idNum="5"
+            numFleets="356"
+            owner="3"
+        />
+        </Planets>
+</GameChange>
