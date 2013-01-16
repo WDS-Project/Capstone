@@ -44,9 +44,10 @@ public class HandleJoin implements HttpHandler {
 			//now deal with the actual request
 			InputStream stream = exchange.getRequestBody();
 			byte[] inbuf = new byte[100];
-			stream.read(inbuf);
-			String request = new String(inbuf);
-                        
+			int len = stream.read(inbuf);
+			byte[] inbufShort = Arrays.copyOfRange(inbuf, 0, len);
+			String request = new String(inbufShort);
+                        System.out.println("Request submitted: " + request);
                         int sessionID = Integer.parseInt(request); //this better be an int
                         
                         GameEngine engine = server.findSession(sessionID);

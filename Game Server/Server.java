@@ -19,7 +19,7 @@ public class Server {
         
 	private TreeMap<String, GameEngine> playersInSessions; //so this maps IP addresses to GameEngines
         private ArrayList<GameEngine> gameSessions; //And this is a list of current sessions
-        private int nextAvailableID = -1;
+        private int nextAvailableID = 1;
         private String xmlPath; //so for right now the server is always going to
                                 //look at the same file to get the Gamestate
 
@@ -52,7 +52,7 @@ public class Server {
                         //context for moves
                         server.createContext("/move/", new HandleMove(this));
                         //context for joining a Game
-                        server.createContext("/move/", new HandleJoin(this));
+                        server.createContext("/join/", new HandleJoin(this));
 			
                         //assign Executor to take care of the tasks using a 
                         //cached thread pool
@@ -143,7 +143,8 @@ public class Server {
                     }
                 }
                     
-                server = new Server(portNumber, ""); //ADD XML PATH
+                //server = new Server(portNumber, ""); //ADD XML PATH
+                server = new Server(portNumber, "src/TestGS3.xml"); // Temporary thing for until we get this going
 		server.run();
 	}
 
