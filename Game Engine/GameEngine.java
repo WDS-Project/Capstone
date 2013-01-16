@@ -1,7 +1,5 @@
 import java.util.*;
 import java.util.concurrent.CyclicBarrier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /** 
  * Contains methods and data pertaining to running a game. As you might
@@ -33,6 +31,7 @@ public class GameEngine {
            //the Engine is initialized by calling methods.
 		init();
                 ID = id;
+                System.out.println("This engine's ID number is " + id);
 	}
 	
 	/** Initialize (or reinitialize) the engine. */
@@ -313,7 +312,7 @@ public class GameEngine {
         	System.out.println(gs.toString());
         	
         	// Final part: setup for the next round.
-        	gs.nextTurn();
+        	//gs.nextTurn();
         }
         
         /** Adjusts the player population for players being eliminated and whatnot. */

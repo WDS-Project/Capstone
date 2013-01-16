@@ -107,7 +107,7 @@ public class Gamestate {
 		// 1. activePlayer moves to the next player
 		do {
 			activePlayer++;
-			activePlayer %= playerList.length + 1; // wrap around
+			activePlayer %= playerList.length; // wrap around
 		} while (playerList[activePlayer] != 0);
 		
 		// 2. turnNumber increments
