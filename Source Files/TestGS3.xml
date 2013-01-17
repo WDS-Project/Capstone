@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Gamestate>
-	<Players numPlayers="2" activePlayer="1" turnNumber="1" cycleNumber="1"/>
+	<Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>
 	<PlanetList>
 		<Planet
 			idNum="1"
 			name="Florida"
 			owner="1"
-			numFleets="1"
+			numFleets="5"
 			color="#ffee33"
 			position="35,25"
 			radius="30"
@@ -14,8 +14,8 @@
 		<Planet
 			idNum="2"
 			name="Aruba"
-			owner="0"
-			numFleets="1"
+			owner="1"
+			numFleets="5"
 			color="#aabbcc"
 			position="300,50"
 			radius="35"
@@ -24,7 +24,7 @@
 			idNum="3"
 			name="Manitoba"
 			owner="1"
-			numFleets="1"
+			numFleets="5"
 			color="#00ffaa"
 			position="50,150"
 			radius="25"
@@ -33,7 +33,7 @@
 			idNum="4"
 			name="Sparta"
 			owner="2"
-			numFleets="1"
+			numFleets="5"
 			color="#aa00ee"
 			position="75,300"
 			radius="25"
@@ -42,7 +42,7 @@
 			idNum="5"
 			name="Akihabara"
 			owner="2"
-			numFleets="1"
+			numFleets="5"
 			color="#55cc11"
 			position="300,350"
 			radius="30"
@@ -50,13 +50,16 @@
 	</PlanetList>
 	<ConnectionList>
 		<connection>1,2</connection>
+		<connection>1,3</connection>
 		<connection>1,4</connection>
 		<connection>1,5</connection>
+		<connection>2,3</connection>
 		<connection>2,4</connection>
+		<connection>2,5</connection>
 		<connection>3,4</connection>
 		<connection>3,5</connection>
+		<connection>4,5</connection>
 	</ConnectionList>
-	<!--Note that each planet should be in exactly one region.-->
 	<RegionList>
 		<Region
 			idNum="1"
@@ -68,14 +71,6 @@
 				<member>1</member>
 				<member>2</member>
 				<member>3</member>
-			</memberList>
-		</Region>
-		<Region idNum="2"
-			name="Spaintugal"
-			value="2"
-			owner="0"
-			color="#ffaa77">
-			<memberList>
 				<member>4</member>
 				<member>5</member>
 			</memberList>
