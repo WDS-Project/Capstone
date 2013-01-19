@@ -222,7 +222,7 @@ public class Gamestate {
 			// Checks the owner of the first planet in the region.
 			int regionOwner = pList[members[0]].getOwner();
 			for (int j = 1; j < members.length; j++)
-				if (pList[members[j]-1].getOwner() != regionOwner)
+				if (pList[members[j]].getOwner() != regionOwner)
 					regionOwner = 0;
 			
 			// If all were owned by the same player, then the region is owned
@@ -379,19 +379,19 @@ public class Gamestate {
 	 */
 	public void update(GameChange gc) {
 		int[][] changeList = gc.getChanges();
-		// [idNum, numFleets, owner]
+		// [idNum, owner, numFleets]
 		
 		for (int i = 0; i < changeList.length; i++) {
 			int[] change = changeList[i];
 			if (change[0] >= pList.length)
 				throw new RuntimeException("Error: invalid planet in Gamechange.");
 			Planet currPlan = pList[change[0]];
-			if (change[1] <= 0)
-				throw new RuntimeException("Error: can't have negative fleets.");
-			currPlan.setFleets(change[1]);
-			if (change[2] >= playerList.length)
+			if (change[1] >= playerList.length)
 				throw new RuntimeException("Error: invalid owner in Gamechange.");
-			currPlan.setOwner(change[2]);			
+			currPlan.setOwner(change[1]);		
+			if (change[2] <= 0)
+				throw new RuntimeException("Error: can't have negative fleets.");
+			currPlan.setFleets(change[2]);
 		}
 		
 		updateRegions();
