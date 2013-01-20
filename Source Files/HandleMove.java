@@ -17,7 +17,7 @@ public class HandleMove implements HttpHandler {
 	//See Move for the request format
 	// /move/<Move>
 
-	public void handle(HttpExchange exchange)throws IOException {
+	public void handle(HttpExchange exchange) {
 		try {
 			//get the IP
 			String playerIP = exchange.getRemoteAddress().getAddress().getHostAddress();
@@ -54,10 +54,10 @@ public class HandleMove implements HttpHandler {
 				//get the session
 				GameEngine engine = server.findSession(playerIP+":" + m.getPlayerID());
 
-                                //if the engine is not found, discard the request
+				//if the engine is not found, discard the request
 				if(engine == null) {
 					System.out.println("Attempt to move by bad player ID.");
-                                        return;
+					return;
 				}               
 
 				//get the Player
@@ -65,7 +65,7 @@ public class HandleMove implements HttpHandler {
 
 				engine.processMove(m);
 
-                                player.synchronizedRequest("gamechange", engine);
+				player.synchronizedRequest("gamechange", engine);
 
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
@@ -73,6 +73,7 @@ public class HandleMove implements HttpHandler {
 				responseBody.close();
 			}
 		} catch (Exception e) {
+			// Any exception thrown by this handler will be displayed to the server console.
 			e.printStackTrace();
 		}
 	}

@@ -24,7 +24,7 @@ public class Gamestate {
 	private Planet[] pList;
 	private Region[] rList;
 	private TreeSet<Connection> cList = new TreeSet<Connection>();
-	
+
 	/*** Methods ***/
 	// Constructors
 	/** 
@@ -44,11 +44,11 @@ public class Gamestate {
 		playerList = new int[numPlayers];
 		for (int i = 1 ; i < numPlayers; i++) // because player 0 = neutral
 			playerList[i] = 1; // 1 = active; 0 = inactive
-		
+
 		pList = new Planet[numPlanets];
 		rList = new Region[numRegions];
 	}
-	
+
 	/** 
 	 * This method creates a gamestate based on a given XML file. For more
 	 * information, see loadXML().
@@ -58,12 +58,12 @@ public class Gamestate {
 	public Gamestate(String xmlPath) {
 		loadXML(xmlPath);
 	}
-	
+
 	/** 
 	 * Returns a deep copy of this object.
 	 * @return a Gamestate identical in content to this one
 	 */
-	public Gamestate copy() throws Exception {
+	public Gamestate copy() {
 		Gamestate copyGS = new Gamestate(pList.length, rList.length, playerList.length);
 		copyGS.activePlayer = this.activePlayer;
 		copyGS.turnNumber = this.turnNumber;
@@ -77,7 +77,7 @@ public class Gamestate {
 		copyGS.rList = Arrays.copyOf(this.rList, this.rList.length);
 		return copyGS;
 	}
-	
+
 	// Getters & Setters
 	/** Returns the complete list of planets in this game. */
 	public Planet[] getPlanets() { return pList; }
@@ -97,9 +97,9 @@ public class Gamestate {
 	public int getCycleNumber() { return cycleNumber; }
 	/** Sets the player ID of the current active player. Note that this 
 	 * method will fail if the given ID is not on the list of players. */
-	public void setActivePlayer(int playerID) throws Exception {
+	public void setActivePlayer(int playerID) {
 		if (playerID > playerList.length || playerID < 1)
-			throw new Exception("Error: Attempt to make an invalid player the active player.");
+			throw new RuntimeException("Error: Attempt to make an invalid player the active player.");
 		activePlayer = playerID;
 	}
 	/** Increments turn counters in preparation for the next turn. */
@@ -109,10 +109,10 @@ public class Gamestate {
 			activePlayer++;
 			activePlayer %= playerList.length; // wrap around
 		} while (playerList[activePlayer] != 0);
-		
+
 		// 2. turnNumber increments
 		turnNumber++;
-		
+
 		// 3. cycleNumber increments only if it has been a full cycle
 		int leadPlayer = 1; // assume the lead player is player 1
 		while (playerList[leadPlayer] == 0)
@@ -128,7 +128,7 @@ public class Gamestate {
 	 * @return an int array of Planet ID's that are connected to
 	 * the specified planet
 	 */
-	public int[] getConnections(int planetID) throws Exception {
+	public int[] getConnections(int planetID) {
 		// Build an Arraylist of the connections
 		ArrayList<Integer> resultList = new ArrayList<Integer>();
 		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
@@ -139,9 +139,9 @@ public class Gamestate {
 				resultList.add(c.end);
 		}
 		if (resultList.size() == 0)
-			throw new Exception("Error: Planet "+planetID+" has no connections.\n"
-									 + "It may not be a valid planet ID.");
-		
+			throw new RuntimeException("Error: Planet "+planetID+" has no connections.\n"
+					+ "It may not be a valid planet ID.");
+
 		// Transform that Arraylist into an int[]
 		int j = 0; // array index
 		int[] result = new int[resultList.size()]; // Arraylist iterator
@@ -150,32 +150,32 @@ public class Gamestate {
 		return result;
 	}
 	/** Returns true if p1 and p2 are connected. */
-	public boolean isConnected(int p1, int p2) throws Exception {
+	public boolean isConnected(int p1, int p2) {
 		if (p1 > pList.length || p2 > pList.length)
-			throw new Exception("Not a valid planet.");
+			throw new RuntimeException("Not a valid planet.");
 		return cList.contains(new Connection(p1, p2));
 	}
-	
+
 	// Inner class storing the information about a connection.
 	private class Connection implements Comparable{
 		public int start;
 		public int end;
-		
-		public Connection(int start, int end) throws Exception {
+
+		public Connection(int start, int end) {
 			if (start > end) { // Swap to put in the right order
 				int temp = start;
 				start = end;
 				end = temp;
 			}
 			if (start == end)
-				throw new Exception("Connection can't have the same start and end points.");
+				throw new RuntimeException("Connection can't have the same start and end points.");
 			this.start = start;
 			this.end = end;
 		}
-		
+
 		@Override
 		public boolean equals(Object o) { return (compareTo(o) == 0); }
-		
+
 		public int compareTo(Object o) {
 			if (o.getClass() != this.getClass())
 				return -1;
@@ -186,7 +186,7 @@ public class Gamestate {
 				return (this.end - other.end);
 			return 0;
 		}
-		
+
 		public String toString() {
 			return "(" + start + ", " + end + ")";
 		}
@@ -198,7 +198,7 @@ public class Gamestate {
 			parentNode.appendChild(connectionNode);			
 		}
 	}
-	
+
 	// Other methods
 	/** Updates a planet after combat.
 	 * @param newFleets new number of fleets 
@@ -209,7 +209,7 @@ public class Gamestate {
 		p.setFleets(newFleets);
 		p.setOwner(newOwner);
 	}
-	
+
 	/** 
 	 * Updates the owners of all regions to reflect the current state of
 	 * the planets (i.e. a region is owned if and only if a player owns
@@ -218,53 +218,53 @@ public class Gamestate {
 	public void updateRegions() {
 		for (int i = 1; i < rList.length; i++) {
 			int[] members = rList[i].getMembers();
-			
+
 			// Checks the owner of the first planet in the region.
 			int regionOwner = pList[members[0]].getOwner();
 			for (int j = 1; j < members.length; j++)
 				if (pList[members[j]].getOwner() != regionOwner)
 					regionOwner = 0;
-			
+
 			// If all were owned by the same player, then the region is owned
 			// by that player; if not, then it is unowned (player 0).
 			rList[i].setOwner(regionOwner);
 		}
 	}
-	
+
 	/** Returns a complete String representation of the current gamestate, including 
 	 * information on all Planets and Regions. */
 	@Override
 	public String toString() {
 		// Gamestate
 		String gsDescript = "Current Gamestate is as follows:\n" +
-						    "--------------------------------\n" +
-						    "Turn Number: " + turnNumber +
-						    ", Cycle Number: " + cycleNumber + "\n" +
-						    "Active Player: " + activePlayer + "\n";
-		
+		"--------------------------------\n" +
+		"Turn Number: " + turnNumber +
+		", Cycle Number: " + cycleNumber + "\n" +
+		"Active Player: " + activePlayer + "\n";
+
 		// Planets
 		String planetDescript = "\nList of Planets:\n" +
-								"--------------------------------\n";
+		"--------------------------------\n";
 		for (int i = 1; i < pList.length; i++)
 			planetDescript += pList[i].toString() + "\n";
-		
+
 		// Connections
 		String connectionsDescript = "\nList of Connections:\n" +
-									 "--------------------------------\n";
+		"--------------------------------\n";
 		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); )
 			connectionsDescript += i.next().toString() + "\n";
-		
+
 		// Regions
 		String regionDescript = "\nList of Regions:\n" +
-								"--------------------------------\n";
+		"--------------------------------\n";
 		for (int i = 1; i < rList.length; i++)
 			regionDescript += rList[i].toString() + "\n";
-		
+
 		// return everything
 		return gsDescript + planetDescript + connectionsDescript +
-			   regionDescript + "--------------------------------";
+		regionDescript + "--------------------------------";
 	}
-	
+
 	/** 
 	 * Verifies the validity of the current Gamestate. This includes:
 	 * - All planets belong to one and only one region
@@ -276,16 +276,16 @@ public class Gamestate {
 	 */
 	public boolean verify() {
 		int[] pTest = new int[pList.length]; // Counts the number of regions
-											 // to which this planet belongs
+		// to which this planet belongs
 		for (int i = 1; i < pList.length; i++) {
 			// 1. All planets belong to exactly one region
 			for (int j = 1; j < rList.length; j++)
 				if (rList[j].hasMember(i)) // Indexing. Bah.
 					pTest[i]++;
-		
+
 			if (pList[i].getOwner() == 0)
 				continue; // We don't need to check unowned planets
-			
+
 			// 2. All planets are owned by active players
 			if (playerList[pList[i].getOwner()] == 0) {
 				System.out.println("Issue 2: Planet "+i+" is owned by player "+
@@ -293,37 +293,37 @@ public class Gamestate {
 				System.out.println(pList[i].toString());
 				return false;
 			}
-		
+
 			// 3. All planets have fleets > 0
 			if (pList[i].getFleets() <= 0) {
 				System.out.println("Issue 3: Planet "+i+" has "+pList[i].getFleets()+" fleets.");
 				return false;
 			}
 		}
-		
+
 		// Check #1
 		for (int i = 1; i < pTest.length; i++)
 			if (pTest[i] != 1) {
 				System.out.println("Issue 1: Planet "+i+" is in "+pTest[i]+" regions.");
 				return false;
 			}
-		
+
 		// 4. Turn & Cycle number match (as best we can tell)
 		// Minimal case: 2 players, in which case cycle = turn / 2 (ish)
 		if (turnNumber / 2 < cycleNumber)  { System.out.println("Issue 4a"); return false; }
 		// Maximal case: n players, in which case cycle = turn / n (ish)
 		if (turnNumber / playerList.length > cycleNumber + 1) { System.out.println("Issue 4b"); return false; }
-		
+
 		// If all cases above have passed, then Gamestate is valid.
 		return true;
 	}
-	
+
 	/** Updates all players' statuses. */
 	public void checkPlayerStatus() {
 		for (int i : playerList)
 			checkPlayerStatus(i);
 	}
-	
+
 	/** 
 	 * Updates the status of one player. Mostly this means setting that
 	 * player to inactive (0) if that player has no planets.
@@ -339,13 +339,13 @@ public class Gamestate {
 			if (p.getOwner() == playerID)
 				pCount++;
 		}
-			
-		
+
+
 		if (pCount == 0) // A player with no planets...
 			playerList[playerID] = 0; // ... is now inactive
 		return playerList[playerID];
 	}
-	
+
 	/** Returns a list of all players with status "active" (1). */
 	public int[] getActivePlayers() {
 		// Count active players
@@ -353,17 +353,17 @@ public class Gamestate {
 		for (int i : playerList)
 			if (playerList[i] == 1)
 				activeCount++;
-		
+
 		// Build a list of the ID's of all active players
 		int[] result = new int[activeCount];
 		int index = 0;
 		for (int i : playerList)
 			if (playerList[i] == 1)
 				result[index++] = i+1;
-		
+
 		return result;
 	}
-	
+
 	/** Returns the number of fleets the specified player can deploy this turn. */
 	public int getPlayerQuota(int playerID) {
 		int quota = 5;
@@ -372,28 +372,28 @@ public class Gamestate {
 				quota += r.getValue();
 		return quota;
 	}
-	
+
 	/** Updates the current Gamestate based on a GameChange.
 	 * 
 	 * @param gc the GameChange with which to update this Gamestate
 	 */
-	public void update(GameChange gc) throws Exception{
+	public void update(GameChange gc) {
 		int[][] changeList = gc.getChanges();
 		// [idNum, owner, numFleets]
-		
+
 		for (int i = 0; i < changeList.length; i++) {
 			int[] change = changeList[i];
 			if (change[0] >= pList.length)
-				throw new Exception("Error: invalid planet in Gamechange.");
+				throw new RuntimeException("Error: invalid planet in Gamechange.");
 			Planet currPlan = pList[change[0]];
 			if (change[1] >= playerList.length)
-				throw new Exception("Error: invalid owner in Gamechange.");
+				throw new RuntimeException("Error: invalid owner in Gamechange.");
 			currPlan.setOwner(change[1]);		
 			if (change[2] <= 0)
-				throw new Exception("Error: can't have negative fleets.");
+				throw new RuntimeException("Error: can't have negative fleets.");
 			currPlan.setFleets(change[2]);
 		}
-		
+
 		updateRegions();
 	}
 
@@ -413,7 +413,7 @@ public class Gamestate {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(xmlPath);
 			NodeList root = doc.getChildNodes().item(0).getChildNodes(); // root = <Gamestate>
-			
+
 			// 2. Players & Turns
 			Element playerNode = (Element)getNode("Players", root);
 			activePlayer = Integer.parseInt(playerNode.getAttribute("activePlayer"));
@@ -423,7 +423,7 @@ public class Gamestate {
 				playerList[i] = 1; // 1 = normal player; 0 = inactive player
 			turnNumber = Integer.parseInt(playerNode.getAttribute("turnNumber"));
 			cycleNumber = Integer.parseInt(playerNode.getAttribute("cycleNumber"));
-			
+
 			// 3. Planets
 			Element planetNode = getNode("PlanetList", root);
 			int pCount = 0;
@@ -437,7 +437,7 @@ public class Gamestate {
 				// Repeat, this time actually building the planets.
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
 					pList[++pCount] = new Planet((Element) kid); // Let the Planet build itself
-			
+
 			// 4. Connections
 			Element connectNode = getNode("ConnectionList", root);
 			for (Node kid = connectNode.getFirstChild(); kid != null; kid = kid.getNextSibling()) {
@@ -448,7 +448,7 @@ public class Gamestate {
 					cList.add(new Connection(start, end));
 				}
 			}
-			
+
 			// 5. Regions - almost exactly the same as #3
 			Element regionNode = getNode("RegionList", root);
 			int rCount = 0;
@@ -460,9 +460,9 @@ public class Gamestate {
 			for (Node kid = regionNode.getFirstChild(); kid != null; kid = kid.getNextSibling())
 				if (kid.getNodeType() == Node.ELEMENT_NODE)
 					rList[++rCount] = new Region((Element) kid); // and the regions build themselves too
-		
+
 		} catch (Exception e) { e.printStackTrace(); } // end of the DocumentBuilder try/catch blocks
-		
+
 		// Done building, cleanup.
 		updateRegions();
 		/*if (!verify()) {
@@ -470,7 +470,7 @@ public class Gamestate {
 			throw new RuntimeException("Warning: Bad XML gamestate.");
 		}*/ //TODO take out this comment
 	} // end loadXML()
-	
+
 	/**
 	 * Returns this Gamestate as an XML-formatted String.
 	 * 
@@ -478,20 +478,20 @@ public class Gamestate {
 	 */
 	public String writeToXML() {
 		StringWriter sb = new StringWriter();
-		
+
 		try {
 			// This part is silly
 			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-            //domFactory.setNamespaceAware(true);
+			//domFactory.setNamespaceAware(true);
 			DocumentBuilder builder = domFactory.newDocumentBuilder();
 			Document doc = builder.newDocument();
-			
+
 			// The root is the start of the document
 			Element root = doc.createElement("root");
 			doc.appendChild(root);
 			Element gsRoot = doc.createElement("Gamestate");
 			root.appendChild(gsRoot);
-			
+
 			// 1. First we add information about the Players (& turns).
 			Element playerNode = doc.createElement("Players");
 			gsRoot.appendChild(playerNode);
@@ -500,46 +500,46 @@ public class Gamestate {
 			playerNode.setAttribute("turnNumber", turnNumber+"");
 			playerNode.setAttribute("cycleNumber", cycleNumber+"");
 			// playerNode.getAttribute(arg0);
-			
+
 			// 2. Then we add information about planets...
 			Element pListEl = doc.createElement("PlanetList");
 			gsRoot.appendChild(pListEl);
 			for (int i = 1; i < pList.length; i++) {
 				pList[i].saveToXML(pListEl);
 			}
-			
+
 			// 3. ... connections...
 			Element cListEl = doc.createElement("ConnectionList");
 			gsRoot.appendChild(cListEl);
 			for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
 				i.next().saveToXML(cListEl);
 			}
-			
+
 			// 4. ... and regions.
 			Element rListEl = doc.createElement("RegionList");
 			gsRoot.appendChild(rListEl);
 			for (int i = 1; i < rList.length; i++) {
 				rList[i].saveToXML(rListEl);
 			}
-			
+
 			// Then we work a little magic and turn this mess into a readable string.
 			DOMSource domSource = new DOMSource(root.getFirstChild());
 			TransformerFactory tf = TransformerFactory.newInstance();
 			Transformer magic = tf.newTransformer();
 			magic.transform(domSource, new StreamResult(sb));
 		} catch (Exception e) { e.printStackTrace(); } // We're effectively not handling errors here
-		
+
 		return sb.toString();
 	}
-	
+
 	// XML Helper method
 	// This came from http://www.drdobbs.com/jvm/easy-dom-parsing-in-java/231002580
 	protected Element getNode(String tagName, NodeList nodes) {
-	    for (int i = 0; i < nodes.getLength(); i++) {
-	        Node node = nodes.item(i);
-	        if (node.getNodeName().equalsIgnoreCase(tagName))
-	            return (Element) node;
-	    }
-	    return null;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node.getNodeName().equalsIgnoreCase(tagName))
+				return (Element) node;
+		}
+		return null;
 	}
 }

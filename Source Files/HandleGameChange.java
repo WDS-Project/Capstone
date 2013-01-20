@@ -8,14 +8,14 @@ import com.sun.net.httpserver.*;
 public class HandleGameChange implements HttpHandler {
 
 	Server server;
-	
+
 	public HandleGameChange(Server svr) {
 		server = svr;	
 	}
 
-        //request format: /gameChange/<playerID>
-        
-	public void handle(HttpExchange exchange)throws IOException {
+	//request format: /gameChange/<playerID>
+
+	public void handle(HttpExchange exchange) {
 		try {
 
 			//get the IP
@@ -58,13 +58,14 @@ public class HandleGameChange implements HttpHandler {
 
 				Player player = engine.findPlayer(playerIP+":"+request);
 				player.synchronizedRequest(request, engine);
-				
+
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
 				responseBody.write(player.getResponse().getBytes());
 				responseBody.close();
 			}
 		} catch (Exception e) {
+			// Any exception thrown by this handler will be displayed to the server console.
 			e.printStackTrace();
 		}
 	}
