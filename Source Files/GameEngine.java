@@ -41,12 +41,12 @@ public class GameEngine {
 	}
 	
 	/** Loads a Gamestate into memory for this game. */
-	public void loadGamestate(String xmlPath) {
+	public void loadGamestate(String xmlPath) throws Exception {
 		gs = new Gamestate(xmlPath);
 		originalGS = gs.copy();
 	}
 	/** Resets the current Gamestate to the last Gamestate that was loaded. */ 
-	public void resetGame() { gs = originalGS.copy(); }
+	public void resetGame() throws Exception { gs = originalGS.copy(); }
 	
 	// Getters & Setters
 	/**
@@ -102,7 +102,7 @@ public class GameEngine {
 	 * @param idNum
 	 * @return
 	 */
-	public Player findPlayer(int idNum) {
+	public Player findPlayer(int idNum) throws Exception {
 		if (players.size() > idNum) return null;
 		
 		Set<String> keys = players.keySet();
@@ -113,7 +113,8 @@ public class GameEngine {
 	    }
 	    
 	    // If we get here, there's a problem with our player ID numbers.
-	    throw new RuntimeException("Error: Player ID not found... but should have been.");
+            System.out.println("Player not found.");
+	    throw new Exception("Error: Player ID not found... but should have been.");
 	}
 	/** Returns the latest GameChange. */
 	public GameChange getChange() { return change; }
@@ -192,7 +193,7 @@ public class GameEngine {
          * @param move the move from some player
          * @return a GameChange describing the changes made by the Move
          */
-        public void processMove(Move move) {
+        public void processMove(Move move) throws Exception {
             System.out.println("Processing move.");
             GameChange gc = new GameChange(gs.getActivePlayer(),
             		gs.getTurnNumber(), gs.getCycleNumber());
@@ -200,19 +201,16 @@ public class GameEngine {
             // Check that the player who submitted the move is the active player.
             // Then, as long as activePlayer is right, the playerID must be valid.
             if (move.getPlayerID() != gs.getActivePlayer()) {
-                System.out.println("That isn't the active player!");
-            	throw new RuntimeException("That isn't the active player!");
+            	throw new Exception("Attempt to move by not the active player.");
             }
             
             //Hacker check: Make sure no one submitted a Move with the correct
             //ID and the wrong IP.
             if(findPlayer(move.getIP()+":" + move.getPlayerID()) == null) {
-                System.out.println("Who are you?!");
-                throw new RuntimeException("Who are you and why are you submitting moves?!");
+                throw new Exception("Who are you and why are you submitting moves?!");
             }
                     
            // loop through the mini Moves
-            System.out.println("Looping through miniMoves ...");
             while(move.hasNext()) {
                 int[] miniMove = move.next();
                 
@@ -233,7 +231,7 @@ public class GameEngine {
                 // Check that the two planets in question are, in fact, connected.
                 if (!gs.isConnected(source.getIDNum(), dest.getIDNum())) {
                         System.out.println("Invalid move.");
-                	throw new RuntimeException("Invalid move: planet "+source.getIDNum()+" and "+
+                	throw new Exception("Invalid move: planet "+source.getIDNum()+" and "+
                 				dest.getIDNum()+" are not connected.");
                 }
                 
@@ -260,7 +258,6 @@ public class GameEngine {
                         gc.addChange(dest);
                     }
                 }
-                System.out.println("One more miniMove done.");
             } // end miniMove loop
             
             int winner = checkWin();

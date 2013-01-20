@@ -55,12 +55,12 @@ public class Move {
      * @throws NumberFormatException    If the move is not
      *                              formatted correctly
      */
-    public Move(String move, String IP) throws NumberFormatException {
+    public Move(String move, String IP) throws Exception {
         /*Some checks to account for network anomalies.*/
         //I'm not sure if the first character in the request will be /
         // or the ID number
         if(move.length() < 1)
-            throw new RuntimeException("Empty move.");
+            throw new Exception("Empty move.");
         if(move.charAt(0) == '/')
             move = move.substring(1);
         
@@ -74,7 +74,7 @@ public class Move {
             
             //if the move is not formatted correctly
             if (sourceDestFleets.length != MOVE_LENGTH)
-                throw new RuntimeException("Incorrectly formatted move. Must contain " +
+                throw new Exception("Incorrectly formatted move. Must contain " +
                         "source, destination, and fleets.");
             
             moves.add(new ArrayList<Integer>());
@@ -82,7 +82,7 @@ public class Move {
             moves.get(i-1).add(Integer.parseInt(sourceDestFleets[1]));
             
             if(Integer.parseInt(sourceDestFleets[2]) <= 0)
-                throw new RuntimeException("You can't move 0 or fewer fleets.");
+                throw new Exception("You can't move 0 or fewer fleets.");
             
             moves.get(i-1).add(Integer.parseInt(sourceDestFleets[2]));
         }

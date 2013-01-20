@@ -63,7 +63,7 @@ public class Gamestate {
 	 * Returns a deep copy of this object.
 	 * @return a Gamestate identical in content to this one
 	 */
-	public Gamestate copy() {
+	public Gamestate copy() throws Exception {
 		Gamestate copyGS = new Gamestate(pList.length, rList.length, playerList.length);
 		copyGS.activePlayer = this.activePlayer;
 		copyGS.turnNumber = this.turnNumber;
@@ -97,9 +97,9 @@ public class Gamestate {
 	public int getCycleNumber() { return cycleNumber; }
 	/** Sets the player ID of the current active player. Note that this 
 	 * method will fail if the given ID is not on the list of players. */
-	public void setActivePlayer(int playerID) {
+	public void setActivePlayer(int playerID) throws Exception {
 		if (playerID > playerList.length || playerID < 1)
-			throw new RuntimeException("Error: That isn't a valid player number.");
+			throw new Exception("Error: Attempt to make an invalid player the active player.");
 		activePlayer = playerID;
 	}
 	/** Increments turn counters in preparation for the next turn. */
@@ -128,7 +128,7 @@ public class Gamestate {
 	 * @return an int array of Planet ID's that are connected to
 	 * the specified planet
 	 */
-	public int[] getConnections(int planetID) {
+	public int[] getConnections(int planetID) throws Exception {
 		// Build an Arraylist of the connections
 		ArrayList<Integer> resultList = new ArrayList<Integer>();
 		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); ) {
@@ -139,7 +139,7 @@ public class Gamestate {
 				resultList.add(c.end);
 		}
 		if (resultList.size() == 0)
-			throw new RuntimeException("Error: Planet "+planetID+" has no connections.\n"
+			throw new Exception("Error: Planet "+planetID+" has no connections.\n"
 									 + "It may not be a valid planet ID.");
 		
 		// Transform that Arraylist into an int[]
@@ -150,9 +150,9 @@ public class Gamestate {
 		return result;
 	}
 	/** Returns true if p1 and p2 are connected. */
-	public boolean isConnected(int p1, int p2) {
+	public boolean isConnected(int p1, int p2) throws Exception {
 		if (p1 > pList.length || p2 > pList.length)
-			throw new RuntimeException("Not a valid planet.");
+			throw new Exception("Not a valid planet.");
 		return cList.contains(new Connection(p1, p2));
 	}
 	
@@ -161,14 +161,14 @@ public class Gamestate {
 		public int start;
 		public int end;
 		
-		public Connection(int start, int end) {
+		public Connection(int start, int end) throws Exception {
 			if (start > end) { // Swap to put in the right order
 				int temp = start;
 				start = end;
 				end = temp;
 			}
 			if (start == end)
-				throw new RuntimeException("Connection can't have the same start and end points.");
+				throw new Exception("Connection can't have the same start and end points.");
 			this.start = start;
 			this.end = end;
 		}
@@ -377,20 +377,20 @@ public class Gamestate {
 	 * 
 	 * @param gc the GameChange with which to update this Gamestate
 	 */
-	public void update(GameChange gc) {
+	public void update(GameChange gc) throws Exception{
 		int[][] changeList = gc.getChanges();
 		// [idNum, owner, numFleets]
 		
 		for (int i = 0; i < changeList.length; i++) {
 			int[] change = changeList[i];
 			if (change[0] >= pList.length)
-				throw new RuntimeException("Error: invalid planet in Gamechange.");
+				throw new Exception("Error: invalid planet in Gamechange.");
 			Planet currPlan = pList[change[0]];
 			if (change[1] >= playerList.length)
-				throw new RuntimeException("Error: invalid owner in Gamechange.");
+				throw new Exception("Error: invalid owner in Gamechange.");
 			currPlan.setOwner(change[1]);		
 			if (change[2] <= 0)
-				throw new RuntimeException("Error: can't have negative fleets.");
+				throw new Exception("Error: can't have negative fleets.");
 			currPlan.setFleets(change[2]);
 		}
 		

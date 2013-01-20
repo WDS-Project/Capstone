@@ -57,12 +57,8 @@ public class HandleGameChange implements HttpHandler {
 					throw new RuntimeException("That game doesn't exist.");
 
 				Player player = engine.findPlayer(playerIP+":"+request);
-				try {
-					player.synchronizedRequest(request, engine);
-				} catch (Exception ex) {
-					System.out.println("Trouble sending request to engine.");
-				}
-
+				player.synchronizedRequest(request, engine);
+				
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
 				responseBody.write(player.getResponse().getBytes());

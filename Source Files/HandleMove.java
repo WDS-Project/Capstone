@@ -54,21 +54,18 @@ public class HandleMove implements HttpHandler {
 				//get the session
 				GameEngine engine = server.findSession(playerIP+":" + m.getPlayerID());
 
+                                //if the engine is not found, discard the request
 				if(engine == null) {
-					System.out.println("There is no session associated with this player.");
-					throw new RuntimeException("Bad player IP");
+					System.out.println("Attempt to move by bad player ID.");
+                                        return;
 				}               
 
 				//get the Player
-				Player player = engine.findPlayer(playerIP);                        
+				Player player = engine.findPlayer(playerIP+":"+m.getPlayerID());                        
 
 				engine.processMove(m);
 
-				try {
-					player.synchronizedRequest("gamechange", engine);
-				} catch (Exception ex) {
-					System.out.println("Trouble sending request to engine.");
-				}
+                                player.synchronizedRequest("gamechange", engine);
 
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
