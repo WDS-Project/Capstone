@@ -205,7 +205,8 @@ public class GameEngine {
 		// Check that the player who submitted the move is the active player.
 		// Then, as long as activePlayer is right, the playerID must be valid.
 		if (move.getPlayerID() != gs.getActivePlayer()) {
-			throw new RuntimeException("Attempt to move by not the active player.");
+			throw new RuntimeException("Player "+move.getPlayerID()+" tried to move, but the active"
+					+" player is "+gs.getActivePlayer()+".");
 		}
 
 		//Hacker check: Make sure no one submitted a Move with the correct
@@ -344,7 +345,7 @@ public class GameEngine {
 		System.out.println(gs.toString());
 
 		// Final part: setup for the next round.
-		//gs.nextTurn();
+		gs.nextTurn();
 	}
 
 	/** Adjusts the player population for players being eliminated and whatnot. */
