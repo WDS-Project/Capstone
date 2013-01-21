@@ -334,15 +334,12 @@ public class Gamestate {
 	public int checkPlayerStatus(int playerID) {
 		if (playerID == 0) return 0;
 		int pCount = 0;
-		for (int i = 1; i < pList.length; i++) {
-			Planet p = pList[i];
-			if (p.getOwner() == playerID)
+		for (int i = 1; i < pList.length; i++)
+			if (pList[i].getOwner() == playerID)
 				pCount++;
-		}
-
 
 		if (pCount == 0) // A player with no planets...
-			playerList[playerID] = 0; // ... is now inactive
+			playerList[playerID] = 0; // ... is inactive
 		return playerList[playerID];
 	}
 
@@ -367,9 +364,9 @@ public class Gamestate {
 	/** Returns the number of fleets the specified player can deploy this turn. */
 	public int getPlayerQuota(int playerID) {
 		int quota = 5;
-		for (Region r : rList)
-			if (r.getOwner() == playerID)
-				quota += r.getValue();
+		for (int i = 1; i < rList.length; i++)
+			if (rList[i].getOwner() == playerID)
+				quota += rList[i].getValue();
 		return quota;
 	}
 
@@ -465,10 +462,10 @@ public class Gamestate {
 
 		// Done building, cleanup.
 		updateRegions();
-		/*if (!verify()) {
+		if (!verify()) {
 			System.out.println(this.toString());
 			throw new RuntimeException("Warning: Bad XML gamestate.");
-		}*/ //TODO take out this comment
+		}
 	} // end loadXML()
 
 	/**
