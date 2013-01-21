@@ -30,9 +30,6 @@ public class GameEngine {
 	/*** Methods ***/
 	// Constructor, I guess? Also related init methods.
 	public GameEngine(int id) {
-		// TODO Figure out what we need to go here.
-		//Not much really ... The Players and Gamestate will be defined after
-		//the Engine is initialized by calling methods.
 		init();
 		ID = id;
 		System.out.println("This engine's ID number is " + id);
@@ -41,6 +38,7 @@ public class GameEngine {
 	/** Initialize (or reinitialize) the engine. */
 	private void init() {
 		players = new TreeMap<String, Player>();
+		setRandomize(false); // *** NOTE: For testing purposes only
 		// Note that the engine is unusable until players are defined.
 	}
 
@@ -209,12 +207,13 @@ public class GameEngine {
 					+" player is "+gs.getActivePlayer()+".");
 		}
 
-		//Hacker check: Make sure no one submitted a Move with the correct
-		//ID and the wrong IP.
+		// Check that the request came from the right IP address
 		if(findPlayer(move.getIP()+":" + move.getPlayerID()) == null) {
-			throw new RuntimeException("Who are you and why are you submitting moves?!");
+			throw new RuntimeException("Move came from "+move.getIP()+", which isn't the right address.");
 		}
 
+		int quota = gs.getPlayerQuota(move.getPlayerID());
+		
 		// loop through the mini Moves
 		while(move.hasNext()) {
 			int[] miniMove = move.next();
@@ -223,10 +222,11 @@ public class GameEngine {
 			Planet dest = gs.getPlanetByID(miniMove[1]);
 			int numFleets = miniMove[2];
 
-			// 1. If Source == 0 --> Deployment (because planet ID's are indexed at 1,
-			// so 0 means deployment because it comes from nowhere)
+			// 1. If Source == 0 --> Deployment 
 			if(miniMove[0] == 0) {
-				// TODO rules for deployments, like checking a player's quota
+				quota -= numFleets;
+				if (quota < 0)
+					throw new RuntimeException("Error: quota exceeded.");
 				dest.addFleets(numFleets);
 				gc.addChange(dest);
 				continue;
