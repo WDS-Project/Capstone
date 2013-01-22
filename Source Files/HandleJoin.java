@@ -56,9 +56,10 @@ public class HandleJoin implements HttpHandler {
 
 				GameEngine engine = server.findSession(sessionID);
 
+                                //if the session does not exist, discard the request
 				if(engine == null) {
 					System.out.println("There is no session " + sessionID);
-					throw new RuntimeException("Bad session ID.");
+                                        return;
 				}
 
 				Player nextPlayer = engine.definePlayer(nextPlayerIP+":"+engine.getNextPlayerID(), 1); //active status

@@ -102,6 +102,9 @@ public class Gamestate {
 			throw new RuntimeException("Error: Attempt to make an invalid player the active player.");
 		activePlayer = playerID;
 	}
+        /**Sets a player inactive upon elimination. */
+        public void setPlayerInactive(int playerID) { playerList[playerID - 1] = 0; }
+        
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
 		// 1. activePlayer moves to the next player

@@ -18,10 +18,10 @@ import org.w3c.dom.*;
 public class GameChange {
 
 	private int activePlayer, turnNumber, cycleNumber; //these should come from
-	//the GameEngine after it determines whose turn it is
-	private ArrayList<ArrayList<Integer>> changes;
+                                //the GameEngine after it determines whose turn it is
+	private ArrayList<ArrayList<Integer>> changes; //change matrix
 	private int numChanges; //place in the matrix for the next change to be added
-	private final int CHANGE_LENGTH = 3;
+	private final int CHANGE_LENGTH = 3;    //the number of integers part of any one change
 
 	/**
 	 * Constructor for GameChange. It receives the information

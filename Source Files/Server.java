@@ -124,8 +124,16 @@ public class Server {
 	public void addPlayerToSession(String IP, GameEngine ge) {
 		playersInSessions.put(IP, ge);
 		System.out.println("Adding player " + IP + " to session " + ge.getID());
-
 	}
+        
+        /**
+         * Remove a player from a session upon elimination so they
+         * can send in no more requests.
+         * @param IP 
+         */
+        public void removePlayerFromSession(String IP) {
+            playersInSessions.remove(IP);
+        }
 
 	/**
 	 * Add a session (GameEngine) to the list.
@@ -163,7 +171,7 @@ public class Server {
 		}
 
 		//server = new Server(portNumber, ""); //ADD XML PATH
-		server = new Server(portNumber, "src/TestGS3.xml"); // Temporary thing for until we get this going
+		server = new Server(portNumber, "src/TestGS6.xml"); // Temporary thing for until we get this going
 		server.run();
 	}
 

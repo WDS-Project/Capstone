@@ -52,17 +52,28 @@ public class HandleGameChange implements HttpHandler {
 
 				//get the session
 				GameEngine engine = server.findSession(playerIP + ":" + request);
-
-				if(engine == null)
-					throw new RuntimeException("That game doesn't exist.");
+                                
+                                //if the engine is not found, discard the request
+				if(engine == null) {
+					System.out.println("Attempt to get a GameChange by bad player ID.");
+                                        return;
+                                }
 
 				Player player = engine.findPlayer(playerIP+":"+request);
-				player.synchronizedRequest(request, engine);
-
-				exchange.sendResponseHeaders(200,0);
-				OutputStream responseBody = exchange.getResponseBody();
-				responseBody.write(player.getResponse().getBytes());
-				responseBody.close();
+				if(engine.eliminate(player.getID())) { //if this player should be eliminated
+                                    engine.eliminatePlayer(player.getID()); //get rid of them in the engine
+                                    server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
+                                    player.setResponse("eliminated"); //tell the player
+                                }
+                                else {
+                                    player.synchronizedRequest("gamechange", engine);
+                                }
+                                 exchange.sendResponseHeaders(200,0);
+                                 OutputStream responseBody = exchange.getResponseBody();
+                                 System.out.println("Sending response to player " + player.getID());
+                                 System.out.println(player.getResponse());
+                                 responseBody.write(player.getResponse().getBytes());
+                                 responseBody.close();
 			}
 		} catch (Exception e) {
 			// Any exception thrown by this handler will be displayed to the server console.
