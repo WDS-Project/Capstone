@@ -113,7 +113,7 @@ public class GameEngine {
 	 * @return
 	 */
 	public Player findPlayer(int idNum) {
-		if (players.size() > idNum) return null;
+		//if (players.size() > idNum) return null;
 
 		Set<String> keys = players.keySet();
 		for(Iterator<String> i = keys.iterator(); i.hasNext(); ) {
@@ -121,7 +121,7 @@ public class GameEngine {
 			if (players.get(s).getID() == idNum)
 				return players.get(s);
 		}
-
+                
 		// If we get here, there's a problem with our player ID numbers.
 		throw new RuntimeException("Error: Player ID not found... but should have been.");
 	}
@@ -275,6 +275,9 @@ public class GameEngine {
 		change = gc;
 		// update the Gamestate
 		gs.update(change);
+                
+                changePlayerPopulation(gs.getActivePlayers().length); 
+                //make sure we aren't waiting on inactive players
 
 		int winningPlayer = checkWin();
 		if(winningPlayer > 0) {
@@ -305,7 +308,6 @@ public class GameEngine {
         public void eliminatePlayer(int player) {
             findPlayer(player).setStatus(0); //eliminate him/her
             gs.setPlayerInactive(player);
-            changePlayerPopulation(gs.getActivePlayers().length); //make sure we aren't waiting on inactive players
         }
 
 	/**
@@ -375,10 +377,14 @@ public class GameEngine {
 	private void finalResultsAvailable() {
 		// I don't think we actually want it to do this every time, but it's a good temporary thing.
 		// If/when we start writing things to a log, this would be the place to do it.
-		System.out.println(gs.toString());
+		//System.out.println(gs.toString());
 
 		// Final part: setup for the next round.
 		gs.nextTurn();
+                for(int p : gs.getPlayerList())
+                    System.out.print(p + " ");
+                
+                System.out.println("active player: " + gs.getActivePlayer());
 	}
 
 	/** Adjusts the player population for players being eliminated and whatnot. */

@@ -103,7 +103,7 @@ public class Gamestate {
 		activePlayer = playerID;
 	}
         /**Sets a player inactive upon elimination. */
-        public void setPlayerInactive(int playerID) { playerList[playerID - 1] = 0; }
+        public void setPlayerInactive(int playerID) { playerList[playerID] = 0; }
         
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 

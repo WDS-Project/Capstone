@@ -69,9 +69,7 @@ public class HandleMove implements HttpHandler {
                                     server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
                                     player.setResponse("eliminated"); //tell the player
                                 }
-                                else {
-                                    player.synchronizedRequest("gamechange", engine);
-                                }
+                                player.synchronizedRequest("gamechange", engine);
                                 exchange.sendResponseHeaders(200,0);
                                 OutputStream responseBody = exchange.getResponseBody();
                                 System.out.println("Sending response to player " + player.getID());
