@@ -99,10 +99,9 @@ public class HandleDefineGame implements HttpHandler {
 					//Then the engine waits for the others to join before sending out Gamestate
 
 					//start up the AI processes with the given difficulties
-					/* Use this when we get to the AI part
-                		for(int i = 1; i < numPlayers; i++) {
-                        	PythonStarter AIstarter = new PythonStarter(i, Integer.parseInt(definitions[i]));
-                		}*/
+					for(int i = 0; i <  AIs; i++) {
+						PythonStarter AIstarter = new PythonStarter(i, diffs[0], engine.getID());
+					}
 
 					//200 indicates successful processing of the request
 					//GameState sent to Player 1
@@ -133,21 +132,23 @@ class PythonStarter implements Runnable {
 	Thread thread;
 	int playerID = -1;
 	int difficulty = -1;
+	int sessionID = -1;
 	Process pythonProc;
 
-	public PythonStarter(int id, int diff) {
+	public PythonStarter(int id, int diff, int gameID) {
 		playerID = id;
 		difficulty = diff;
+		sessionID = gameID;
 		thread = new Thread(this);
 		thread.start();
 	}
 
 	public void run() {
 		try{
-			pythonProc = Runtime.getRuntime().exec("cmd /c pythonTalker.py " + playerID + " " + difficulty);
+			pythonProc = Runtime.getRuntime().exec("cmd /c AIClient.py " + playerID + " " + difficulty + " " + sessionID);
 		}
 		catch(IOException e) {
-			System.out.print("Welp. It didn't work.");	
+			e.printStaceTrace();	
 		}
 	}
 
