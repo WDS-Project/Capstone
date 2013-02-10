@@ -92,6 +92,7 @@ public class HandleDefineGame implements HttpHandler {
 
 					try {
 						playerOne.synchronizedRequest("gamestate", engine);
+						System.out.println("Request submitted");
 					} catch (Exception ex) {
 						System.out.println("Could not start the game.");
 					}
@@ -99,8 +100,11 @@ public class HandleDefineGame implements HttpHandler {
 					//Then the engine waits for the others to join before sending out Gamestate
 
 					//start up the AI processes with the given difficulties
+					String serverIP = server.getServerIP();
 					for(int i = 0; i <  AIs; i++) {
-						PythonStarter AIstarter = new PythonStarter(i, diffs[0], engine.getID());
+						System.out.println("Starting up an AI");
+						PythonStarter AIstarter = new PythonStarter(diffs[0],
+							engine.getID(), serverIP, server.getServerPort());
 					}
 
 					//200 indicates successful processing of the request
@@ -130,25 +134,30 @@ public class HandleDefineGame implements HttpHandler {
 class PythonStarter implements Runnable {
 
 	Thread thread;
-	int playerID = -1;
 	int difficulty = -1;
 	int sessionID = -1;
+	String serverIP = "";
+	int serverPort = -1;
 	Process pythonProc;
 
-	public PythonStarter(int id, int diff, int gameID) {
-		playerID = id;
+	public PythonStarter(int diff, int gameID, String IP, int port) {
 		difficulty = diff;
 		sessionID = gameID;
+		serverIP = IP;
+		serverPort = port;
 		thread = new Thread(this);
 		thread.start();
 	}
 
 	public void run() {
 		try{
-			pythonProc = Runtime.getRuntime().exec("cmd /c AIClient.py " + playerID + " " + difficulty + " " + sessionID);
+			System.out.println("Starting an AI!");
+			pythonProc = Runtime.getRuntime().exec("cmd /c AIClient.py " 
+				+ difficulty + " " + sessionID + " " +
+				serverIP + ":" + serverPort);
 		}
 		catch(IOException e) {
-			e.printStaceTrace();	
+			e.printStackTrace();	
 		}
 	}
 

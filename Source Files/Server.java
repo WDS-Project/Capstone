@@ -84,6 +84,14 @@ public class Server {
 		server.stop(5);	
 		System.exit(0);
 	}
+	
+	public String getServerIP() {
+		return server.getAddress().getAddress().toString();
+	}
+	
+	public int getServerPort() {
+		return port;	
+	}
 
 	/**
 	 * This gives out IDs in a very simplistic manner. It will only
@@ -171,7 +179,7 @@ public class Server {
 		}
 
 		//server = new Server(portNumber, ""); //ADD XML PATH
-		server = new Server(portNumber, "src/TestGS6.xml"); // Temporary thing for until we get this going
+		server = new Server(portNumber, "TestGS6.xml"); // Temporary thing for until we get this going
 		server.run();
 	}
 
