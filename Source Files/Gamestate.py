@@ -24,7 +24,7 @@ class Gamestate:
     # Sets the active player. Prints an error if the ID provided is invalid.
     def setActivePlayer(self, playerID):
         if playerID not in self.getActivePlayers():
-            print("Error: Invalid player number.", file=sys.stderr)
+            print("Error: Invalid player number.", sys.stderr)
         else:
             self.activePlayer = playerID
 
@@ -46,9 +46,9 @@ class Gamestate:
             p1 = p2
             p2 = temp
         if p1 == p2:
-            print("Error: connections must have different start and end points.", file=sys.stderr)
+            print("Error: connections must have different start and end points.", sys.stderr)
         if p1 == 0 or p2 == 0:
-            print("Error: Cannot connect to planet 0.", file=sys.stderr)
+            print("Error: Cannot connect to planet 0.", sys.stderr)
         self.cList.add(str(p1) + ',' + str(p2))
 
     # Returns a string representation of the entire gamestate.
@@ -118,6 +118,16 @@ class Gamestate:
                 if self.pList[memberID].owner is not testOwner:
                     testOwner = 0
             region.owner = testOwner
+
+    # Returns the number of fleets the specified player can deploy.
+    def getPlayerQuota(self, playerID):
+        quota = 5
+        for r in self.rList:
+            if r is None:
+                continue
+            if r.owner is playerID:
+                quota += r.value
+        return quota
             
     ## Connection Methods ##
     
@@ -126,7 +136,7 @@ class Gamestate:
         start, end = pair.split(',')
         if start == end:
             print("Connections can't have the same start and end points.",
-                  file=sys.stderr)
+                  sys.stderr)
             return
 
         if start > end:
@@ -149,7 +159,7 @@ class Gamestate:
     # Returns true if two Planets are connected.
     def isConnected(self, p1, p2):
         if p1 > len(self.pList) or p2 > len(self.pList):
-            print("Not a valid planet.", file=sys.stderr)
+            print("Not a valid planet.", sys.stderr)
         testSet = set()
         testSet.add(str(p1) + "," + str(p2))
         return self.cList.issuperset(testSet)

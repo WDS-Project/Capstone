@@ -63,9 +63,9 @@ class Move:
         self.moves = []
 
     def __str__(self):
-        result = str(playerID) + "/"
-        for m in moves:
-            result += m[0]+":"+m[1]+":"+m[2]+"/"
+        result = str(self.playerID) + "/"
+        for m in self.moves:
+            result += str(m[0])+":"+str(m[1])+":"+str(m[2])+"/"
         return result
 
     def addMove(self, sourceID, destID, numFleets):
