@@ -10,29 +10,43 @@ import sys      #for command-line arguments
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
 import RandomAI
+import traceback # for printing errors to the log
 
 #command line args: playerID, difficulty, sessionID, serverIPaddr:port
 #global variables: difficulty, sessionID, serverIPandPort, gs, currentPlayer
+#this client writes its status to a text file log called, conveniently,
+#"ailog.txt"
 
 class AIClient:
 
     # self-explanatory constructor 
     def __init__(self, diff, sID, IPnPort):
+        self.log = open('X:\Capstone\Repository\Capstone\log.txt', 'w')
+        self.log.write("AI created.\n")
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort
 
     # join a game given a session ID, also load gamestate and playerID
     def connect(self):
-        connection = httplib.HTTPConnection(self.serverIPandPort)
-        connection.request("POST", "http://" + self.serverIPandPort +
-                           "/join/", self.sessionID)
-        response = connection.getresponse().read()
-        index = response.index("\n")
-        self.playerID = response[:index]
-        response = response[index:]
-        self.gs = Gamestate()
-        gs.loadXML(response)
+        try:
+            self.log.write("Connecting to " + self.serverIPandPort + "... \n")
+            connection = httplib.HTTPConnection(self.serverIPandPort)
+            self.log.write("Found the server. " + self.serverIPandPort + "\n")
+            connection.request("POST", "http://" + self.serverIPandPort +
+                               "/join/", self.sessionID)
+            self.log.write("Made request to join session " + self.sessionID + "\n")
+            response = connection.getresponse().read()
+            self.log.write("Response is: " + response + "\n")
+            index = response.index("\n")
+            self.playerID = response[:index]
+            response = response[(index+1):]
+            self.gs = Gamestate()
+            self.log.write("Loading gamestate ...\n")
+            self.gs.loadXML(response)
+        except Exception:
+            traceback.print_exc(file=self.log)
+        self.log.close()
 
     # a round of requests; ie, make a move if it's our turn, if not, request
     # a gamechange
@@ -54,6 +68,7 @@ class AIClient:
     # if the game is over (for us), exit, if not, load updated gamestate 
     def dealWithResponse(self, response):
         if(response is "eliminated" or response is "winner"):
+            self.log.close()
             sys.exit(0)
         else:
             gc = Gamechange()
@@ -65,10 +80,14 @@ class AIClient:
         print "player ID: " + self.playerID + " session ID: " + sessionID
 
 def main(args):
+    try:
         ai = AIClient(args[1], args[2], args[3])
         ai.connect()
-        while(True):
-            go()
+        for i in range(1,3):
+                go()
+    except Exception:
+        traceback.print_exc(file=self.log)
+    self.log.close()
 
 # I still don't know why this nonsense is here
 if __name__ == "__main__":

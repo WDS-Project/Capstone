@@ -7,7 +7,7 @@
  */
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.Executors;
 
@@ -85,8 +85,11 @@ public class Server {
 		System.exit(0);
 	}
 	
-	public String getServerIP() {
-		return server.getAddress().getAddress().toString();
+	/** Returns the IP address of the machine this server is running on. (Hopefully)
+	*/
+	public String getServerIP() throws UnknownHostException {
+		InetAddress inetAddress = InetAddress.getLocalHost();
+		return inetAddress.getHostAddress();
 	}
 	
 	public int getServerPort() {

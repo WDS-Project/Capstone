@@ -342,7 +342,7 @@ public class GameEngine {
 				String key = itKey.next();
 				Player player = players.get(key);
                                 if(player.getStatus() != 0)
-                                    player.setResponse(gs.writeToXML()); } 
+                                    player.setResponse(player.getID() + "\n" + gs.writeToXML()); } 
 			stateOfGame = IN_PROGRESS; 
 		}
 

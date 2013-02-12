@@ -89,23 +89,21 @@ public class HandleDefineGame implements HttpHandler {
 
 					Player playerOne = engine.definePlayer(player1IP+":"+engine.getNextPlayerID(), 1); //active status
 					server.addPlayerToSession(player1IP + ":" + playerOne.getID(), engine);
+					
+					//start up the AI processes with the given difficulties
+					String serverIP = server.getServerIP();
+					for(int i = 0; i <  AIs; i++) {
+						PythonStarter AIstarter = new PythonStarter(diffs[0],
+							engine.getID(), serverIP, server.getServerPort());
+					}
 
 					try {
 						playerOne.synchronizedRequest("gamestate", engine);
-						System.out.println("Request submitted");
 					} catch (Exception ex) {
 						System.out.println("Could not start the game.");
 					}
 
 					//Then the engine waits for the others to join before sending out Gamestate
-
-					//start up the AI processes with the given difficulties
-					String serverIP = server.getServerIP();
-					for(int i = 0; i <  AIs; i++) {
-						System.out.println("Starting up an AI");
-						PythonStarter AIstarter = new PythonStarter(diffs[0],
-							engine.getID(), serverIP, server.getServerPort());
-					}
 
 					//200 indicates successful processing of the request
 					//GameState sent to Player 1
