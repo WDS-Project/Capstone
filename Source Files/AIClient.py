@@ -57,9 +57,10 @@ class AIClient:
             connection = httplib.HTTPConnection(self.serverIPandPort)
             connection.request("POST", "http://" + self.serverIPandPort +
                                "/gamechange/", self.playerID)
+            self.log.write("Therefore I have sent a gamechange request.\n")
         elif(self.gs.activePlayer == self.playerID):
             self.log.write("It's our turn.\n")
-            m = RandomAI.getMove(self.playerID)
+            m = RandomAI.getMove(self.gs, self.playerID)
             move = str(m)
             self.log.write("Move: " + move + " \n")
             connection = httplib.HTTPConnection(self.serverIPandPort)
