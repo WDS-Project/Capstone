@@ -44,20 +44,24 @@ class AIClient:
             self.gs = Gamestate()
             self.log.write("Loading gamestate ...\n")
             self.gs.loadXML(response)
+            self.log.write("Gamestate loaded.\n")
         except Exception:
             traceback.print_exc(file=self.log)
-        self.log.close()
 
     # a round of requests; ie, make a move if it's our turn, if not, request
     # a gamechange
     def go(self):
-        if(gs.activePlayer != self.playerID):
+        self.log.write("Turn: " + str(self.gs.activePlayer) + " My ID: " + str(self.playerID) + "\n")
+        if(self.gs.activePlayer != self.playerID):
+            self.log.write("It's not our turn.\n")
             connection = httplib.HTTPConnection(self.serverIPandPort)
             connection.request("POST", "http://" + self.serverIPandPort +
                                "/gamechange/", self.playerID)
-        elif(gs.activePlayer == self.playerID):
+        elif(self.gs.activePlayer == self.playerID):
+            self.log.write("It's our turn.\n")
             m = RandomAI.getMove(self.playerID)
             move = str(m)
+            self.log.write("Move: " + move + " \n")
             connection = httplib.HTTPConnection(self.serverIPandPort)
             connection.request("POST", "http://" + self.serverIPandPort +
                                "/move/", move)
@@ -67,6 +71,7 @@ class AIClient:
 
     # if the game is over (for us), exit, if not, load updated gamestate 
     def dealWithResponse(self, response):
+        self.log.write("Response is: " + response + "\n")
         if(response is "eliminated" or response is "winner"):
             self.log.close()
             sys.exit(0)
@@ -84,10 +89,11 @@ def main(args):
         ai = AIClient(args[1], args[2], args[3])
         ai.connect()
         for i in range(1,3):
-                go()
+                ai.go()
     except Exception:
-        traceback.print_exc(file=self.log)
-    self.log.close()
+        traceback.print_exc(file=ai.log)
+        ai.log.close()
+    ai.log.close()
 
 # I still don't know why this nonsense is here
 if __name__ == "__main__":

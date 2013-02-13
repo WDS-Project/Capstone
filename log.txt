@@ -5,13 +5,20 @@ Made request to join session 1
 Response is: 2
 <?xml version="1.0" encoding="UTF-8"?><Gamestate><Players activePlayer="0" cycleNumber="0" numPlayers="4" turnNumber="0"/><PlanetList><Planet color="#ffee33" idNum="1" name="X" numFleets="5" owner="1" position="35,25" radius="30"/><Planet color="#aabbcc" idNum="2" name="Y" numFleets="5" owner="1" position="300,50" radius="35"/><Planet color="#00ffaa" idNum="3" name="Z" numFleets="5" owner="2" position="50,150" radius="25"/><Planet color="#aa00ee" idNum="4" name="W" numFleets="5" owner="2" position="75,300" radius="25"/><Planet color="#55cc11" idNum="5" name="S" numFleets="5" owner="3" position="300,350" radius="30"/><Planet color="#55cc11" idNum="6" name="T" numFleets="5" owner="3" position="300,350" radius="30"/></PlanetList><ConnectionList><connection>1,2</connection><connection>1,3</connection><connection>1,4</connection><connection>1,5</connection><connection>1,6</connection><connection>2,3</connection><connection>2,4</connection><connection>2,5</connection><connection>3,4</connection><connection>3,5</connection><connection>4,5</connection></ConnectionList><RegionList><Region color="#44aadd" idNum="1" name="Outer Space" owner="0" value="5"><memberList><member>1</member><member>2</member><member>3</member></memberList></Region><Region color="#44aadd" idNum="2" name="Inner Space" owner="0" value="5"><memberList><member>4</member><member>5</member><member>6</member></memberList></Region></RegionList></Gamestate>
 Loading gamestate ...
+Gamestate loaded.
+Turn: 0 My ID: 2
+It's not our turn.
 Traceback (most recent call last):
-  File "X:\Capstone\Repository\Capstone\Source Files\AIClient.py", line 46, in connect
-    self.gs.loadXML(response)
-  File "X:\Capstone\Repository\Capstone\Source Files\Gamestate.py", line 171, in loadXML
-    dom = parse(xmlString)
-  File "C:\Python27\lib\xml\dom\minidom.py", line 1914, in parse
-    return expatbuilder.parse(file)
-  File "C:\Python27\lib\xml\dom\expatbuilder.py", line 922, in parse
-    fp = open(file, 'rb')
-IOError: [Errno 2] No such file or directory: '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players activePlayer="0" cycleNumber="0" numPlayers="4" turnNumber="0"/><PlanetList><Planet color="#ffee33" idNum="1" name="X" numFleets="5" owner="1" position="35,25" radius="30"/><Planet color="#aabbcc" idNum="2" name="Y" numFleets="5" owner="1" position="300,50" radius="35"/><Planet color="#00ffaa" idNum="3" name="Z" numFleets="5" owner="2" position="50,150" radius="25"/><Planet color="#aa00ee" idNum="4" name="W" numFleets="5" owner="2" position="75,300" radius="25"/><Planet color="#55cc11" idNum="5" name="S" numFleets="5" owner="3" position="300,350" radius="30"/><Planet color="#55cc11" idNum="6" name="T" numFleets="5" owner="3" position="300,350" radius="30"/></PlanetList><ConnectionList><connection>1,2</connection><connection>1,3</connection><connection>1,4</connection><connection>1,5</connection><connection>1,6</connection><connection>2,3</connection><connection>2,4</connection><connection>2,5</connection><connection>3,4</connection><connection>3,5</connection><connection>4,5</connection></ConnectionList><RegionList><Region color="#44aadd" idNum="1" name="Outer Space" owner="0" value="5"><memberList><member>1</member><member>2</member><member>3</member></memberList></Region><Region color="#44aadd" idNum="2" name="Inner Space" owner="0" value="5"><memberList><member>4</member><member>5</member><member>6</member></memberList></Region></RegionList></Gamestate>'
+  File "X:\Capstone\Repository\Capstone\Source Files\AIClient.py", line 92, in main
+    ai.go()
+  File "X:\Capstone\Repository\Capstone\Source Files\AIClient.py", line 69, in go
+    response = connection.getresponse().read()
+  File "C:\Python27\lib\httplib.py", line 1027, in getresponse
+    response.begin()
+  File "C:\Python27\lib\httplib.py", line 407, in begin
+    version, status, reason = self._read_status()
+  File "C:\Python27\lib\httplib.py", line 365, in _read_status
+    line = self.fp.readline()
+  File "C:\Python27\lib\socket.py", line 430, in readline
+    data = recv(1)
+error: [Errno 10054] An existing connection was forcibly closed by the remote host
