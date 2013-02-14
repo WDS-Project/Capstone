@@ -149,10 +149,11 @@ class Gamestate:
     def getConnections(self, pId):
         result = []
         for c in self.cList:
-            if c.start == pId:
-                result.append(c.end)
-            if c.end == pId:
-                result.append(c.start)
+            start, end = c.split(',')
+            if int(start) == pId:
+                result.append(end)
+            if int(end) == pId:
+                result.append(start)
 
         return result
 
@@ -167,9 +168,8 @@ class Gamestate:
     ## XML Methods ##
 
     def loadXML(self, xmlString):
-        dom = parseString(xmlString)
-
-        #dom = parse(xmlString)
+        #dom = parseString(xmlString)
+        dom = parse(xmlString)
 
         # Player data
         players = dom.getElementsByTagName("Players")[0]
