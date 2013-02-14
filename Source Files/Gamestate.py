@@ -168,8 +168,8 @@ class Gamestate:
     ## XML Methods ##
 
     def loadXML(self, xmlString):
-        #dom = parseString(xmlString)
-        dom = parse(xmlString)
+        dom = parseString(xmlString)
+        # dom = parse(xmlString)
 
         # Player data
         players = dom.getElementsByTagName("Players")[0]
