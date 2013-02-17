@@ -22,19 +22,16 @@ public class Server {
 
 	private ArrayList<GameEngine> gameSessions; //And this is a list of current sessions
 	private int nextAvailableID = 1;
-	private String xmlPath; //so for right now the server is always going to
-	//look at the same file to get the Gamestate
 
 	/**
 	 * Constructor for Server. Sets the port.
 	 * @param newPort   Port for the server to listen on.
 	 */
-	private Server(int newPort, String xml) {
+	private Server(int newPort) {
 		port = newPort;
 		keyboard = new Scanner(System.in);
 		playersInSessions = new TreeMap<String, GameEngine>();
 		gameSessions = new ArrayList<GameEngine>();
-		xmlPath = xml;
 	}
 
 	/**
@@ -48,7 +45,7 @@ public class Server {
 			server = HttpServer.create(new InetSocketAddress(port), 20);
 
 			//context for defining a game
-			server.createContext("/definegame/", new HandleDefineGame(this, xmlPath));
+			server.createContext("/definegame/", new HandleDefineGame(this));
 			//context for passing out game changes
 			server.createContext("/gamechange/", new HandleGameChange(this));
 			//context for moves
@@ -181,8 +178,7 @@ public class Server {
 			}
 		}
 
-		//server = new Server(portNumber, ""); //ADD XML PATH
-		server = new Server(portNumber, "TestGS6.xml"); // Temporary thing for until we get this going
+		server = new Server(portNumber); 
 		server.run();
 	}
 

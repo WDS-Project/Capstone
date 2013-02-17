@@ -74,7 +74,7 @@ class AIClient:
     # if the game is over (for us), exit, if not, load updated gamestate 
     def dealWithResponse(self, response):
         self.log.write("Response is: " + response + "\n")
-        if(response is "eliminated" or response is "winner"):
+        if(response is "eliminated" or response is ("winner:" + self.playerID)):
             self.log.close()
             sys.exit(0)
         else:

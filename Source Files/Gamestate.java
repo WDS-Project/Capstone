@@ -7,6 +7,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
+import java.lang.Math;
 
 /** 
  * A complete Java description of the current gamestate.
@@ -104,7 +105,7 @@ public class Gamestate {
 	}
 	/**Sets a player inactive upon elimination. */
 	public void setPlayerInactive(int playerID) { playerList[playerID] = 0; }
-
+	
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
 		// 1. activePlayer moves to the next player
@@ -234,6 +235,29 @@ public class Gamestate {
 			// by that player; if not, then it is unowned (player 0).
 			rList[i].setOwner(regionOwner);
 		}
+	}
+	
+	/**
+	 * This method distributes planets equally and randomly among all
+	 * active players.  It should only be called before the game begins.
+	 * Each planet gets a default 1 fleet after being distributed.
+	 */
+	public void distributePlanets() {
+			//start with a random player
+			Random rand = new Random();
+			int player = rand.nextInt(playerList.length-2) + 1; //this goes from 0 to numPlayers + 1
+			
+			//shuffle planets
+			ArrayList<Integer> planetIDs = new ArrayList<Integer>();
+			for(int i = 1; i < pList.length; i++) planetIDs.add(i);
+			Collections.shuffle(planetIDs);
+			
+			//loop through planets and distribute them
+			for(int i : planetIDs) {
+				updatePlanet(i, 1, player);
+				player = (player + 1) % playerList.length - 1; 
+				if(player == 0) player = playerList.length -1; //if it's 0, it's the length, which is the last player ID
+			}
 	}
 
 	/** Returns a complete String representation of the current gamestate, including 

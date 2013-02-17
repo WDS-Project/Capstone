@@ -339,6 +339,10 @@ public class GameEngine {
 		Set<String> keys = players.keySet();
 		//If the game hasn't started yet, send everyone a Gamestate
 		if(stateOfGame == NOT_STARTED) {
+			
+			//distribute planets here
+			gs.distributePlanets();
+			
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
 				Player player = players.get(key);
