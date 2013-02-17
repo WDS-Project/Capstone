@@ -87,20 +87,20 @@ public class HandleDefineGame implements HttpHandler {
 					engine.loadGamestate(xmlGsPath);
 					engine.changePlayerPopulation(humans+AIs); //this should make Engine wait for all players
 
-					Player playerOne = engine.definePlayer(player1IP+":"+engine.getNextPlayerID(), 1); //active status
+					Player playerOne = engine.definePlayer(player1IP+":1", 1); //active status
 					server.addPlayerToSession(player1IP + ":" + playerOne.getID(), engine);
-					
+
 					//start up the AI processes with the given difficulties
 					String serverIP = server.getServerIP();
 					for(int i = 0; i <  AIs; i++) {
 						PythonStarter AIstarter = new PythonStarter(diffs[0],
-							engine.getID(), serverIP, server.getServerPort());
+								engine.getID(), serverIP, server.getServerPort());
 					}
 
 					try {
 						playerOne.synchronizedRequest("gamestate", engine);
 					} catch (Exception ex) {
-						System.out.println("Could not start the game.");
+						ex.printStackTrace();
 					}
 
 					//Then the engine waits for the others to join before sending out Gamestate
@@ -113,7 +113,7 @@ public class HandleDefineGame implements HttpHandler {
 					response.close();
 
 				} catch (IOException ex) {
-					//TODO have the client display bad request
+					ex.printStackTrace();
 				}
 			}
 		} catch (Exception e) {
@@ -150,9 +150,9 @@ class PythonStarter implements Runnable {
 	public void run() {
 		try{
 			System.out.println("Starting an AI!");
-			pythonProc = Runtime.getRuntime().exec("cmd /c AIClient.py " 
-				+ difficulty + " " + sessionID + " " +
-				serverIP + ":" + serverPort);
+			pythonProc = Runtime.getRuntime().exec("cmd /c python X:/Capstone/Repository/Capstone/\"Source Files\"/AIClient.py " 
+					+ difficulty + " " + sessionID + " " +
+					serverIP + ":" + serverPort);
 		}
 		catch(IOException e) {
 			e.printStackTrace();	

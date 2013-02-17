@@ -120,11 +120,11 @@ public class Server {
 
 	/**
 	 * Finds the session associated with that players IP.
-	 * @param IP
+	 * @param IPandID
 	 * @return  The session (GameEngine) that the player is associated with
 	 */
-	public GameEngine findSession(String IP) {
-		return playersInSessions.get(IP);
+	public GameEngine findSession(String IPandID) {
+		return playersInSessions.get(IPandID);
 	}
 
 	/**
@@ -132,9 +132,9 @@ public class Server {
 	 * @param IP    IP address of Player
 	 * @param ge    GameEngine (session)
 	 */
-	public void addPlayerToSession(String IP, GameEngine ge) {
-		playersInSessions.put(IP, ge);
-		System.out.println("Adding player " + IP + " to session " + ge.getID());
+	public void addPlayerToSession(String IPandID, GameEngine ge) {
+		playersInSessions.put(IPandID, ge);
+		System.out.println("Adding player " + IPandID + " to session " + ge.getID());
 	}
         
         /**

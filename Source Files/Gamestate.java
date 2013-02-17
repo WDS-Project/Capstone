@@ -19,8 +19,8 @@ public class Gamestate {
 	/*** Fields ***/
 	private int[] playerList;
 	private int activePlayer,
-				turnNumber = 0,
-				cycleNumber = 0;
+	turnNumber = 0,
+	cycleNumber = 0;
 	private Planet[] pList;
 	private Region[] rList;
 	private TreeSet<Connection> cList = new TreeSet<Connection>();
@@ -102,9 +102,9 @@ public class Gamestate {
 			throw new RuntimeException("Error: Attempt to make an invalid player the active player.");
 		activePlayer = playerID;
 	}
-        /**Sets a player inactive upon elimination. */
-        public void setPlayerInactive(int playerID) { playerList[playerID] = 0; }
-        
+	/**Sets a player inactive upon elimination. */
+	public void setPlayerInactive(int playerID) { playerList[playerID] = 0; }
+
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
 		// 1. activePlayer moves to the next player
@@ -124,6 +124,8 @@ public class Gamestate {
 		// this will throw an exception.
 		if (activePlayer == leadPlayer)
 			cycleNumber++;
+
+		System.out.println("GS: Active player: " + activePlayer + " Turn number: " + turnNumber + " Cycle number: " + cycleNumber);
 	}
 	/** Returns a list of all Planets connected to a given Planet.
 	 *
@@ -240,32 +242,32 @@ public class Gamestate {
 	public String toString() {
 		// Gamestate
 		String gsDescript = "Current Gamestate is as follows:\n" +
-		"--------------------------------\n" +
-		"Turn Number: " + turnNumber +
-		", Cycle Number: " + cycleNumber + "\n" +
-		"Active Player: " + activePlayer + "\n";
+				"--------------------------------\n" +
+				"Turn Number: " + turnNumber +
+				", Cycle Number: " + cycleNumber + "\n" +
+				"Active Player: " + activePlayer + "\n";
 
 		// Planets
 		String planetDescript = "\nList of Planets:\n" +
-		"--------------------------------\n";
+				"--------------------------------\n";
 		for (int i = 1; i < pList.length; i++)
 			planetDescript += pList[i].toString() + "\n";
 
 		// Connections
 		String connectionsDescript = "\nList of Connections:\n" +
-		"--------------------------------\n";
+				"--------------------------------\n";
 		for (Iterator<Connection> i = cList.iterator(); i.hasNext(); )
 			connectionsDescript += i.next().toString() + "\n";
 
 		// Regions
 		String regionDescript = "\nList of Regions:\n" +
-		"--------------------------------\n";
+				"--------------------------------\n";
 		for (int i = 1; i < rList.length; i++)
 			regionDescript += rList[i].toString() + "\n";
 
 		// return everything
 		return gsDescript + planetDescript + connectionsDescript +
-		regionDescript + "--------------------------------";
+				regionDescript + "--------------------------------";
 	}
 
 	/** 

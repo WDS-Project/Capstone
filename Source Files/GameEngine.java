@@ -24,21 +24,24 @@ public class GameEngine {
 	private boolean randomize = true; // Flag to disable RNG for testing
 
 	private int ID = -1;
+	
+	private int numPlayers = 0;
 
-        //these are to figure out where we are in the game
-        //in order to know what to send players in the executeRequests() method
+	//these are to figure out where we are in the game
+	//in order to know what to send players in the executeRequests() method
 	private final int NOT_STARTED = 1;
-        private final int IN_PROGRESS = 2;
-        private final int GAME_OVER = 3;
-        
-        private int stateOfGame = 1;
-        private int winner = -1;
+	private final int IN_PROGRESS = 2;
+	private final int GAME_OVER = 3;
+
+	private int stateOfGame = 1;
+	private int winner = -1;
 
 	/*** Methods ***/
 	// Constructor, I guess? Also related init methods.
 	public GameEngine(int id) {
 		init();
 		ID = id;
+		numPlayers = 1;
 		System.out.println("This engine's ID number is " + id);
 	}
 
@@ -71,11 +74,12 @@ public class GameEngine {
 		if (players.containsKey(IPandID)) return null;
 
 		// Otherwise, add a new Player. The new Player's ID is the next one in line.
-		Player newP = new Player(getNextPlayerID());
+		int id = Integer.parseInt(IPandID.substring(IPandID.lastIndexOf(":")+1));
+		Player newP = new Player(id);
 		newP.setStatus(status);
 		players.put(IPandID, newP);
-                //Note that the player population is changed by HandleDefineGame
-                //Based on the number of players the user asked to play
+		//Note that the player population is changed by HandleDefineGame
+		//Based on the number of players the user asked to play
 		return newP;		
 	}
 
@@ -86,7 +90,7 @@ public class GameEngine {
 	 * @return 
 	 */
 	public int getNextPlayerID() {
-		return players.size() + 1;
+		return ++numPlayers;
 	}
 
 	/**Returns this session's ID.*/
@@ -121,7 +125,7 @@ public class GameEngine {
 			if (players.get(s).getID() == idNum)
 				return players.get(s);
 		}
-                
+
 		// If we get here, there's a problem with our player ID numbers.
 		throw new RuntimeException("Error: Player ID not found... but should have been.");
 	}
@@ -203,8 +207,7 @@ public class GameEngine {
 	 */
 	public void processMove(Move move) {
 		System.out.println("Processing move.");
-		GameChange gc = new GameChange(gs.getActivePlayer(),
-				gs.getTurnNumber(), gs.getCycleNumber());
+		GameChange gc = new GameChange();
 
 		// Check that the player who submitted the move is the active player.
 		// Then, as long as activePlayer is right, the playerID must be valid.
@@ -219,7 +222,7 @@ public class GameEngine {
 		}
 
 		int quota = gs.getPlayerQuota(move.getPlayerID());
-		
+
 		// loop through the mini Moves
 		while(move.hasNext()) {
 			int[] miniMove = move.next();
@@ -257,58 +260,55 @@ public class GameEngine {
 			else {
 				int[] results = processAttack(numFleets, dest.getFleets(), randomize);
 				if(results[1] == 0) { // the attacker has won
-                                        dest.setOwner(source.getOwner());
+					dest.setOwner(source.getOwner());
 					dest.setFleets(results[0]);
 					source.addFleets((-1)*numFleets);
 					gc.addChange(source);
 					gc.addChange(dest);
 				} else { // the attacker retreated (or all died, I suppose)
-                                        source.addFleets(results[0] - numFleets);
+					source.addFleets(results[0] - numFleets);
 					dest.setFleets(results[1]);
 					gc.addChange(source);
 					gc.addChange(dest);
 				}
 			}
 		} // end miniMove loop
-                
-                // Store the new GameChange
+
+		// Store the new GameChange
 		change = gc;
 		// update the Gamestate
 		gs.update(change);
-                
-                changePlayerPopulation(gs.getActivePlayers().length); 
-                //make sure we aren't waiting on inactive players
 
 		int winningPlayer = checkWin();
 		if(winningPlayer > 0) {
-                    stateOfGame = GAME_OVER;
-                    winner = winningPlayer;
-                }
+			stateOfGame = GAME_OVER;
+			winner = winningPlayer;
+		}
 
 		System.out.println("Done processing move.");
 	} // end processMove()
-        
-        /**
-         * Checks to see if a certain player should be eliminated.
-         * This should be called on the defeated planet owner at
-         * the end of attacks
-         * @param player    The candidate for elimination
-         * @return          True if the candidate should be eliminated, false if not
-         */
-        public boolean eliminate(int player) {
-            Planet[] planets = gs.getPlanets();
-            for(int i = 1; i < planets.length; i++) {
-                Planet pl = planets[i];
-                if(pl.getOwner() == player)
-                    return false;
-            }
-            return true;
-        }
-        
-        public void eliminatePlayer(int player) {
-            findPlayer(player).setStatus(0); //eliminate him/her
-            gs.setPlayerInactive(player);
-        }
+
+	/**
+	 * Checks to see if a certain player should be eliminated.
+	 * This should be called on the defeated planet owner at
+	 * the end of attacks
+	 * @param player    The candidate for elimination
+	 * @return          True if the candidate should be eliminated, false if not
+	 */
+	public boolean eliminate(int player) {
+		Planet[] planets = gs.getPlanets();
+		for(int i = 1; i < planets.length; i++) {
+			Planet pl = planets[i];
+			if(pl.getOwner() == player)
+				return false;
+		}
+		return true;
+	}
+
+	public void eliminatePlayer(int player) {
+		findPlayer(player).setStatus(0); //eliminate him/her
+		gs.setPlayerInactive(player);
+	}
 
 	/**
 	 * Process the request for a player, synchronizing with the other players in the round.
@@ -321,7 +321,6 @@ public class GameEngine {
 		// This method call sits and waits until all players have submitted their
 		// requests. If the code moves beyond that line, then all players are on the
 		// same page.
-
 		// When all players have submitted their moves, executeRequests() is called
 		// according to the declaration of the roundBegin barrier.
 
@@ -331,8 +330,10 @@ public class GameEngine {
 		// Once the roundEnd barrier is overcome, we move onto the next round (turn).
 	}
 
+	private void executeRequests() {}
+
 	/** Executes the requests of all the players. This method is highly preliminary. */
-	private void executeRequests() {
+	private void setResponses() {
 		// TODO implement error handling and request checking or whatever
 
 		Set<String> keys = players.keySet();
@@ -341,12 +342,11 @@ public class GameEngine {
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
 				Player player = players.get(key);
-                                if(player.getStatus() != 0)
-                                    player.setResponse(player.getID() + "\n" + gs.writeToXML()); } 
-			stateOfGame = IN_PROGRESS; 
+				if(player.getStatus() != 0)
+					player.setResponse(player.getID() + "\n" + gs.writeToXML()); } 
 		}
 
-                else if(stateOfGame == IN_PROGRESS) {
+		else if(stateOfGame == IN_PROGRESS) {
 			// If it has, send a GameChange
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
@@ -355,36 +355,43 @@ public class GameEngine {
 				// Process the request for this player.
 				// This would be where we process the players' requests...
 				try {
-                                        if(player.getStatus() != 0)
-                                            player.setResponse(change.writeToXML());
+					if(player.getStatus() != 0)
+						player.setResponse(change.writeToXML());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-                }
-                else { //the game must be over
-                    for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
+		}
+		else { //the game must be over
+			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
 				Player player = players.get(key);
-                                if(player.getStatus() != 0)
-                                    player.setResponse("winner:" + winner); }
-                }
+				if(player.getStatus() != 0)
+					player.setResponse("winner:" + winner); }
+		}
 		// Now everyone's threads are released and they all move on to roundEnd.
 		// The next thing to happen should be finalResultsAvailable().
 	}
 
 	/** Do whatever needs to be done to get ready for the next round (turn). */
 	private void finalResultsAvailable() {
-		// I don't think we actually want it to do this every time, but it's a good temporary thing.
-		// If/when we start writing things to a log, this would be the place to do it.
-		//System.out.println(gs.toString());
+		changePlayerPopulation(gs.getActivePlayers().length); //make sure we aren't waiting on inactive players
 
 		// Final part: setup for the next round.
-		gs.nextTurn();
-                for(int p : gs.getPlayerList())
-                    System.out.print(p + " ");
-                
-                System.out.println("active player: " + gs.getActivePlayer());
+		if(stateOfGame == IN_PROGRESS) {
+			gs.nextTurn();
+			change.setTurnStatus(gs.getActivePlayer(), gs.getTurnNumber(), gs.getCycleNumber());
+		}
+
+		setResponses();
+
+		if(stateOfGame == NOT_STARTED)
+			stateOfGame = IN_PROGRESS; 
+
+		for(int p : gs.getPlayerList())
+			System.out.print(p + " ");
+
+		System.out.println("active player: " + gs.getActivePlayer() + "\n");
 	}
 
 	/** Adjusts the player population for players being eliminated and whatnot. */

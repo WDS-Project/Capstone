@@ -62,13 +62,15 @@ public class HandleJoin implements HttpHandler {
                                         return;
 				}
 
-				Player nextPlayer = engine.definePlayer(nextPlayerIP+":"+engine.getNextPlayerID(), 1); //active status
-				server.addPlayerToSession(nextPlayerIP + ":" + nextPlayer.getID(), engine);
+				int id = engine.getNextPlayerID();
+				server.addPlayerToSession(nextPlayerIP + ":" + id, engine);
+				Player nextPlayer = engine.definePlayer(nextPlayerIP+":"+id, 1); //active status
+
 
 				try {
 					nextPlayer.synchronizedRequest("gameState", engine);
 				} catch (Exception ex) {
-					System.out.println("We couldn't add you to the game.");
+					ex.printStackTrace();
 				}
 
 				//send Gamestate to the player when this turn rolls around

@@ -17,8 +17,8 @@ import org.w3c.dom.*;
  */
 public class GameChange {
 
-	private int activePlayer, turnNumber, cycleNumber; //these should come from
-                                //the GameEngine after it determines whose turn it is
+	private int activePlayer = -1, turnNumber = - 1, cycleNumber = -1; //these should come from
+	//the GameEngine after it determines whose turn it is
 	private ArrayList<ArrayList<Integer>> changes; //change matrix
 	private int numChanges; //place in the matrix for the next change to be added
 	private final int CHANGE_LENGTH = 3;    //the number of integers part of any one change
@@ -28,11 +28,8 @@ public class GameChange {
 	 * from the GameEngine.
 	 * @param turnID        The player ID of the player whose turn is next
 	 */
-	public GameChange(int active, int turn, int cycle) {
+	public GameChange() {
 		changes = new ArrayList<ArrayList<Integer>>();
-		activePlayer = active;
-		turnNumber = turn;
-		cycleNumber = cycle;
 		numChanges = 0;
 	}
 
@@ -60,6 +57,20 @@ public class GameChange {
 			changes.get(numChanges).add(p.getFleets());
 			numChanges++;
 		}
+	}
+
+	/**
+	 * Sets information about whose turn is next.
+	 * This information should come from the engine after it determines
+	 * whose turn is next.
+	 * @param active
+	 * @param turn
+	 * @param cycle
+	 */
+	public void setTurnStatus(int active, int turn, int cycle) { 
+		activePlayer = active;
+		turnNumber = turn;
+		cycleNumber = cycle;
 	}
 
 	/**

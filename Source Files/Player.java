@@ -42,6 +42,7 @@ public class Player {
 	 * @throws Exception If something goes wrong with the synchronization
 	 */
 	public void synchronizedRequest(String request, GameEngine round) throws Exception {
+		System.out.println("Player " + ID + " synchronized request");
 		requestSemaphore.acquire(); //This Player gets the floor
 		setRequest(request); //The request that came in over the network is stored here
 		round.synchronizedRequest(); //Tell the engine this Player is waiting in line
