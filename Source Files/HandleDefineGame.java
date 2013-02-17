@@ -15,16 +15,14 @@ public class HandleDefineGame implements HttpHandler {
 
 	GameEngine engine;
 	Server server;
-	String xmlGsPath;
 
 	/**
 	 * Constructor for HandleDefineGame. Sets the GameEngine and XML path.
 	 * @param eng   The GameEngine for the handler to work with.
 	 * @param xmlPath   Path of the XML Gamestate
 	 */
-	public HandleDefineGame(Server svr, String xmlPath) {
+	public HandleDefineGame(Server svr) {
 		server = svr;
-		xmlGsPath = xmlPath;
 	}
 
 	/**
@@ -67,24 +65,41 @@ public class HandleDefineGame implements HttpHandler {
 					header.add("Access-Control-Allow-Methods", "OPTIONS");
 					header.add("Access-Control-Allow-Headers", "Content-Type");
 
-					//request format: <number of human players>/<number of AI players>/
-					//<difficulty of AI1>/<difficulty of AI 2>/etc"
+					//request format: <name of Gamestate file>/<number of human players>/<number of AI players>/
+					//<difficulty of AI1>/<difficulty of AI 2>/<etc>/"
 					InputStream stream = exchange.getRequestBody();
 					byte[] inbuf = new byte[1000]; //so the max is 1000 characters
 					stream.read(inbuf);
 					String definition = new String(inbuf).trim();			
-					String[] definitions = definition.split("/");
+					String[] params = definition.split("/");
 
-					int humans = Integer.parseInt(definitions[0]);
-					int AIs = Integer.parseInt(definitions[1]);
-					int[] diffs = new int[definitions.length -2];
-					for(int i = 2; i < definitions.length; i++) 
-						diffs[i-2] = Integer.parseInt(definitions[i]);
+					//number of players
+					int humans = Integer.parseInt(params[1]);
+					int AIs = Integer.parseInt(params[2]);
+					
+					//difficulties of AIs
+					int[] diffs = new int[params.length -3];
+					for(int i = 3; i < params.length; i++) 
+						diffs[i-3] = Integer.parseInt(params[i]);
+					
+					//gamestate file name
+					String gsFile = params[0] + ".xml";
 
 					//setup the Engine starting with this Player (1)
 					engine = new GameEngine(server.getNextAvailableID());
 					server.addSession(engine);
-					engine.loadGamestate(xmlGsPath);
+					
+					try {
+						engine.loadGamestate(gsFile);
+					} catch (Exception ex) {
+						System.out.println("Error loading gamestate.");
+						exchange.sendResponseHeaders(400,0);
+						OutputStream response = exchange.getResponseBody();	
+						response.write("Error".getBytes());
+						response.close();
+						return;
+					}
+					
 					engine.changePlayerPopulation(humans+AIs); //this should make Engine wait for all players
 
 					Player playerOne = engine.definePlayer(player1IP+":1", 1); //active status
@@ -93,8 +108,7 @@ public class HandleDefineGame implements HttpHandler {
 					//start up the AI processes with the given difficulties
 					String serverIP = server.getServerIP();
 					for(int i = 0; i <  AIs; i++) {
-						PythonStarter AIstarter = new PythonStarter(diffs[0],
-								engine.getID(), serverIP, server.getServerPort());
+						new PythonStarter(diffs[0],	engine.getID(), serverIP, server.getServerPort());
 					}
 
 					try {
