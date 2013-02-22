@@ -109,31 +109,31 @@ var Gamestate = function() {
 	that.toString = function() {
 		// First, the Gamestate itself.
 		var gs_str = ("Current Gamestate is as follows:\n" +
-			      "--------------------------------\n");
+			"--------------------------------\n");
 		gs_str += ("Turn Number: " + that.turnNumber +
-			   ", Cycle Number: " + that.cycleNumber + "\n");
+			", Cycle Number: " + that.cycleNumber + "\n");
 		gs_str += "Active Player: " + that.activePlayer + "\n";
 		
 		// Then, planets...
 		var planet_str = ("\nList of Planets:\n" +
-				  "--------------------------------\n");
+			"--------------------------------\n");
 		for (var i = 1; i < that.pList.length; i++)
 			planet_str += that.pList[i].toString() + "\n";
                 
                 // ... connections...
                 var connect_str = ("\nList of Connections:\n" +
-                		   "--------------------------------\n");
+                	"--------------------------------\n");
                 for (var i = 1; i < that.cList.length; i++)
                 	connect_str += that.cList[i] + "\n";
                 
                 // ... and regions.
                 var region_str = ("\nList of Regions:\n" +
-                		  "--------------------------------\n");
+                	"--------------------------------\n");
                 for (var i = 1; i < that.rList.length; i++)
 			region_str += that.rList[i].toString() + "\n";
                 
                 result = (gs_str + planet_str + connect_str + region_str +
-                	  "--------------------------------\n");
+                	"--------------------------------\n");
                 return result;
 	};
 	
@@ -185,7 +185,7 @@ var Gamestate = function() {
 		var quota = 5;
 		for (var i = 1; i < that.rList.length; i++)
 			if (that.rList[i].owner == playerID)
-				quota += that.rList[i].value;
+			quota += that.rList[i].value;
 		return quota;
 	};
 	
@@ -311,17 +311,111 @@ var Move = function(playerID) {
 	that.playerID = playerID;
 	that.moves = [];
 };
+var Client = function() {
+	var self = this;
+	self.playerID = 1; //the human player is always player 1
+	self.request;	//this is the xmlHTTP request, which is reinstantiated every time
+	self.serverIPandPort = "localhost:12345" //CHANGE THIS!!!
+	self.gs = Gamestate();
+	
+	/**
+	This function connects to the server and defines a game
+	based on the parameters chosen by the user.
+	*/
+	self.connect = function() {
+		
+		//this gets the user's selected gamestate file
+		var gsFile = document.getElementById("gamestate");
+		var definition = gsFile.options[gsFile.selectedIndex].value + "/1/";
+		
+		//this collects all the AI difficulties
+		var counter = 0;
+		var ais = [];
+		for(var i = 1; i < 6; i++) {
+			var aiDiff = document.getElementById("ai"+i);
+			ais[i-1] = aiDiff.options[aiDiff.selectedIndex].value;
+			if(ais[i-1] > 0)
+				counter++;
+		}
+		
+		//This creates the request string
+		definition += counter;
+		for(var i = 0; i < counter; i++) 
+			definition += "/" + ais[i];	
+		definition += "/";
+		
+		//this sends the request string
+		self.request = new XMLHttpRequest();
+		self.request.open("POST", "http://" +self. serverIPandPort + "/definegame/", true);
+		self.request.send(definition);
+		
+		self.request.onreadystatechange=function()
+		{
+			if (self.request.status==200 && self.request.readyState == 4) {
+				response = self.request.responseText;
+				self.gs.loadXML(response);
+			}
+			else {
+				//bad stuff happened
+			}
+		}
+	}
+	
+	/* A round of requests, that is, make a move if it's our turn, if not,
+	request a gamechange.
+	*/
+	self.go = function(){
+		//if it's not our turn, send a gamechange request
+		if(self.gs.activePlayer != self.playerID) {
+			self.request = new XMLHttpRequest();
+			self.request.open("POST", "http://" + serverIPandPort + "/gamechange/", true);
+			self.request.send(playerID);
+		self.request.onreadystatechange=function() {
+			if (self.request.status==200 && self.request.readyState == 4) {
+				response = self.request.responseText;
+				dealWithResponse(response);
+			} else {
+				//bad stuff happened
+		} } }
+		//if it's not, everything will wait on the user to click the
+		//"Submit" button, which will cause a move to be made
+	}
+	
+	/**
+	Deal with responses from server
+	*/
+	self.dealWithResponses = function(res) {
+		if(res == "eliminated")
+			alert("Sorry, you lost.");
+		else if (res == ("winner:" + playerID))
+			alert("You have conquered all the planets!");
+		//LOAD THE GAMECHANGE
+	}
+	
+	self.move = function() {
+		//so for this part we need an actual GUI to get info from to make a move.
+		//This is getting frightening
+		self.request = new XMLHttpRequest();
+		self.request.open("POST", "http://" + serverIPandPort + "/move/", true)
+		//GET A MOVE!
+		self.request.send(move);
+	}
+	
+};
 
+var c = new Client();
 
-
+/* Testing stuff:
 var gs = new Gamestate();
 gs.loadXML(gsString);
 alert(gs.toString());
 var gc = new Gamechange();
 gc.loadXML(gcString);
 alert(gc.toString());
+*/
 
 // Other things to do:
-// - Communicate with the server using XMLHttpRequests
 // - Display the data we parsed through
 // - Allow user input of various kinds
+// - Look for "bad stuff happened" and insert error handling
+// - Fix Chrome issues

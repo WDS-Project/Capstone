@@ -13,7 +13,7 @@ import RandomAI
 import traceback # for printing errors to the log
 
 #command line args: playerID, difficulty, sessionID, serverIPaddr:port
-#global variables: difficulty, sessionID, serverIPandPort, gs, currentPlayer
+#global variables: difficulty, sessionID, serverIPandPort, gs
 #this client writes its status to a text file log called, conveniently,
 #"ailog.txt"
 

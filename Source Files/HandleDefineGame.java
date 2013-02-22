@@ -45,13 +45,19 @@ public class HandleDefineGame implements HttpHandler {
 			String player1IP = exchange.getRemoteAddress().getAddress().getHostAddress();
 			System.out.println("Define game request from " + player1IP);
 
-			if(req.equalsIgnoreCase("OPTIONS")) {
+			if(req.equalsIgnoreCase("OPTIONS")) { 
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
 				header.add("Access-Control-Allow-Methods", "POST");
 				header.add("Access-Control-Allow-Methods", "GET");
 				header.add("Access-Control-Allow-Methods", "OPTIONS");
 				header.add("Access-Control-Allow-Headers", "Content-Type");
+				
+				//send an ok
+				exchange.sendResponseHeaders(200,0);
+				OutputStream response = exchange.getResponseBody();	
+				response.write("ok".getBytes());
+				response.close();
 			}
 			else if(req.equalsIgnoreCase("POST")) {
 				try {

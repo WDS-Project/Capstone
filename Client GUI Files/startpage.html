@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src = "ClientGUI.js"> </script>
+
+<title>WDS Start</title>
+</head>
+<body>
+<h2>Welcome to a very primitive settings page</h2>
+
+<p></p>
+Color:
+<select id = "color" size="1">
+<option value="red">Red</option>
+<option value="green">Green</option>
+<option value="blue">Blue</option>
+</select>
+<p></p>
+
+<!--Number of AI opponents:
+<input type = "number" min = "1" max = "10" step = "1" value = "2" size = "6">
+<p></p><!-->
+
+AI Opponents : Select their difficulties. Leave fields of undesired AIs as "None."<br>
+You must play with at least 1 AI. <br><br>
+AI 1: <select id="ai1" size="1" value >
+<option value="1">Easy</option>
+<option value="2">Medium</option>
+<option value="3">Hard</option>
+</select>
+  AI 2: <select id="ai2" size="1" value >
+<option value="0">None</option>
+<option value="1">Easy</option>
+<option value="2">Medium</option>
+<option value="3">Hard</option>
+</select>
+  AI 3: <select id="ai3" size="1" value >
+<option value="0">None</option>
+<option value="1">Easy</option>
+<option value="2">Medium</option>
+<option value="3">Hard</option>
+</select>
+  AI 4: <select id="ai4" size="1" value >
+<option value="0">None</option>
+<option value="1">Easy</option>
+<option value="2">Medium</option>
+<option value="3">Hard</option>
+</select>
+  AI 5: <select id="ai5" size="1" value >
+<option value="0">None</option>
+<option value="1">Easy</option>
+<option value="2">Medium</option>
+<option value="3">Hard</option>
+</select>
+
+<p></p>
+
+<!-- right now these all refer to the same gamestate <!-->
+<br>Difficult of Game:
+<select id="gamestate" size="1">
+<option value="TestGS6">10 Planets</option>
+<option value="TestGS6">25 Planets</option>
+<option value="TestGS6">50 Planets</option>
+</select>
+<p></p>
+
+<input type="submit" value="Start Game" onClick = "c.connect()" >
+
+</body>
+</html>

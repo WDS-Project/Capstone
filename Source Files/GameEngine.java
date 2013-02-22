@@ -346,8 +346,13 @@ public class GameEngine {
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
 				Player player = players.get(key);
-				if(player.getStatus() != 0)
-					player.setResponse(player.getID() + "\n" + gs.writeToXML()); } 
+				if(player.getStatus() != 0) {
+					if(player.getID() != 1)
+						player.setResponse(player.getID() + "\n" + gs.writeToXML());
+					else
+						player.setResponse(gs.writeToXML());
+				}
+			} 
 		}
 
 		else if(stateOfGame == IN_PROGRESS) {

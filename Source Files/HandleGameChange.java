@@ -3,6 +3,7 @@
  * @author Alana
  */
 import java.io.*;
+
 import com.sun.net.httpserver.*;
 
 public class HandleGameChange implements HttpHandler {
@@ -31,6 +32,12 @@ public class HandleGameChange implements HttpHandler {
 				header.add("Access-Control-Allow-Methods", "GET");
 				header.add("Access-Control-Allow-Methods", "OPTIONS");
 				header.add("Access-Control-Allow-Headers", "Content-Type");
+				
+				//send an ok
+				exchange.sendResponseHeaders(200,0);
+				OutputStream response = exchange.getResponseBody();	
+				response.write("ok".getBytes());
+				response.close();
 			}
 			else if(req.equalsIgnoreCase("POST")) {
 				//all this header nonsense that I really don't know why we have to do
