@@ -1,0 +1,88 @@
+@CHARSET "ISO-8859-1";
+
+body {  
+	margin:0px;  
+	padding:0px;  
+	text-align:center;  
+}  
+
+canvas{  
+	outline:0;  
+	border:1px solid #000;  
+	margin-left: auto;  
+	margin-right: auto;  
+}
+
+div div {
+	padding-bottom:2px;
+	margin-bottom:5px;
+}
+
+div.result {
+	background-color:yellow;
+}
+
+div.result input {
+	background-color:#bbbbbb;
+}
+
+div.field {
+	background-color:blue;
+}
+
+label {
+	background-color:#afffaf;
+	float:left;
+	width:10em;
+	margin-right: 1em;
+}
+
+header, h1, h2, h3, h4, h5 {
+	color:#000000;
+	text-align:center;
+}
+
+li {color:rgb(50,50,255);}
+
+table, th, td
+{
+	border: 2px solid black;
+	border-collapse:collapse;
+	padding:3px;
+}
+
+th {
+	background-color:#afafff;
+}
+
+td {
+	background-color:#af5fff;
+	color:white;
+}
+
+ul, ol {
+	list-style-type:circle;
+	background-color:white;
+	width:400px;
+	border-style:outset;
+	border-color:red;
+	padding:20px 0px 20px 50px;
+
+}
+
+.center {text-align:center;}
+
+form {
+	background-color:white;
+	border-style:inset;
+	border-color:red;
+	width:400px;
+	padding:10px;
+	
+}
+
+form td, form tr, form th {
+	border-color:white;
+	background-color:white;
+	color:black;
+}
