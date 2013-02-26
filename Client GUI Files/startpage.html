@@ -2,11 +2,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script type="text/javascript" src = "ClientGUI.js"> </script>
+
 
 <title>WDS Start</title>
 </head>
 <body>
+
+<script src="ClientGUIClient.js"></script>
+<script src="ClientGUI.js"></script>
+<!--script src="ClientGUICanvas.js"></script!-->
 <h2>Welcome to a very primitive settings page</h2>
 
 <p></p>
@@ -65,7 +69,7 @@ AI 1: <select id="ai1" size="1" value >
 </select>
 <p></p>
 
-<input type="submit" value="Start Game" onClick = "c.connect()" >
+<input type="submit" value="Start Game" onClick = "client.connect()" >
 
 </body>
 </html>

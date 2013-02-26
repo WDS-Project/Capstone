@@ -145,7 +145,7 @@ var clear = function() {
 
 	try {  
 		var img = new Image();   // Create new img element
-		img.src = 'starfield.jpg'; // Set source path
+		img.src = 'X:/Capstone/Repository/Capstone/starfield.jpg'; // Set source path
 		ctx.drawImage(img, -bgmove, 0);
         } catch (err) { // If the image isn't found, color everything red.
         	// *** DOES NOT WORK IN CHROME ***
