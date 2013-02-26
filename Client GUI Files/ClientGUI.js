@@ -9,10 +9,10 @@
 // *** Step 1: Load the XML into a Javascript object. ***
 // Incidentally, our target is TestGS3.xml (as always), reproduced here in glorious massive string form.
 var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
-'<PlanetList><Planet idNum="1" name="Florida" owner="1" numFleets="5" color="#ffee33" position="35,25" radius="30" /><Planet idNum="2" name="Aruba"' +
-' owner="1" numFleets="5" color="#aabbcc" position="300,50" radius="35" /><Planet idNum="3" name="Manitoba" owner="1" numFleets="5" color="#00ffaa"'+
-' position="50,150" radius="25" /><Planet idNum="4" name="Sparta" owner="2" numFleets="5" color="#aa00ee" position="75,300" radius="25" /><Planet'+
-' idNum="5" name="Akihabara" owner="2" numFleets="5" color="#55cc11" position="300,350"	radius="30" /></PlanetList><ConnectionList><connection>1,2</connection>'+
+'<PlanetList><Planet idNum="1" name="Florida" owner="1" numFleets="5" color="#ffee33" position="135,125" radius="30" /><Planet idNum="2" name="Aruba"' +
+' owner="1" numFleets="5" color="#aabbcc" position="700,450" radius="35" /><Planet idNum="3" name="Manitoba" owner="1" numFleets="5" color="#00ffaa"'+
+' position="600,250" radius="25" /><Planet idNum="4" name="Sparta" owner="2" numFleets="5" color="#aa00ee" position="175,400" radius="25" /><Planet'+
+' idNum="5" name="Akihabara" owner="2" numFleets="5" color="#55cc11" position="400,450"	radius="30" /></PlanetList><ConnectionList><connection>1,2</connection>'+
 '<connection>1,3</connection><connection>1,4</connection><connection>1,5</connection><connection>2,3</connection><connection>2,4</connection>'+
 '<connection>2,5</connection><connection>3,4</connection><connection>3,5</connection><connection>4,5</connection></ConnectionList><RegionList>'+
 '<Region idNum="1" name="Eastern U.S." value="5" owner="0" color="#44aadd"><memberList><member>1</member><member>2</member><member>3</member>'+
@@ -21,6 +21,8 @@ var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPla
 var gcString = '<?xml version="1.0" encoding="UTF-8"?><GameChange><Players activePlayer="1" cycleNumber="1" turnNumber="1"/>' +
 '<Planets><Planet idNum="1" numFleets="4" owner="1"/><Planet idNum="2" numFleets="7" owner="1"/><Planet idNum="4" numFleets="1" owner="2"/>' +
 '</Planets></GameChange>';
+
+var drawLoop; // the game loop - see DrawLoop() below
 
 
 // *** Step 2: Load that Javascript object into actual meaningful data structures. ***
@@ -33,13 +35,20 @@ var Planet = function(el) {
 		that.idNum = Number(el.getAttribute("idNum"));
 		that.numFleets = Number(el.getAttribute("numFleets"));
 		that.owner = Number(el.getAttribute("owner"));
+		var position = el.getAttribute("position").split(',');
+		that.xPos = position[0];
+		that.yPos = position[1];
+		that.radius = el.getAttribute("radius");
+		//alert("Position: " + position + ", followed by ("+that.xPos+", "+that.yPos+")");
+		that.color = el.getAttribute("color");
 	};
 	
 	// Returns this object as a string.
 	that.toString = function() {
 		return ("Planet " + that.idNum + ", " + that.name +
 			". Owner: " + that.owner + "; number of fleets: "
-			+ that.numFleets + ".");
+			+ that.numFleets + "; position: " + that.xPos + ", "
+			+ that.yPos + "; color: " + that.color + ".");
 	};
 	
 	// Basic setup
@@ -61,6 +70,7 @@ var Region = function(el) {
 		that.idNum = Number(el.getAttribute("idNum"));
 		that.value = Number(el.getAttribute("value"));
 		that.owner = Number(el.getAttribute("owner"));
+		that.color = el.getAttribute("color");
 		var memberListEl = el.getElementsByTagName("memberList")[0];
 		var memberList = memberListEl.getElementsByTagName("member");
 		for (var i = 0; i < memberList.length; i++) {
@@ -318,10 +328,10 @@ var Client = function() {
 	self.serverIPandPort = "localhost:12345" //CHANGE THIS!!!
 	self.gs = Gamestate();
 	
-	/**
-	This function connects to the server and defines a game
-	based on the parameters chosen by the user.
-	*/
+	
+	//This function connects to the server and defines a game
+	//based on the parameters chosen by the user.
+	
 	self.connect = function() {
 		
 		//this gets the user's selected gamestate file
@@ -361,9 +371,9 @@ var Client = function() {
 		}
 	}
 	
-	/* A round of requests, that is, make a move if it's our turn, if not,
-	request a gamechange.
-	*/
+	// A round of requests, that is, make a move if it's our turn, if not,
+	// request a gamechange.
+	
 	self.go = function(){
 		//if it's not our turn, send a gamechange request
 		if(self.gs.activePlayer != self.playerID) {
@@ -381,9 +391,9 @@ var Client = function() {
 		//"Submit" button, which will cause a move to be made
 	}
 	
-	/**
-	Deal with responses from server
-	*/
+	
+	//Deal with responses from server
+	
 	self.dealWithResponses = function(res) {
 		if(res == "eliminated")
 			alert("Sorry, you lost.");
@@ -403,16 +413,28 @@ var Client = function() {
 	
 };
 
-var c = new Client();
+var cli = new Client();
 
-/* Testing stuff:
+// Testing stuff:
 var gs = new Gamestate();
 gs.loadXML(gsString);
 alert(gs.toString());
 var gc = new Gamechange();
 gc.loadXML(gcString);
 alert(gc.toString());
-*/
+
+// Main loop. Every 20ms, it redraws everything.
+var DrawLoop = function() {
+	clear();
+	
+	// Code to draw goes here
+	draw(gs); // requires ClientGUICanvas.js
+	
+	drawLoop = setTimeout(DrawLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
+};
+
+DrawLoop();
+//GameLoop();
 
 // Other things to do:
 // - Display the data we parsed through
