@@ -8,7 +8,7 @@
 // ********* How to load an XML string into the stuff we want. *********
 // *** Step 1: Load the XML into a Javascript object. ***
 // Incidentally, our target is TestGS3.xml (as always), reproduced here in glorious massive string form.
-var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
+/*var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
 '<PlanetList><Planet idNum="1" name="Florida" owner="1" numFleets="5" color="#ffee33" position="135,125" radius="30" /><Planet idNum="2" name="Aruba"' +
 ' owner="1" numFleets="5" color="#aabbcc" position="700,450" radius="35" /><Planet idNum="3" name="Manitoba" owner="1" numFleets="5" color="#00ffaa"'+
 ' position="600,250" radius="25" /><Planet idNum="4" name="Sparta" owner="2" numFleets="5" color="#aa00ee" position="175,400" radius="25" /><Planet'+
@@ -20,10 +20,9 @@ var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPla
 
 var gcString = '<?xml version="1.0" encoding="UTF-8"?><GameChange><Players activePlayer="1" cycleNumber="1" turnNumber="1"/>' +
 '<Planets><Planet idNum="1" numFleets="4" owner="1"/><Planet idNum="2" numFleets="7" owner="1"/><Planet idNum="4" numFleets="1" owner="2"/>' +
-'</Planets></GameChange>';
+'</Planets></GameChange>';*/
 
 var drawLoop; // the game loop - see DrawLoop() below
-
 
 // *** Step 2: Load that Javascript object into actual meaningful data structures. ***
 var Planet = function(el) {
@@ -250,6 +249,7 @@ var Gamestate = function() {
 		else
 			that.activePlayer = id;
 	};
+	
 };
 var Gamechange = function() {
 	var that = this;
@@ -322,29 +322,118 @@ var Move = function(playerID) {
 	that.moves = [];
 };
 
-// Testing stuff:
-//var gs = new Gamestate();
-//gs.loadXML(gsString);
-//alert(gs.toString());
-//var gc = new Gamechange();
-//gc.loadXML(gcString);
-//alert(gc.toString());
+/***********
+This is a class that handles the interaction of the client with the server.
 
-// Main loop. Every 20ms, it redraws everything.
-var DrawLoop = function() {
-	clear();
+@author Alana
+*/
+
+var Client = function() {
+	var self = this;
+	self.gs = new Gamestate();
+	self.playerID = 1; //the human player is always player 1
+	self.request;	//this is the xmlHTTP request, which is reinstantiated every time
+	self.serverIPandPort = "localhost:12345" //CHANGE THIS!!!
 	
-	// Code to draw goes here
-	draw(gs); // requires ClientGUICanvas.js
+	/**
+	This function connects to the server and defines a game
+	based on the parameters chosen by the user.
+	*/
+	self.connect = function() {
+		
+		//this gets the user's selected gamestate file
+		var gsFile = document.getElementById("gamestate");
+		var definition = gsFile.options[gsFile.selectedIndex].value + "/1/";
+		
+		//this collects all the AI difficulties
+		var counter = 0;
+		var ais = [];
+		for(var i = 1; i < 6; i++) {
+			var aiDiff = document.getElementById("ai"+i);
+			ais[i-1] = aiDiff.options[aiDiff.selectedIndex].value;
+			if(ais[i-1] > 0)
+				counter++;
+		}
+		
+		//This creates the request string
+		definition += counter;
+		for(var i = 0; i < counter; i++) 
+			definition += "/" + ais[i];	
+		definition += "/";
+		
+		//this sends the request string
+		self.request = new XMLHttpRequest();
+		if(self.request.open("POST", "http://" +self. serverIPandPort + "/definegame/", true)) {
+			self.request.send(definition);
+			
+			self.request.onreadystatechange=function()
+			{
+				if (self.request.status==200 && self.request.readyState == 4) {
+					response = self.request.responseText;
+					window.localStorage.setItem("gsString", response);
+					location.href = "gamepage.html";
+					DrawLoop(self.gs);
+				} else if (self.request.status != 200) {
+					if(confirm("A connection to the server could not be established.\n Try again? Connect"))
+						self.connect();
+				}
+			}
+		}
+		else {
+			if(confirm("A connection to the server could not be established.\n Try again? Connect"))
+						self.connect();
+		}
+	}
 	
-	drawLoop = setTimeout(DrawLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
+	/* A round of requests, that is, make a move if it's our turn, if not,
+	request a gamechange.
+	*/
+	self.go = function(){
+		//if it's not our turn, send a gamechange request
+		if(self.gs.activePlayer != self.playerID) {
+			self.request = new XMLHttpRequest();
+			self.request.open("POST", "http://" + serverIPandPort + "/gamechange/", true);
+			self.request.send(playerID);
+		self.request.onreadystatechange=function() {
+			if (self.request.status==200) {
+				response = self.request.responseText;
+				dealWithResponse(response);
+			} else {
+						if(
+				confirm("We did not successfully receive the gamechange.\n Try again?"))
+				self.go();
+		} } }
+		//if it's not, everything will wait on the user to click the
+		//"Submit" button, which will cause a move to be made
+	}
+	
+	/**
+	Deal with responses from server
+	*/
+	self.dealWithResponses = function(res) {
+		if(res == "eliminated")
+			alert("Sorry, you lost.");
+		else if (res == ("winner:" + playerID))
+			alert("You have conquered all the planets!");
+		//LOAD THE GAMECHANGE
+	}
+	
+	self.move = function() {
+		//so for this part we need an actual GUI to get info from to make a move.
+		//This is getting frightening
+		self.request = new XMLHttpRequest();
+		self.request.open("POST", "http://" + serverIPandPort + "/move/", true)
+		//GET A MOVE!
+		self.request.send(move);
+	}
+	
 };
 
-DrawLoop();
-//GameLoop();
+
+
+
 
 // Other things to do:
 // - Display the data we parsed through
 // - Allow user input of various kinds
 // - Look for "bad stuff happened" and insert error handling
-// - Fix Chrome issues

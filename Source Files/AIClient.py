@@ -3,9 +3,10 @@
 #set the playerID
 #start move loop
 
-#Note: This version is compatible with Python 2.7
+#Note: This version is compatible with Python 3.2
 
-import httplib  #for HTTP connections
+import http
+from http import client #for HTTP connections
 import sys      #for command-line arguments
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
@@ -30,17 +31,18 @@ class AIClient:
     # join a game given a session ID, also load gamestate and playerID
     def connect(self):
         try:
-            self.log.write("Connecting to " + self.serverIPandPort + "... \n")
-            connection = httplib.HTTPConnection(self.serverIPandPort)
-            self.log.write("Found the server. " + self.serverIPandPort + "\n")
-            req = "http://" + self.serverIPandPort + "/join/"
-            self.log.write("Request is " + req + self.sessionID + "/\n")
+            self.log.write(str("Connecting to " + self.serverIPandPort + "... \n"))
+            connection = http.client.HTTPConnection(self.serverIPandPort)
+            self.log.write(str("Found the server. " + self.serverIPandPort + "\n"))
+            req = "/join/"
+            self.log.write(str("Request is " + req + self.sessionID + "/\n"))
             connection.request("POST", req, self.sessionID)
-            self.log.write("Made request to join session " + self.sessionID + "\n")
-            response = connection.getresponse().read()
+            self.log.write(str("Made request to join session " + self.sessionID + "\n"))
+            response = str(connection.getresponse().read())
+            response = response[2:len(response)-1]
             self.log.write("Response is: " + response + "\n")
-            index = response.index("\n")
-            self.playerID = response[:index]
+            index = response.index("n")
+            self.playerID = response[:index-1]
             response = response[(index+1):]
             self.gs = Gamestate()
             self.log.write("Loading gamestate ...\n")
@@ -52,28 +54,26 @@ class AIClient:
     # a round of requests; ie, make a move if it's our turn, if not, request
     # a gamechange
     def go(self):
-        self.log.write("Turn: " + str(self.gs.activePlayer) + " My ID: " + str(self.playerID) + "\n")
+        self.log.write(str("Turn: " + str(self.gs.activePlayer) + " My ID: " + str(self.playerID) + "\n"))
         if(int(self.gs.activePlayer) != int(self.playerID)):
             self.log.write("It's not our turn.\n")
-            connection = httplib.HTTPConnection(self.serverIPandPort)
-            connection.request("POST", "http://" + self.serverIPandPort +
-                               "/gamechange/", self.playerID)
+            connection = http.client.HTTPConnection(self.serverIPandPort)
+            connection.request("POST", "/gamechange/", self.playerID)
             self.log.write("Therefore I have sent a gamechange request.\n")
         elif(int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
             m = RandomAI.getMove(self.gs, self.playerID)
             move = str(m)
-            self.log.write("Move: " + move + " \n")
-            connection = httplib.HTTPConnection(self.serverIPandPort)
-            connection.request("POST", "http://" + self.serverIPandPort +
-                               "/move/", move)
+            self.log.write(str("Move: " + move + " \n"))
+            connection = http.client.HTTPConnection(self.serverIPandPort)
+            connection.request("POST", "/move/", move)
 
         response = connection.getresponse().read()
         self.dealWithResponse(response)
 
     # if the game is over (for us), exit, if not, load updated gamestate 
     def dealWithResponse(self, response):
-        self.log.write("Response is: " + response + "\n")
+        self.log.write(str("Response is: " + response + "\n"))
         if(response is "eliminated" or response is ("winner:" + self.playerID)):
             self.log.close()
             sys.exit(0)
@@ -84,11 +84,11 @@ class AIClient:
 
     # yeah ... this doesnt tell us much
     def __str__(self):
-        print "player ID: " + self.playerID + " session ID: " + sessionID
+        print("player ID: " + self.playerID + " session ID: " + sessionID)
 
 def main(args):
+    ai = AIClient(args[1], args[2], args[3])
     try:
-        ai = AIClient(args[1], args[2], args[3])
         ai.connect()
         while(True):
                 ai.go()

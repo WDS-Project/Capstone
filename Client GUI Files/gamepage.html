@@ -3,21 +3,26 @@
 <html>
 <head>
 <style type = "text/css">
-body {
-	background-color:light gray;	
-}
 
 #header {
-	font-size:2em;
-	font-weight:bold;
+	font-size:3em;
+	font-family: Impact, "Courier New", Helvetica, Serif;
 	text-align:center;
-	margin:1em;	
+	margin:1em;
+	color:white;	
 }
+
 #player_controls {
 	float:left;
 	padding:1em;
-	border:2px solid green;
+	border:3px solid blue;
 	margin:1em;
+	font-family: "Courier New", Helvetica, Serif;
+	font-size:18px;
+	text-align:center;
+	width:400px;
+	height:565px;
+	background-color:#878787;
 }
 #board {
 	float:left;
@@ -26,26 +31,49 @@ body {
 #footer {
 	clear:both;
 	padding:1em;
-	border:2px solid red;
-	margin:2em;	
+	border:3px solid red;
+	margin:1em;
+	width:1250px;	
+	font-family: "Courier New", Helvetica, Serif;
+	font-size:18px;
+	font-weight:bold;
+	background-color:#878787;
 }
 
 </style>
 <title>WDS Game Screen</title>
 
 </head>
-<body>  
-	<div id = "header"> Primitive Game Screen </div>
-	<div id = "player_controls"> So this is a player control area. 
-		<input type = "submit" value = "Submit Move" id = "submitButton">
+<body background = "background.jpg">  
+	<div id = "header"> World Domination Simulator </div>
+	<div id = "player_controls"> <b>Player Controls</b> <br>
+	<b>_____________________________________</b><br><br>
+	<input type = "submit" value = "Submit Move" id = "submitButton"
+	style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
+	font-weight:bold; display:table-cell; vertical-align:bottom;">
 	</div>
 	<div id = "board">
-		<canvas id="c">This should work.</canvas>  
-		<script src="ClientGUICanvas.js"></script>
-		<script src="ClientGUI.js"></script>
-		<script src="ClientGUIClient.js"></script>
+	<canvas id="c" style="border: solid 3px green;"></canvas>  
+	<script src="ClientGUI.js"> </script>
+	<script src="ClientGUICanvas.js"></script>
+	<script type = "text/javascript"> 
+		var DrawLoop = function() {
+			clear();
+
+			// Code to draw goes here
+			draw(client.gs); // requires ClientGUICanvas.js
+			drawLoop = setTimeout(DrawLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
+		};
+
+	var client;
+	client = new Client();
+	client.gs.loadXML(window.localStorage.getItem("gsString"));
+	DrawLoop();
+
+	// Main loop. Every 20ms, it redraws everything
+	</script>
 	</div>
-	<div id = "footer"> And this is the footer. Everyone loved everything. </div>
- 
+	<div id = "footer"> Click and drag to see all planets.<br>To begin, click on a planet and select the number of fleets to deploy.  
+	Max is 5.</div>
 </body>
 </html>

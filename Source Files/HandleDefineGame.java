@@ -54,7 +54,7 @@ public class HandleDefineGame implements HttpHandler {
 				header.add("Access-Control-Allow-Headers", "Content-Type");
 				
 				//send an ok
-				exchange.sendResponseHeaders(200,0);
+				exchange.sendResponseHeaders(300,0);
 				OutputStream response = exchange.getResponseBody();	
 				response.write("ok".getBytes());
 				response.close();

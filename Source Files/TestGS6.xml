@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Gamestate>
-	<Players numPlayers="3" activePlayer="0" turnNumber="0" cycleNumber="0"/>
+	<Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>
 	<PlanetList>
 		<Planet
 			idNum="1"
 			name="X"
-			owner="1"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#ffee33"
 			position="35,25"
-			radius="30"
+			radius="20"
 		/>
 		<Planet
 			idNum="2"
 			name="Y"
-			owner="1"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#aabbcc"
 			position="300,50"
 			radius="35"
@@ -23,8 +23,8 @@
 		<Planet
 			idNum="3"
 			name="Z"
-			owner="2"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#00ffaa"
 			position="50,150"
 			radius="25"
@@ -32,8 +32,8 @@
 		<Planet
 			idNum="4"
 			name="W"
-			owner="2"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#aa00ee"
 			position="75,300"
 			radius="25"
@@ -41,8 +41,8 @@
 		<Planet
 			idNum="5"
 			name="S"
-			owner="3"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#55cc11"
 			position="300,350"
 			radius="30"
@@ -50,11 +50,65 @@
                 <Planet
 			idNum="6"
 			name="T"
-			owner="3"
-			numFleets="5"
+			owner="0"
+			numFleets="0"
 			color="#55cc11"
 			position="300,350"
 			radius="30"
+		/>
+		 <Planet
+			idNum="7"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#fffff"
+			position="500,730"
+			radius="20"
+		/>
+		 <Planet
+			idNum="8"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#fffff"
+			position="500,350"
+			radius="35"
+		/>
+		 <Planet
+			idNum="8"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#11c68"
+			position="750,25"
+			radius="20"
+		/>
+		 <Planet
+			idNum="10"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#f2f2f2"
+			position="600,500"
+			radius="15"
+		/>
+		 <Planet
+			idNum="11"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#56789"
+			position="900,700"
+			radius="20"
+		/>
+		 <Planet
+			idNum="12"
+			name="T"
+			owner="0"
+			numFleets="0"
+			color="#5g7e2"
+			position="500,730"
+			radius="20"
 		/>
 	</PlanetList>
 	<ConnectionList>
@@ -69,6 +123,16 @@
 		<connection>3,4</connection>
 		<connection>3,5</connection>
 		<connection>4,5</connection>
+		<connection>4,7</connection>
+		<connection>2,8</connection>
+		<connection>3,9</connection>
+		<connection>8,9</connection>
+		<connection>5,10</connection>
+		<connection>6,11</connection>
+		<connection>7,12</connection>
+		<connection>8,12</connection>
+		<connection>11,12</connection>
+		<connection>6,11</connection>
 	</ConnectionList>
 	<RegionList>
 		<Region
@@ -93,6 +157,21 @@
 				<member>4</member>
 				<member>5</member>
 				<member>6</member>
+				<member>7</member>
+			</memberList>
+		</Region>
+		 <Region
+			idNum="3"
+			name="Inner Space"
+			value="5"
+			owner="0"
+			color="#44aadd">
+			<memberList>
+				<member>8</member>
+				<member>9</member>
+				<member>10</member>
+				<member>11</member>
+				<member>12</member>
 			</memberList>
 		</Region>
 	</RegionList>
