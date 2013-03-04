@@ -54,26 +54,26 @@
 	</div>
 	<div id = "board">
 	<canvas id="c" style="border: solid 3px green;"></canvas>  
-	<script src="ClientGUI.js"> </script>
-	<script src="ClientGUICanvas.js"></script>
-	<script type = "text/javascript"> 
-		var DrawLoop = function() {
-			clear();
-
-			// Code to draw goes here
-			draw(client.gs); // requires ClientGUICanvas.js
-			drawLoop = setTimeout(DrawLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
-		};
-
-	var client;
-	client = new Client();
-	client.gs.loadXML(window.localStorage.getItem("gsString"));
-	DrawLoop();
-
-	// Main loop. Every 20ms, it redraws everything
-	</script>
 	</div>
 	<div id = "footer"> Click and drag to see all planets.<br>To begin, click on a planet and select the number of fleets to deploy.  
 	Max is 5.</div>
 </body>
+<script src="ClientGUI.js"> </script>
+<script src="ClientGUICanvas.js"></script>
+<script type = "text/javascript">
+	var client = new Client();
+	var gs = new Gamestate();
+	// For testing purposes
+	gs.loadXML(gsString);
+	
+	var drawLoop;
+	var DrawLoop = function() {
+		clear();
+		draw(gs); // requires ClientGUICanvas.js
+		drawLoop = setTimeout(DrawLoop, 1000/50); // when 20ms have passed, recurse & redraw (50fps max)
+	};
+	
+	DrawLoop(); // Main loop. Every 20ms, it redraws everything
+</script>
+
 </html>
