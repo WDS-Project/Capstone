@@ -64,7 +64,8 @@
 	var client = new Client();
 	var gs = new Gamestate();
 	// For testing purposes
-	gs.loadXML(gsString);
+	//gs.loadXML(gsString);
+	gs.loadXML(window.localStorage.getItem("gsString"));
 	
 	var drawLoop;
 	var DrawLoop = function() {

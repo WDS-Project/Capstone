@@ -8,7 +8,7 @@
 // ********* How to load an XML string into the stuff we want. *********
 // *** Step 1: Load the XML into a Javascript object. ***
 // Incidentally, our target is TestGS3.xml (as always), reproduced here in glorious massive string form.
-var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
+/*var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
 '<PlanetList><Planet idNum="1" name="Florida" owner="1" numFleets="5" color="#ffee33" position="135,125" radius="30" /><Planet idNum="2" name="Aruba"' +
 ' owner="1" numFleets="5" color="#aabbcc" position="700,450" radius="35" /><Planet idNum="3" name="Manitoba" owner="1" numFleets="5" color="#00ffaa"'+
 ' position="600,250" radius="25" /><Planet idNum="4" name="Sparta" owner="2" numFleets="5" color="#aa00ee" position="175,400" radius="25" /><Planet'+
@@ -20,7 +20,7 @@ var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPla
 
 var gcString = '<?xml version="1.0" encoding="UTF-8"?><GameChange><Players activePlayer="1" cycleNumber="1" turnNumber="1"/>' +
 '<Planets><Planet idNum="1" numFleets="4" owner="1"/><Planet idNum="2" numFleets="7" owner="1"/><Planet idNum="4" numFleets="1" owner="2"/>' +
-'</Planets></GameChange>';
+'</Planets></GameChange>';*/
 
 var drawLoop; // the game loop - see DrawLoop() below
 
@@ -547,7 +547,7 @@ var Client = function() {
 	//self.gs = new Gamestate();
 	self.playerID = 1; //the human player is always player 1
 	self.request;	//this is the xmlHTTP request, which is reinstantiated every time
-	self.serverIPandPort = "localhost:12345" //CHANGE THIS!!!
+	self.serverIPandPort = "localhost:12345"; //CHANGE THIS!!!
 	
 	// This function connects to the server and defines a game
 	// based on the parameters chosen by the user.
@@ -576,7 +576,8 @@ var Client = function() {
 		
 		//this sends the request string
 		self.request = new XMLHttpRequest();
-		if(self.request.open("POST", "http://" +self. serverIPandPort + "/definegame/", true)) {
+		alert("http://" + self.serverIPandPort + "/definegame/");
+		self.request.open("POST", "http://" + self.serverIPandPort + "/definegame/", true)
 			self.request.send(definition);
 			
 			self.request.onreadystatechange=function()
@@ -585,18 +586,13 @@ var Client = function() {
 					response = self.request.responseText;
 					window.localStorage.setItem("gsString", response);
 					location.href = "gamepage.html";
-					DrawLoop(gs);
 				} else if (self.request.status != 200) {
-					if(confirm("A connection to the server could not be established.\n Try again? Connect"))
+					if(confirm("A connection to the server could not be established.\n Try again?"))
 						self.connect();
 				}
 			}
+
 		}
-		else {
-			if(confirm("A connection to the server could not be established.\n Try again? Connect"))
-						self.connect();
-		}
-	}
 	
 	// A round of requests, that is, make a move if it's our turn, if not,
 	// request a gamechange.
