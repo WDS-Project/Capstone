@@ -46,11 +46,16 @@
 </head>
 <body background = "background.jpg">  
 	<div id = "header"> World Domination Simulator </div>
-	<div id = "player_controls"> <b>Player Controls</b> <br>
-	<b>_____________________________________</b><br><br>
-	<input type = "submit" value = "Submit Move" id = "submitButton"
-	style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
-	font-weight:bold; display:table-cell; vertical-align:bottom;">
+	<div id = "player_controls"> 
+		<div id = "move_list" >
+		<b>Player Controls</b> <br>
+		<b>_____________________________________</b><br><br>
+		</div>
+	
+		<div id = "button" style = " bottom: 0; text-align:center;">
+		<input type = "submit" value = "End Deployment" id = "submitButton"
+		style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
+		font-weight:bold; " onclick = "client.endDeploy();"> </div>
 	</div>
 	<div id = "board">
 	<canvas id="c" style="border: solid 3px green;"></canvas>  
@@ -63,8 +68,6 @@
 <script type = "text/javascript">
 	var client = new Client();
 	var gs = new Gamestate();
-	// For testing purposes
-	//gs.loadXML(gsString);
 	gs.loadXML(window.localStorage.getItem("gsString"));
 	
 	var drawLoop;

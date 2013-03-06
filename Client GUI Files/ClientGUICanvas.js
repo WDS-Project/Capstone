@@ -16,6 +16,7 @@
 var 	canvas = document.getElementById('c'), // Canvas variable
 	ctx = canvas.getContext('2d'), // drawing context of the canvas
 	selection, // ID of currently selected planet
+	connectionSelect, //connection object selected by user currently
 	moves = []; // planned moves
 
 // ****** Note: eventually, the size of view & world will need to be determinet from XML
@@ -80,16 +81,23 @@ canvas.onclick = function(e) {
 
 	for (var i = 1; i < gs.pList.length; i++) {
 		if (gs.pList[i].isInside(mouse.xCanv, mouse.yCanv)) {
-			selection = i;
-			gs.setActivePlanet(i);
+			if(client.deployment == true)
+				client.deploy(i); //we're in deployment, so all we need is a planet
+							//otherwise wait for a connection to be clicked
+			else {
+				selection = i;
+				gs.setActivePlanet(i);
+			}				
 			return;
-			//alert("Clicked planet " +selection);
 		}
 	}
-	for (var i = 1; i < gs.cList.length; i++) {
-		if (gs.cList[i].isInside(mouse.xCanv, mouse.yCanv)) {
-			alert("Clicked connection "+i+": "+gs.cList[i].toString());
-			return;
+	
+	if(selection != null) {
+		for (var i = 1; i < gs.cList.length; i++) {
+			if (gs.cList[i].isInside(mouse.xCanv, mouse.yCanv)) {
+				client.addMove(gs.cList[i]);
+				return;
+			}
 		}
 	}
 	

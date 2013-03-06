@@ -529,7 +529,7 @@ var Move = function(playerID) {
 	
 	// Adds a move to this Move object.
 	self.addMove = function(sourceID, destID, numFleets) {
-		move.push( [sourceID, destID, numFleets] );
+		self.moves.push( [sourceID, destID, numFleets] );
 	};
 	
 	// Sets fields to default values.
@@ -548,6 +548,9 @@ var Client = function() {
 	self.playerID = 1; //the human player is always player 1
 	self.request;	//this is the xmlHTTP request, which is reinstantiated every time
 	self.serverIPandPort = "localhost:12345"; //CHANGE THIS!!!
+	self.deployment = true; //for move states
+	self.count = 0; //for counting up to quota
+	self.currentMove = new Move(self.playerID);
 	
 	// This function connects to the server and defines a game
 	// based on the parameters chosen by the user.
@@ -576,7 +579,6 @@ var Client = function() {
 		
 		//this sends the request string
 		self.request = new XMLHttpRequest();
-		alert("http://" + self.serverIPandPort + "/definegame/");
 		self.request.open("POST", "http://" + self.serverIPandPort + "/definegame/", true)
 			self.request.send(definition);
 			
@@ -604,36 +606,128 @@ var Client = function() {
 			self.request.open("POST", "http://" + serverIPandPort + "/gamechange/", true);
 			self.request.send(playerID);
 			self.request.onreadystatechange=function() {
-				if (self.request.status==200) {
+				if (self.request.status==200 && self.request.readyState == 4) {
 					response = self.request.responseText;
-					dealWithResponse(response);
-				} else {
+					self.dealWithResponse(response);
+				} else if (self.request.status != 200) {
 					if(confirm("We did not successfully receive the gamechange.\n Try again?"))
 					self.go();
 				}
 			}
 		}
-		//if it's not, everything will wait on the user to click the
-		//"Submit" button, which will cause a move to be made
+		//if it is, everything will wait on the user to click the
+		//"Submit" button, which will cause a move to be made, and the move is automatically
+		//in deployment phase
 	}
 	
 	// Deal with responses from server
-	
 	self.dealWithResponses = function(res) {
 		if(res == "eliminated")
 			alert("Sorry, you lost.");
 		else if (res == ("winner:" + playerID))
 			alert("You have conquered all the planets!");
-		//LOAD THE GAMECHANGE
+		
+		alert(res);
+		var gc = new Gamechange();
+		gc.loadXML(res);
+		gs.update(gc);
+		alert(gs.toString());
 	}
 	
-	self.move = function() {
-		//so for this part we need an actual GUI to get info from to make a move.
-		//This is getting frightening
+	self.deploy = function(source) {
+		//see if the planet we clicked on is one of our own
+		//if not, just ignore the click
+		var planet = gs.pList[source];
+		if(planet.owner != self.playerID) 
+			return;
+				
+		//self.deployment is true; set this to false if quota expended or the user ends the phase
+		quota = gs.getPlayerQuota(self.playerID);
+		
+		if(self.deployment) { 
+			//display a pop-up and get number of fleets
+			var fleets = prompt("Enter number of fleets to deploy to " + planet.name);
+			fleets = Number(fleets);
+			
+			self.count += fleets;
+			planet.numFleets += fleets;
+			
+			self.currentMove.addMove(0, source, fleets);
+			
+			document.getElementById("move_list").innerHTML += 
+			("Deployed " + fleets + " fleets to " + planet.name + "<br><br>");
+			
+			document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
+				"or click End Deployment to move to attack phase. " +
+				"<br>Remaining fleets: " + (quota - self.count);
+		}
+		
+		if(self.count == quota)
+			self.endDeploy();
+	}
+	
+	self.endDeploy = function() {
+		self.deployment = false;
+		self.count = 0;
+		
+		document.getElementById("submitButton").value = "Submit Move";
+		document.getElementById("submitButton").onclick = client.submitMove;
+		
+		document.getElementById("footer").innerHTML = "Click on a planet you own to see connected planets.<br>" +
+			"Click on an arrow to attack.";
+	}
+	
+	self.addMove = function(connection) {		
+		var source, dest;
+		if(connection.state == 1) {
+			source = connection.p1;
+			dest = connection.p2;
+		}
+		else if(connection.state == 2) {
+			source = connection.p2;
+			dest = connection.p1;
+		}
+		
+		if(gs.pList[source].owner != self.playerID)
+			return; //do nothing
+		
+		var fleets = Number(prompt("Enter number of fleets to use to attack " + gs.pList[dest].name));
+		
+		if(fleets == 0) {
+			alert("FLEETS IS 0");
+			return;
+		}
+		
+		if(fleets > gs.pList[source].numFleets) {
+			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
+			return;
+		}
+		
+		self.currentMove.addMove(source, dest, fleets);
+		
+		document.getElementById("move_list").innerHTML += 
+			("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+		
+	}
+	
+	self.submitMove = function() {
 		self.request = new XMLHttpRequest();
-		self.request.open("POST", "http://" + serverIPandPort + "/move/", true)
-		//GET A MOVE!
+		self.request.open("POST", "http://" + self.serverIPandPort + "/move/", true)
+		var move = self.currentMove.toString();
+		alert(move);
 		self.request.send(move);
+		
+		self.request.onreadystatechange=function() {
+			if (self.request.status==200 && self.request.readyState == 4) {
+				response = self.request.responseText;
+				self.dealWithResponse(response);
+			} else {
+				if(confirm("We did not successfully receive the gamechange.\n Try again?"))
+				self.go();
+			}
+		}
+		self.deployment = true;
+		self.currentMove = new Move();
 	}
 	
 };

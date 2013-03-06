@@ -243,9 +243,10 @@ public class Gamestate {
 	 * Each planet gets a default 1 fleet after being distributed.
 	 */
 	public void distributePlanets() {
+			int minFleets = 1;
 			//start with a random player
 			Random rand = new Random();
-			int player = rand.nextInt(playerList.length-2) + 1; //this goes from 0 to numPlayers + 1
+			int player = rand.nextInt(playerList.length-1) + 1; //this goes from 0 to numPlayers + 1
 			
 			//shuffle planets
 			ArrayList<Integer> planetIDs = new ArrayList<Integer>();
@@ -254,8 +255,8 @@ public class Gamestate {
 			
 			//loop through planets and distribute them
 			for(int i : planetIDs) {
-				updatePlanet(i, 1, player);
-				player = (player + 1) % playerList.length - 1; 
+				updatePlanet(i, minFleets, player);
+				player = (player + 1) % (playerList.length - 1); 
 				if(player == 0) player = playerList.length -1; //if it's 0, it's the length, which is the last player ID
 			}
 	}
