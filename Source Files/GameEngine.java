@@ -340,6 +340,7 @@ public class GameEngine {
 		//If the game hasn't started yet, send everyone a Gamestate
 		if(stateOfGame == NOT_STARTED) {
 			//distribute planets here
+			//System.out.println("Now distributing planets...");
 			gs.distributePlanets();
 			
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
@@ -351,7 +352,9 @@ public class GameEngine {
 					else
 						player.setResponse(gs.writeToXML());
 				}
-			} 
+			}
+			//System.out.println("Done distributing planets.");
+			//System.out.println(gs);
 		}
 
 		else if(stateOfGame == IN_PROGRESS) {

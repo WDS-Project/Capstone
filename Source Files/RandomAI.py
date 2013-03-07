@@ -69,13 +69,3 @@ def getOwnedPlanets(gs, idNum):
         if p.owner is idNum:
             ownedPlanets.append(p.idNum)
     return ownedPlanets
-
-def main():
-    global gs
-    gs = Gamestate()
-    gs.loadXML("TestGS.xml")
-    idNum = 1
-    print(getMove(gs, idNum))
-
-if __name__ == '__main__':
-    main()

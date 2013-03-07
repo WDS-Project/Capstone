@@ -381,9 +381,9 @@ var Gamestate = function() {
 		self.cycleNumber = change.cycleNumber;
 		self.activePlayer = change.activePlayer;
 		for (var i = 0; i < change.changes.length; i++) {
-			var p = self.pList[change.changes[0]];
-			p.owner = change.changes[1];
-			p.numFleets = change.changes[2];
+			var p = self.pList[change.changes[i][0]];
+			p.owner = change.changes[i][1];
+			p.numFleets = change.changes[i][2];
 		}
 		self.updateRegions();
 	};
@@ -446,6 +446,10 @@ var Gamestate = function() {
 		var regionList = regionListEl.getElementsByTagName("Region");
 		for (var i = 0; i < regionList.length; i++)
 			self.rList.push(new Region(regionList[i]));
+		
+		// 5. Set player colors - HIGHLY PRELIMINARY
+		for (var i = 1; i < self.pList.length; i++)
+			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
@@ -532,6 +536,11 @@ var Move = function(playerID) {
 		self.moves.push( [sourceID, destID, numFleets] );
 	};
 	
+	// Clears all moves from this object.
+	self.clear = function() {
+		self.moves = [];
+	};
+	
 	// Sets fields to default values.
 	self.playerID = playerID;
 	self.moves = [];
@@ -610,6 +619,7 @@ var Client = function() {
 					response = self.request.responseText;
 					self.dealWithResponse(response);
 				} else if (self.request.status != 200) {
+					alert("Response status: " + self.request.status);
 					if(confirm("We did not successfully receive the gamechange.\n Try again?"))
 					self.go();
 				}
@@ -621,10 +631,10 @@ var Client = function() {
 	}
 	
 	// Deal with responses from server
-	self.dealWithResponses = function(res) {
+	self.dealWithResponse = function(res) {
 		if(res == "eliminated")
 			alert("Sorry, you lost.");
-		else if (res == ("winner:" + playerID))
+		else if (res == ("winner:" + self.playerID))
 			alert("You have conquered all the planets!");
 		
 		alert(res);
@@ -701,7 +711,8 @@ var Client = function() {
 		if(fleets > gs.pList[source].numFleets) {
 			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
 			return;
-		}
+		} else
+			gs.pList[source].numFleets -= fleets;
 		
 		self.currentMove.addMove(source, dest, fleets);
 		
@@ -721,15 +732,25 @@ var Client = function() {
 			if (self.request.status==200 && self.request.readyState == 4) {
 				response = self.request.responseText;
 				self.dealWithResponse(response);
-			} else {
+			} else if (self.request.status != 200) {
 				if(confirm("We did not successfully receive the gamechange.\n Try again?"))
 				self.go();
 			}
 		}
+		
+		// Reset for deployment
 		self.deployment = true;
-		self.currentMove = new Move();
+		self.currentMove.clear();
+		document.getElementById("submitButton").value = "End Deployment";
+		document.getElementById("submitButton").onclick = client.endDeploy;
+		
+		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
+				"or click End Deployment to move to attack phase. " +
+				"<br>Remaining fleets: " + (quota - self.count);
+				
+		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
+			"<b>_____________________________________</b><br><br>";
 	}
-	
 };
 
 

@@ -16,13 +16,14 @@ import traceback # for printing errors to the log
 #command line args: playerID, difficulty, sessionID, serverIPaddr:port
 #global variables: difficulty, sessionID, serverIPandPort, gs
 #this client writes its status to a text file log called, conveniently,
-#"ailog.txt"
+#"log#.txt"
 
 class AIClient:
 
     # self-explanatory constructor 
     def __init__(self, diff, sID, IPnPort):
-        self.log = open('X:\Capstone\Repository\Capstone\log'+str(diff)+'.txt', 'w')
+        self.log = open('log'+str(diff)+'.txt', 'w')
+        #self.log = open('log1.txt', 'w')
         self.log.write("AI created.\n")
         self.difficulty = diff
         self.sessionID = sID
@@ -36,6 +37,7 @@ class AIClient:
             self.log.write(str("Found the server. " + self.serverIPandPort + "\n"))
             req = "/join/"
             self.log.write(str("Request is " + req + self.sessionID + "/\n"))
+            self.log.write(self.difficulty+" "+self.sessionID+" "+self.serverIPandPort)
             connection.request("POST", req, self.sessionID)
             self.log.write(str("Made request to join session " + self.sessionID + "\n"))
             response = str(connection.getresponse().read())
@@ -73,7 +75,7 @@ class AIClient:
 
     # if the game is over (for us), exit, if not, load updated gamestate 
     def dealWithResponse(self, response):
-        self.log.write(str("Response is: " + response + "\n"))
+        self.log.write(str("Response is: " + str(response) + "\n"))
         if(response is "eliminated" or response is ("winner:" + self.playerID)):
             self.log.close()
             sys.exit(0)

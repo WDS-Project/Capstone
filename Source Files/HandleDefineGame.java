@@ -170,9 +170,11 @@ class PythonStarter implements Runnable {
 	public void run() {
 		try{
 			System.out.println("Starting an AI!");
-			pythonProc = Runtime.getRuntime().exec("cmd /c python X:/Capstone/Repository/Capstone/\"Source Files\"/AIClient.py " 
+			pythonProc = Runtime.getRuntime().exec("cmd /c python AIClient.py "
+			//pythonProc = Runtime.getRuntime().exec("cmd /c python X:/Capstone/Server/AIClient.py "
 					+ difficulty + " " + sessionID + " " +
 					serverIP + ":" + serverPort);
+			System.out.println("Now we are waiting to hear from it.");
 		}
 		catch(IOException e) {
 			e.printStackTrace();	
