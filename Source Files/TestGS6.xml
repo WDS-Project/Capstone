@@ -4,7 +4,7 @@
 	<PlanetList>
 		<Planet
 			idNum="1"
-			name="X"
+			name="Alpha"
 			owner="0"
 			numFleets="0"
 			color="#ffee33"
@@ -13,7 +13,7 @@
 		/>
 		<Planet
 			idNum="2"
-			name="Y"
+			name="Beta"
 			owner="0"
 			numFleets="0"
 			color="#aabbcc"
@@ -22,7 +22,7 @@
 		/>
 		<Planet
 			idNum="3"
-			name="Z"
+			name="Gamma"
 			owner="0"
 			numFleets="0"
 			color="#00ffaa"
@@ -31,7 +31,7 @@
 		/>
 		<Planet
 			idNum="4"
-			name="W"
+			name="Delta"
 			owner="0"
 			numFleets="0"
 			color="#aa00ee"
@@ -40,7 +40,7 @@
 		/>
 		<Planet
 			idNum="5"
-			name="S"
+			name="Epsilon"
 			owner="0"
 			numFleets="0"
 			color="#55cc11"
@@ -49,7 +49,7 @@
 		/>
                 <Planet
 			idNum="6"
-			name="T"
+			name="Zeta"
 			owner="0"
 			numFleets="0"
 			color="#55cc11"
@@ -58,7 +58,7 @@
 		/>
 		 <Planet
 			idNum="7"
-			name="T"
+			name="Eta"
 			owner="0"
 			numFleets="0"
 			color="#fffff"
@@ -67,7 +67,7 @@
 		/>
 		 <Planet
 			idNum="8"
-			name="T"
+			name="Theta"
 			owner="0"
 			numFleets="0"
 			color="#fffff"
@@ -75,8 +75,8 @@
 			radius="35"
 		/>
 		 <Planet
-			idNum="8"
-			name="T"
+			idNum="9"
+			name="Iota"
 			owner="0"
 			numFleets="0"
 			color="#11c68"
@@ -85,7 +85,7 @@
 		/>
 		 <Planet
 			idNum="10"
-			name="T"
+			name="Kappa"
 			owner="0"
 			numFleets="0"
 			color="#f2f2f2"
@@ -94,7 +94,7 @@
 		/>
 		 <Planet
 			idNum="11"
-			name="T"
+			name="Lambda"
 			owner="0"
 			numFleets="0"
 			color="#56789"
@@ -103,7 +103,7 @@
 		/>
 		 <Planet
 			idNum="12"
-			name="T"
+			name="Mu"
 			owner="0"
 			numFleets="0"
 			color="#5g7e2"
