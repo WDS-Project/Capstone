@@ -37,6 +37,8 @@ def generateMoves(gs, move):
             continue # only make one move per planet
 
         # generates a random number of fleets, 1 <= n < total fleets available
+        if(gs.pList[sourceID].numFleets == 1):
+            continue
         numFleets = random.randint(1, gs.pList[sourceID].numFleets - 1)
         move.addMove(sourceID, destID, numFleets)
         moveCount -= 1
