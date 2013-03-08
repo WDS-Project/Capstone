@@ -53,7 +53,7 @@
 			owner="0"
 			numFleets="0"
 			color="#55cc11"
-			position="300,350"
+			position="250,1000"
 			radius="30"
 		/>
 		 <Planet
@@ -107,7 +107,7 @@
 			owner="0"
 			numFleets="0"
 			color="#5g7e2"
-			position="500,730"
+			position="500,900"
 			radius="20"
 		/>
 	</PlanetList>

@@ -715,10 +715,19 @@ var Client = function() {
 		if(gs.pList[source].owner != self.playerID)
 			return; //do nothing
 		
-		var fleets = Number(prompt("Enter number of fleets to use to attack " + gs.pList[dest].name));
+		var fleets;
+		if(gs.pList[dest] == self.playerID)
+			fleets = Number(prompt("Enter number of fleets to use to reinforce " + gs.pList[dest].name));
+		else
+			fleets = Number(prompt("Enter number of fleets to use to reinforce " + gs.pList[dest].name));
 		
-		if(fleets == 0) {
-			alert("FLEETS IS 0");
+		if(fleets == null)
+			return;
+		
+		fleets = Number(fleets);
+		
+		if(isNaN(fleets)){
+			alert("ENTER A NUMBER DUMMY!");
 			return;
 		}
 		
