@@ -137,7 +137,7 @@
 	<RegionList>
 		<Region
 			idNum="1"
-			name="Outer Space"
+			name="Greece"
 			value="5"
 			owner="0"
 			color="#44aadd">
@@ -149,7 +149,7 @@
 		</Region>
                 <Region
 			idNum="2"
-			name="Inner Space"
+			name="Turkey"
 			value="5"
 			owner="0"
 			color="#44aadd">
@@ -162,7 +162,7 @@
 		</Region>
 		 <Region
 			idNum="3"
-			name="Inner Space"
+			name="Southeast Asia"
 			value="5"
 			owner="0"
 			color="#44aadd">
