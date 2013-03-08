@@ -612,8 +612,8 @@ var Client = function() {
 		//if it's not our turn, send a gamechange request
 		if(gs.activePlayer != self.playerID) {
 			self.request = new XMLHttpRequest();
-			self.request.open("POST", "http://" + serverIPandPort + "/gamechange/", true);
-			self.request.send(playerID);
+			self.request.open("POST", "http://" +self.serverIPandPort + "/gamechange/", true);
+			self.request.send(self.playerID);
 			self.request.onreadystatechange=function() {
 				if (self.request.status==200 && self.request.readyState == 4) {
 					response = self.request.responseText;
@@ -657,7 +657,16 @@ var Client = function() {
 		if(self.deployment) { 
 			//display a pop-up and get number of fleets
 			var fleets = prompt("Enter number of fleets to deploy to " + planet.name);
+			
+			if(fleets == null)
+				return;
+			
 			fleets = Number(fleets);
+			
+			if(isNaN(fleets)){
+				alert("ENTER A NUMBER DUMMY!");
+				return;
+			}
 			
 			if(fleets > quota || fleets < 1) {
 				alert("You must deploy between 1 and " + quota + " fleets.");
@@ -737,9 +746,10 @@ var Client = function() {
 			if (self.request.status==200 && self.request.readyState == 4) {
 				response = self.request.responseText;
 				self.dealWithResponse(response);
+				self.go();
 			} else if (self.request.status != 200) {
 				if(confirm("We did not successfully receive the gamechange.\n Try again?"))
-				self.go();
+				self.submitMove();
 			}
 		}
 		
