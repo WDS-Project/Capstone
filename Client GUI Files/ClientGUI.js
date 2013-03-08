@@ -659,6 +659,11 @@ var Client = function() {
 			var fleets = prompt("Enter number of fleets to deploy to " + planet.name);
 			fleets = Number(fleets);
 			
+			if(fleets > quota || fleets < 1) {
+				alert("You must deploy between 1 and " + quota + " fleets.");
+				return;
+			}
+			
 			self.count += fleets;
 			planet.numFleets += fleets;
 			
