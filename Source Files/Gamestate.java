@@ -386,7 +386,7 @@ public class Gamestate {
 		int index = 0;
 		for (int i : playerList)
 			if (playerList[i] == 1)
-				result[index++] = i+1;
+				result[index++] = i;
 
 		return result;
 	}

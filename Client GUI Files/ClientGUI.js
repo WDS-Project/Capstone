@@ -146,8 +146,8 @@ var Connection = function(el) {
 	self.isInside = function(xClick, yClick) {
 		if (self.direct == 0) return false; // connection inactive
 		var p = {x:xClick, y:yClick};
-		var rPts = self.shapes[self.state].rPts;
-		var tPts = self.shapes[self.state].tPts;
+		var rPts = self.shapes[self.direct].rPts;
+		var tPts = self.shapes[self.direct].tPts;
 		return (self.pointIsInside(tPts[0], tPts[1], tPts[2], p)
 			|| self.pointIsInside(rPts[0], rPts[1], rPts[2], p)
 			|| self.pointIsInside(rPts[0], rPts[2], rPts[3], p));
@@ -660,11 +660,9 @@ var Client = function() {
 		else if (res == ("winner:" + self.playerID))
 			alert("You have conquered all the planets!");
 		
-		alert(res);
 		var gc = new Gamechange();
 		gc.loadXML(res);
 		gs.update(gc);
-		alert(gs.toString());
 	}
 	
 	self.deploy = function(source) {
@@ -675,7 +673,7 @@ var Client = function() {
 			return;
 				
 		//self.deployment is true; set this to false if quota expended or the user ends the phase
-		quota = gs.getPlayerQuota(self.playerID);
+		var quota = gs.getPlayerQuota(self.playerID);
 		
 		if(self.deployment) { 
 			//display a pop-up and get number of fleets
@@ -724,13 +722,13 @@ var Client = function() {
 			"Click on an arrow to attack.";
 	}
 	
-	self.addMove = function(connection) {		
+	self.addMove = function(connection) {			
 		var source, dest;
-		if(connection.state == 1) {
+		if(connection.direct == 1) {
 			source = connection.p1;
 			dest = connection.p2;
 		}
-		else if(connection.state == 2) {
+		else if(connection.direct == 2) {
 			source = connection.p2;
 			dest = connection.p1;
 		}
@@ -739,10 +737,10 @@ var Client = function() {
 			return; //do nothing
 		
 		var fleets;
-		if(gs.pList[dest] == self.playerID)
-			fleets = Number(prompt("Enter number of fleets to use to reinforce " + gs.pList[dest].name));
+		if(connection.status == 1) 
+			fleets = prompt("Enter number of fleets to use to reinforce " + gs.pList[dest].name);
 		else
-			fleets = Number(prompt("Enter number of fleets to use to reinforce " + gs.pList[dest].name));
+			fleets = prompt("Enter number of fleets to use to attack " + gs.pList[dest].name);
 		
 		if(fleets == null)
 			return;
@@ -762,8 +760,13 @@ var Client = function() {
 		
 		self.currentMove.addMove(source, dest, fleets);
 		
-		document.getElementById("move_list").innerHTML += 
-			("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+		if(connection.status == 1) {
+			document.getElementById("move_list").innerHTML += 
+				("Reinforce " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+		} else {
+			document.getElementById("move_list").innerHTML += 
+				("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+		}
 		
 	}
 	
@@ -771,7 +774,6 @@ var Client = function() {
 		self.request = new XMLHttpRequest();
 		self.request.open("POST", "http://" + self.serverIPandPort + "/move/", true)
 		var move = self.currentMove.toString();
-		alert(move);
 		self.request.send(move);
 		
 		self.request.onreadystatechange=function() {
@@ -793,7 +795,7 @@ var Client = function() {
 		
 		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
 				"or click End Deployment to move to attack phase. " +
-				"<br>Remaining fleets: " + (quota - self.count);
+				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
 				
 		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
 			"<b>_____________________________________</b><br><br>";

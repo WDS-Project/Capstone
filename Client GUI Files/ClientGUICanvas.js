@@ -80,7 +80,7 @@ canvas.onclick = function(e) {
 	mouse.yCanv = (mouse.y + view.offsetY - canvas.offsetTop);
 
 	for (var i = 1; i < gs.pList.length; i++) {
-		if (gs.pList[i].isInside(mouse.xCanv, mouse.yCanv)) {
+		if (gs.pList[i].isInside(mouse.xCanv, mouse.yCanv) && gs.pList[i].owner == client.playerID) {
 			if(client.deployment == true)
 				client.deploy(i); //we're in deployment, so all we need is a planet
 							//otherwise wait for a connection to be clicked
