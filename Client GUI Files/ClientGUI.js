@@ -138,12 +138,13 @@ var Connection = function(el) {
 	
 	// Returns this connection as a string
 	self.toString = function() {
-		return "(" + self.p1 + ", " + self.p2 + ")";
+		return "(" + self.p1 + ", " + self.p2 + "); direct = " + self.direct
+			+ " and status = " + self.status + ".";
 	};
 	
 	// Tests if a point is inside this connection (only if active).
 	self.isInside = function(xClick, yClick) {
-		if (self.state == 0) return false;
+		if (self.direct == 0) return false; // connection inactive
 		var p = {x:xClick, y:yClick};
 		var rPts = self.shapes[self.state].rPts;
 		var tPts = self.shapes[self.state].tPts;
@@ -257,14 +258,15 @@ var Connection = function(el) {
 	
 	// If this connection is active, it gets drawn differently.
 	self.drawActive = function(ctx, view) {
-		// self.state should be 1 (p1 selected) or 2 (p2 selected)
-		if (self.state == 0) return;
-		var rPts = self.shapes[self.state].rPts;
-		var tPts = self.shapes[self.state].tPts;
+		// self.direct should be 1 (p1 selected) or 2 (p2 selected)
+		if (self.direct == 0) return;
+		var rPts = self.shapes[self.direct].rPts;
+		var tPts = self.shapes[self.direct].tPts;
 		
-		// Set the style properties.
-		ctx.fillStyle = '#0D2';
-		ctx.strokeStyle = '#B33';
+		// Set the style properties (differs depending on whether this
+		// connection is friendly or hostile).
+		ctx.fillStyle = (self.status == 1 ? '#0F3' : '#F30');
+		ctx.strokeStyle = (self.status == 1 ? '#0A1' : '#A10');
 		ctx.lineWidth = 3;
 		
 		// Draw the rectangle first.
@@ -294,7 +296,8 @@ var Connection = function(el) {
 	var connects = conStr.split(',');
 	self.p1 = connects[0];
 	self.p2 = connects[1];
-	self.state = 1; // 0 => inactive; 1 => p1 active; 2 => p2 active
+	self.direct = 1; // 0 => inactive; 1 => p1 active; 2 => p2 active
+	self.status = 0; // 1 => friendly connection; 2 => hostile; 0 => uninitialized
 };
 var Gamestate = function() {
 	var self = this;
@@ -378,6 +381,17 @@ var Gamestate = function() {
 		}
 	};
 	
+	// Updates the status of all Connections.
+	self.updateConnections = function() {
+		for (var i = 1; i < self.cList.length; i++) {
+			var con = self.cList[i];
+			if (self.pList[con.p1].owner == self.pList[con.p2].owner)
+				con.status = 1; // indicates friendly connection
+			else
+				con.status = 2; // indicates hostile connection
+		}
+	};
+	
 	// Updates this Gamestate based on a Gamechange.
 	self.update = function(change) {
 		self.turnNumber = change.turnNumber;
@@ -392,6 +406,7 @@ var Gamestate = function() {
 		for (var i = 1; i < self.pList.length; i++)
 			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
 		self.updateRegions();
+		self.updateConnections();
 	};
 	
 	// Returns the number of fleets the given player can deploy.
@@ -408,11 +423,11 @@ var Gamestate = function() {
 		for (var i = 1; i < self.cList.length; i++) {
 			var con = self.cList[i];
 			if (con.p1 == selectID)
-				con.state = 1;
+				con.direct = 1;
 			else if (con.p2 == selectID)
-				con.state = 2;
+				con.direct = 2;
 			else
-				con.state = 0;
+				con.direct = 0;
 		}
 	};
 	
@@ -456,6 +471,8 @@ var Gamestate = function() {
 		// 5. Set player colors - HIGHLY PRELIMINARY
 		for (var i = 1; i < self.pList.length; i++)
 			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
+		
+		self.updateConnections();
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
