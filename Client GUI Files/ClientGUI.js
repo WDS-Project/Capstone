@@ -112,6 +112,7 @@ var Region = function(el) {
 			var m = memberList[i];
 			self.members[Number(m.childNodes[0].data)] = true;
 		}
+		self.members.length = memberList.length;
 	};
 	
 	// Returns this region as a string
@@ -361,14 +362,16 @@ var Gamestate = function() {
 	// Updates the owners of all Regions.
 	self.updateRegions = function() {
 		var testOwner;
+		var j = 1; // planet ID to be checked
 		for (var i = 1; i < self.rList.length; i++) {
 			testOwner = -1;
-			for (var j = 0; j < self.rList[i].members.length; i++) {
-				var currOwner = self.rList[i].members[j];
+			while (self.rList[i].members[ j ] ) {
+				var currOwner = self.pList[j].owner;
 				if (testOwner == -1)
-					testowner = currOwner;
+					testOwner = currOwner;
 				else if (testOwner != currOwner)
-					testowner = 0;
+					testOwner = 0;
+				j++; // check next planet
 			}
 			
 			self.rList[i].owner = testOwner;
@@ -385,6 +388,9 @@ var Gamestate = function() {
 			p.owner = change.changes[i][1];
 			p.numFleets = change.changes[i][2];
 		}
+		// 5. Set player colors - HIGHLY PRELIMINARY
+		for (var i = 1; i < self.pList.length; i++)
+			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
 		self.updateRegions();
 	};
 	
