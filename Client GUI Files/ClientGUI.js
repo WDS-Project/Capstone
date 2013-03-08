@@ -148,7 +148,7 @@ var Connection = function(el) {
 		var tPts = self.shapes[self.state].tPts;
 		return (self.pointIsInside(tPts[0], tPts[1], tPts[2], p)
 			|| self.pointIsInside(rPts[0], rPts[1], rPts[2], p)
-			|| self.pointIsInside(rPts[1], rPts[2], rPts[3], p));
+			|| self.pointIsInside(rPts[0], rPts[2], rPts[3], p));
 	};
 	// Determines if a point is within a triangle by converting to barycentric
 	// coordinates.
