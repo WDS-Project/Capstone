@@ -2,30 +2,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script type="text/javascript" src = "ClientGUI.js"> </script>
-<script type="text/javascript"> var client = new Client(); </script>
+<style type = "text/css">
+h2 {
+	text-align:center;	
+}
+body {
+	font-size:1.5em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin-top:17em;
+	font-weight:bold;
+	margin-left:3em;
+	color:white;
+	text-shadow:2px 2px 2px #000000;
+}
+#color {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#gamestate {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#ai1 {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#ai2 {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#ai3 {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#ai4 {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+#ai5 {
+	font-size:1em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-shadow:2px 2px 2px #ffffff;	
+}
+html { 
+        background: url("background2.jpg");
+        background-size: cover;
+}
+</style>
 
 <title>WDS Start</title>
 </head>
 <body>
-<h2>Welcome to a very primitive settings page</h2>
 
-<p></p>
-Color:
-<select id = "color" size="1">
+<script src="ClientGUI.js"></script>
+<script type = "text/javascript">
+	var client = new Client();
+</script>
+
+<table align = center>
+<tr>
+<td>Color:</td>
+<td><select id = "color" size="1">
 <option value="red">Red</option>
 <option value="green">Green</option>
 <option value="blue">Blue</option>
-</select>
-<p></p>
-
+</select></td></tr>
+<tr><td></td><td></td></tr>
 <!--Number of AI opponents:
 <input type = "number" min = "1" max = "10" step = "1" value = "2" size = "6">
 <p></p><!-->
-
-AI Opponents : Select their difficulties. Leave fields of undesired AIs as "None."<br>
-You must play with at least 1 AI. <br><br>
-AI 1: <select id="ai1" size="1" value >
+<tr>
+<td>AI Opponents: Select their difficulties. <br>Leave fields of undesired AIs as "None."<br>
+You must play with at least 1 AI. <br><br></td>
+<td margin-left=2px>AI 1: <select id="ai1" size="1" value >
 <option value="1">Easy</option>
 <option value="2">Medium</option>
 <option value="3">Hard</option>
@@ -41,7 +110,7 @@ AI 1: <select id="ai1" size="1" value >
 <option value="1">Easy</option>
 <option value="2">Medium</option>
 <option value="3">Hard</option>
-</select>
+</select><br>
   AI 4: <select id="ai4" size="1" value >
 <option value="0">None</option>
 <option value="1">Easy</option>
@@ -53,20 +122,22 @@ AI 1: <select id="ai1" size="1" value >
 <option value="1">Easy</option>
 <option value="2">Medium</option>
 <option value="3">Hard</option>
-</select>
-
-<p></p>
-
+</select></td></tr>
+<tr><td></td><td></td></tr>
 <!-- right now these all refer to the same gamestate <!-->
-<br>Difficult of Game:
-<select id="gamestate" size="1">
+<tr>
+<td><br>Difficulty of Game:</td>
+<td><select id="gamestate" size="1">
 <option value="TestGS6">10 Planets</option>
 <option value="TestGS6">25 Planets</option>
 <option value="TestGS6">50 Planets</option>
-</select>
-<p></p>
-
-<input type="submit" value="Start Game" onClick = "client.connect()" >
+</select></td>
+</tr>
+<tr><td></td><td></td></tr>
+</table><br><br>
+<div align=center>
+<input type="submit" value="Start Game" style = "font-family: 'Courier New', Helvetica, Serif; font-size:30px; padding:.5em;
+		font-weight:bold; text-align:center;" onClick = "client.connect()" > </div>
 
 </body>
 </html>
