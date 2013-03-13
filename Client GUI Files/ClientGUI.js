@@ -683,12 +683,12 @@ var Client = function() {
 			fleets = Number(fleets);
 			
 			if(isNaN(fleets)){
-				alert("ENTER A NUMBER DUMMY!");
+				document.getElementById("footer").innerHTML = "Must enter a number.";
 				return;
 			}
 			
 			if(fleets > quota || fleets < 1) {
-				alert("You must deploy between 1 and " + quota + " fleets.");
+				document.getElementById("footer").innerHTML = ("You must deploy between 1 and " + quota + " fleets.");
 				return;
 			}
 			
@@ -746,11 +746,11 @@ var Client = function() {
 		fleets = Number(fleets);
 		
 		if(isNaN(fleets)){
-			alert("ENTER A NUMBER DUMMY!");
+			document.getElementById("footer").innerHTML = "Must enter a number.";
 			return;
 		}
 		
-		if(fleets > gs.pList[source].numFleets) {
+		if(fleets >= gs.pList[source].numFleets) {
 			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
 			return;
 		} else
