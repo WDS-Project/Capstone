@@ -52,7 +52,7 @@ var Planet = function(el) {
 	// Tests if a point is inside this planet.
 	self.isInside = function(x, y) {
 		var h = Math.sqrt(Math.pow( (x - self.xPos), 2)
-				+ Math.pow( (y - self.yPos), 2));
+			+ Math.pow( (y - self.yPos), 2));
 		if (h <= self.radius)
 			return true;
 	};
@@ -110,9 +110,8 @@ var Region = function(el) {
 		var memberList = memberListEl.getElementsByTagName("member");
 		for (var i = 0; i < memberList.length; i++) {
 			var m = memberList[i];
-			self.members[Number(m.childNodes[0].data)] = true;
+			self.members.push(Number(m.childNodes[0].data));
 		}
-		self.members.length = memberList.length;
 	};
 	
 	// Returns this region as a string
@@ -123,7 +122,7 @@ var Region = function(el) {
 	};
 	
 	// Basic setup
-	self.members = {};
+	self.members = [];
 	if (!el) {
 		self.name = "";
 		self.idNum = 0;
@@ -139,7 +138,7 @@ var Connection = function(el) {
 	// Returns this connection as a string
 	self.toString = function() {
 		return "(" + self.p1 + ", " + self.p2 + "); direct = " + self.direct
-			+ " and status = " + self.status + ".";
+		+ " and status = " + self.status + ".";
 	};
 	
 	// Tests if a point is inside this connection (only if active).
@@ -365,16 +364,15 @@ var Gamestate = function() {
 	// Updates the owners of all Regions.
 	self.updateRegions = function() {
 		var testOwner;
-		var j = 1; // planet ID to be checked
 		for (var i = 1; i < self.rList.length; i++) {
 			testOwner = -1;
-			while (self.rList[i].members[ j ] ) {
-				var currOwner = self.pList[j].owner;
+			for (var j = 0; j < self.rList[i].members.length; j++) {
+				var pId = self.rList[i].members[j];
+				var currOwner = self.pList[pId].owner;
 				if (testOwner == -1)
 					testOwner = currOwner;
 				else if (testOwner != currOwner)
 					testOwner = 0;
-				j++; // check next planet
 			}
 			
 			self.rList[i].owner = testOwner;
@@ -472,6 +470,7 @@ var Gamestate = function() {
 		for (var i = 1; i < self.pList.length; i++)
 			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
 		
+		self.updateRegions();
 		self.updateConnections();
 	};
 	
@@ -612,21 +611,20 @@ var Client = function() {
 		//this sends the request string
 		self.request = new XMLHttpRequest();
 		self.request.open("POST", "http://" + self.serverIPandPort + "/definegame/", true)
-			self.request.send(definition);
-			
-			self.request.onreadystatechange=function()
-			{
-				if (self.request.status==200 && self.request.readyState == 4) {
-					response = self.request.responseText;
-					window.localStorage.setItem("gsString", response);
-					location.href = "gamepage.html";
-				} else if (self.request.status != 200) {
-					if(confirm("A connection to the server could not be established.\n Try again?"))
-						self.connect();
-				}
+		self.request.send(definition);
+		
+		self.request.onreadystatechange=function()
+		{
+			if (self.request.status==200 && self.request.readyState == 4) {
+				response = self.request.responseText;
+				window.localStorage.setItem("gsString", response);
+				location.href = "gamepage.html";
+			} else if (self.request.status != 200) {
+				if(confirm("A connection to the server could not be established.\n Try again?"))
+					self.connect();
 			}
-
 		}
+	}
 	
 	// A round of requests, that is, make a move if it's our turn, if not,
 	// request a gamechange.
@@ -644,7 +642,7 @@ var Client = function() {
 				} else if (self.request.status != 200) {
 					alert("Response status: " + self.request.status);
 					if(confirm("We did not successfully receive the gamechange.\n Try again?"))
-					self.go();
+						self.go();
 				}
 			}
 		}
@@ -671,7 +669,7 @@ var Client = function() {
 		var planet = gs.pList[source];
 		if(planet.owner != self.playerID) 
 			return;
-				
+		
 		//self.deployment is true; set this to false if quota expended or the user ends the phase
 		var quota = gs.getPlayerQuota(self.playerID);
 		
@@ -703,8 +701,8 @@ var Client = function() {
 			("Deployed " + fleets + " fleets to " + planet.name + "<br><br>");
 			
 			document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-				"or click End Deployment to move to attack phase. " +
-				"<br>Remaining fleets: " + (quota - self.count);
+			"or click End Deployment to move to attack phase. " +
+			"<br>Remaining fleets: " + (quota - self.count);
 		}
 		
 		if(self.count == quota)
@@ -719,7 +717,7 @@ var Client = function() {
 		document.getElementById("submitButton").onclick = client.submitMove;
 		
 		document.getElementById("footer").innerHTML = "Click on a planet you own to see connected planets.<br>" +
-			"Click on an arrow to attack.";
+		"Click on an arrow to attack.";
 	}
 	
 	self.addMove = function(connection) {			
@@ -756,16 +754,16 @@ var Client = function() {
 			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
 			return;
 		} else
-			gs.pList[source].numFleets -= fleets;
+		gs.pList[source].numFleets -= fleets;
 		
 		self.currentMove.addMove(source, dest, fleets);
 		
 		if(connection.status == 1) {
 			document.getElementById("move_list").innerHTML += 
-				("Reinforce " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+			("Reinforce " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
 		} else {
 			document.getElementById("move_list").innerHTML += 
-				("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
+			("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
 		}
 		
 	}
@@ -783,22 +781,23 @@ var Client = function() {
 				self.go();
 			} else if (self.request.status != 200) {
 				if(confirm("We did not successfully receive the gamechange.\n Try again?"))
-				self.submitMove();
+					self.submitMove();
 			}
 		}
 		
 		// Reset for deployment
+		selection = null;
 		self.deployment = true;
 		self.currentMove.clear();
 		document.getElementById("submitButton").value = "End Deployment";
 		document.getElementById("submitButton").onclick = client.endDeploy;
 		
 		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-				"or click End Deployment to move to attack phase. " +
-				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
-				
+		"or click End Deployment to move to attack phase. " +
+		"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+		
 		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
-			"<b>_____________________________________</b><br><br>";
+		"<b>_____________________________________</b><br><br>";
 	}
 };
 

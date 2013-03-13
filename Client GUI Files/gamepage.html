@@ -60,15 +60,18 @@
 	<div id = "board">
 	<canvas id="c" style="border: solid 3px green;"></canvas>  
 	</div>
-	<div id = "footer"> Click and drag to see all planets.<br>To begin, click on a planet and select the number of fleets to deploy.  
-	Max is 5.</div>
+	<div id = "footer"> ARGH THIS IS BAD CHANGE THIS.</div>
 </body>
 <script src="ClientGUI.js"> </script>
 <script src="ClientGUICanvas.js"></script>
 <script type = "text/javascript">
-	var client = new Client();
 	var gs = new Gamestate();
 	gs.loadXML(window.localStorage.getItem("gsString"));
+	var client = new Client();
+	// Prepare for deployment
+	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
+		"or click End Deployment to move to attack phase. " +
+		"<br>Remaining fleets: " + (gs.getPlayerQuota(1));
 	
 	var drawLoop;
 	var DrawLoop = function() {
