@@ -73,7 +73,7 @@ public class Planet {
 	public void addFleets(int plusFleets) {
 		numFleets += plusFleets;
 		if (numFleets < 1)
-			numFleets = 1;
+			throw new RuntimeException("Error: too few fleets on this planet.");
 	}
 	
 	// Other

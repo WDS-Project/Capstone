@@ -248,6 +248,13 @@ public class GameEngine {
 				throw new RuntimeException("Invalid move: planet "+source.getIDNum()+" and "+
 						dest.getIDNum()+" are not connected.");
 			}
+			
+			// Check to see that there are enough fleets to complete the action.
+			if (numFleets >= source.getFleets()) {
+				throw new RuntimeException("Invalid move: planet " + source.getIDNum() +
+					" has " + source.getFleets() + " fleets; request was for " +
+					numFleets + ".");
+			}
 
 			// 2. If Source owner == Dest owner --> Reinforcement
 			if(source.getOwner() == dest.getOwner()) {
