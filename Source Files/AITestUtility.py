@@ -25,15 +25,20 @@ def setup(gsName, numAIs, diffs):
     print("Planets distributed: " + str(gs) + "\n")
 
 def playGame():
-    print("They're playing ... \n")
+    print("Game Started! \n")
     winner = 0
-    for k in range(10):
+    k = 0
+    while (winner == 0):
+        k += 1
+    #for k in range(10):
+        print("Round " + str(k) + "...")
         for i in range(1, len(players)):
+            #print("Player "+str(i)+" is moving.")
             if(players[i] == 0):
                 m = RandomAI.getMove(gs, i)  #ADD ELIFS HERE
             else: #empty move
                 m = str(self.playerID) + "/"
-            print("Player " + str(i) + ": " + str(m))
+            #print("Player " + str(i) + "'s move is: " + str(m))
             processMove(m)
             moves[i] += 1
         for j in range(1, len(players)):
@@ -51,11 +56,11 @@ def printStats():
     print(str("Order of elimination: " + eliminationStr), file=sys.stdout)
 
 def processMove(m):
-    print("Beginning of move: " + str(gs))
+    #print("Beginning of move: " + str(gs))
     quota = gs.getPlayerQuota(m.playerID)
     while(m.hasNext()):
         miniMove = m.next()
-        print("miniMove: " + str(miniMove))
+        #print("miniMove: " + str(miniMove))
         dest = miniMove[1] 
         fleets = miniMove[2]
 
@@ -65,40 +70,41 @@ def processMove(m):
                 print("Illegal move: quota exceeded. Quota: " + str(quota) + " Fleets: " + str(fleets) + "\n")
                 return #turn is passed up for illegal action
             quota -= fleets
-        #    gs.pList[dest].numFleets += fleets
+            gs.pList[dest].numFleets += fleets
             continue
 
         source = miniMove[0]
 
         if(not(gs.isConnected(source, dest))):
-            print("Illegal move: planets " + str(source) + " " + str(type(source)) + " and " + str(dest) + " are not connected")
+            print("Illegal move: planets " + str(source) + " and " + str(dest) + " are not connected")
             return #another illegal action
 
         if(fleets >= gs.pList[source].numFleets):
-            print("Illegal move: not enough fleets")
+            print("Illegal move: not enough fleets ("+str(fleets)+" requested,"
+                  +" but planet "+str(source)+" only has " +
+                  str(gs.pList[source].numFleets)+".)")
             return #another illegal action
 
         #reinforcement
         if(gs.pList[source].owner == gs.pList[dest].owner):
-        #    gs.pList[source].numFleets -= fleets
+            gs.pList[source].numFleets -= fleets
             gs.pList[dest].numFleets += fleets
         #attack
         else:
             results = processAttack(fleets, gs.pList[dest].numFleets)
-            print(str(results))
             #attacker won
             if(results[1] == 0):
                 gs.pList[dest].owner = gs.pList[source].owner
                 gs.pList[dest].numFleets += results[0]
-            #    gs.pList[source].numFleets -= fleets
+                gs.pList[source].numFleets -= fleets
             #attacker retreated or took the ultimate stand
             else:
-                gs.pList[source].numFleets += results[0]
+                gs.pList[source].numFleets += (results[0] - fleets)
                 gs.pList[dest].numFleets = results[1]
 
 
 def processAttack(sourceFleets, destFleets):
-    print("Process attack: " + str(sourceFleets) + " " + str(destFleets) + "\n")
+    #print("Processing attack: " + str(sourceFleets) + " vs. " + str(destFleets) + "\n")
     res = []
     if(sourceFleets > destFleets):
         res.append(sourceFleets - destFleets)
@@ -137,12 +143,15 @@ def checkElimination(id):
         if(gs.pList[i].owner == id):
             return False
     print("Player " + str(id) + " eliminated.\n")
+    players[id] = -1
     return True
     
 def checkWin():
-    if(len(players) == 2):
-        return players[1]
-    return 0
+    count = 0
+    for p in players:
+        if p is not None and p != -1:
+            count += 1
+    return count == 1
 
 def distributePlanets():
     minFleets = 1
@@ -153,20 +162,21 @@ def distributePlanets():
     random.shuffle(planetIDs)
     for i in range(len(planetIDs)):
         gs.pList[planetIDs[i]].owner = plyr
-        print("Player " + str(plyr) + " owns planet " + str(planetIDs[i]) + "\n")
         gs.pList[planetIDs[i]].numFleets = minFleets
         plyr = (plyr + 1) % (len(players) - 1)
         if(plyr == 0):
             plyr = (len(players) - 1)
 
-#PLAYERS START AT 0
-players = []
-players.append(None)
-gs = Gamestate()
-moves = []
-moves.append(None)
-elimOrder = []
+if __name__ == '__main__':
+    #PLAYERS START AT 0
+    players = []
+    players.append(None)
+    gs = Gamestate()
+    moves = []
+    moves.append(None)
+    elimOrder = []
 
-setup("AIGS.xml", 2, [0,0])
-playGame()
+    #setup("AIGS.xml", 2, [0,0])
+    setup("DemoGS.xml", 2, [0,0])
+    playGame()
     

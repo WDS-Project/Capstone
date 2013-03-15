@@ -5,6 +5,7 @@
 
 from xml.dom.minidom import parse, parseString
 import sys
+import copy
 
 class Gamestate:
     # Sets all fields to default values.
@@ -86,15 +87,7 @@ class Gamestate:
 
     # Returns a deep copy of this gamestate.
     def copy(self):
-        gs = Gamestate()
-        gs.activePlayer = self.activePlayer
-        gs.turnNumber = self.turnNumber
-        gs.cycleNumber = self.cycleNumber
-        gs.playerList = list(self.playerList)
-        gs.pList = list(self.pList)
-        gs.cList = set(self.cList)
-        gs.rList = list(self.rList)
-        return gs
+        return copy.deepcopy(self)
 
     # Updates this gamestate based on a Gamechange.
     def update(self, change):
@@ -139,7 +132,7 @@ class Gamestate:
                   sys.stderr)
             return
 
-        if start > end:
+        if int(start) > int(end):
             temp = start
             start = end
             end = temp

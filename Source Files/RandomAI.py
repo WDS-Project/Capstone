@@ -9,23 +9,24 @@ import random
 
 # Builds a move for a given player based on a Gamestate
 def getMove(gs, idNum):
+    gsLocal = gs.copy() # makes a local copy so we don't change the external gs
     result = Move(idNum)
-    generateDeployments(gs, result)
-    generateMoves(gs, result)
+    generateDeployments(gsLocal, result)
+    generateMoves(gsLocal, result)
     return result
 
 # Generates a set of random attacks based on owned planets
-def generateMoves(gs, move):
-    ownedPlanets = getOwnedPlanets(gs, move.playerID)
+def generateMoves(gsLocal, move):
+    ownedPlanets = getOwnedPlanets(gsLocal, move.playerID)
 
     # Gets all possible moves
     connections = []
     for p in ownedPlanets: # for each owned planet...
-        pConnects = gs.getConnections(p) # get all connections
+        pConnects = gsLocal.getConnections(p) # get all connections
         for conn in pConnects:
             connections.append(str(p) + "," + str(conn)) 
 
-    moveCount = 2#(len(ownedPlanets) / 3) + 1 # minimum of one move
+    moveCount = (len(ownedPlanets) / 3) + 1 # minimum of one move
     while (moveCount > 0 and len(connections) > 0):
         temp = random.randint(0, len(connections)-1)
         start, end = connections[temp].split(",") # gets a random connection
@@ -37,25 +38,27 @@ def generateMoves(gs, move):
             continue # only make one move per planet
 
         # generates a random number of fleets, 1 <= n < total fleets available
-        if(gs.pList[sourceID].numFleets == 1):
+        if(gsLocal.pList[sourceID].numFleets == 1):
+            connections.pop(temp)
             continue
-        numFleets = random.randint(1, gs.pList[sourceID].numFleets - 1)
-        move.addMove(sourceID, destID, numFleets)
+        randFleets = random.randint(1, gsLocal.pList[sourceID].numFleets - 1)
+        move.addMove(sourceID, destID, randFleets)
+        gsLocal.pList[sourceID].numFleets -= randFleets
         moveCount -= 1
         ownedPlanets.remove(sourceID)
     
     return
 
 # Generates a set of random deployments based on owned planets
-def generateDeployments(gs, move):
-    ownedPlanets = getOwnedPlanets(gs, move.playerID)
-    deployCount = gs.getPlayerQuota(move.playerID)
+def generateDeployments(gsLocal, move):
+    ownedPlanets = getOwnedPlanets(gsLocal, move.playerID)
+    deployCount = gsLocal.getPlayerQuota(move.playerID)
     
     while (deployCount > 0 and len(ownedPlanets) > 0):
         temp = random.randint(0, len(ownedPlanets)-1)
         destID = ownedPlanets[temp] # a random owned planet
         numFleets = random.randint(1, deployCount) # a random number of fleets
-        gs.pList[destID].numFleets += numFleets # update the local Gamestate
+        gsLocal.pList[destID].numFleets += numFleets # update the local Gamestate
         move.addMove(0, destID, numFleets)
         deployCount -= numFleets
         ownedPlanets.remove(destID) # only one deploy per planet (at most)
@@ -63,9 +66,9 @@ def generateDeployments(gs, move):
     return
 
 # Returns a list of planets owned by the given player
-def getOwnedPlanets(gs, idNum):
+def getOwnedPlanets(gsLocal, idNum):
     ownedPlanets = []
-    for p in gs.pList:
+    for p in gsLocal.pList:
         if p is None:
             continue
         if p.owner is idNum:
