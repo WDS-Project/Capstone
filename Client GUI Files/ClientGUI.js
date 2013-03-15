@@ -439,6 +439,12 @@ var Gamestate = function() {
 			return;
 		}
 		
+		// 0. Load game size.
+		var gamestate = xmlDoc.getElementsByTagName("Gamestate")[0];
+		var x = Number(gamestate.getAttribute("xSize"));
+		var y = Number(gamestate.getAttribute("ySize"));
+		setWorldSize(x, y);
+		
 		// 1. Load Player data.
 		var players = xmlDoc.getElementsByTagName("Players")[0];
 		self.activePlayer = Number(players.getAttribute("activePlayer"));
@@ -467,8 +473,10 @@ var Gamestate = function() {
 			self.rList.push(new Region(regionList[i]));
 		
 		// 5. Set player colors - HIGHLY PRELIMINARY
-		for (var i = 1; i < self.pList.length; i++)
+		for (var i = 1; i < self.pList.length; i++) {
 			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
+			if (self.pList[i].owner == 3) self.pList[i].color = 'green';
+		}
 		
 		self.updateRegions();
 		self.updateConnections();

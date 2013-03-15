@@ -37,9 +37,14 @@ canvas.height = view.height;
 // which is why this setup is needed in the first place. The view's offset is
 // its offset from the origin of the world.
 var world = {
-	height: 1500,
-	width: 1600
+	height: 1,
+	width: 1 // These need to be set when the Gamestate is loaded.
 };
+
+var setWorldSize = function(height, width) {
+	world.height = height;
+	world.width = width;
+}
 
 // ===================================================================
 // ***    Functions for allowing you to drag the camera around.    ***

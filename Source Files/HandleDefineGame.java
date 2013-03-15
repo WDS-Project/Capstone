@@ -82,6 +82,7 @@ public class HandleDefineGame implements HttpHandler {
 					//number of players
 					int humans = Integer.parseInt(params[1]);
 					int AIs = Integer.parseInt(params[2]);
+					int totalPlayers = humans + AIs;
 					
 					//difficulties of AIs
 					int[] diffs = new int[params.length -3];
@@ -96,7 +97,7 @@ public class HandleDefineGame implements HttpHandler {
 					server.addSession(engine);
 					
 					try {
-						engine.loadGamestate(gsFile);
+						engine.loadGamestate(gsFile, totalPlayers);
 					} catch (Exception ex) {
 						System.out.println("Error loading gamestate.");
 						exchange.sendResponseHeaders(400,0);
