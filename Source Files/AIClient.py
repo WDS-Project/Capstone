@@ -12,11 +12,14 @@ from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
 import RandomAI
 import traceback # for printing errors to the log
+# add more imports for different AI difficulty levels
 
 #command line args: playerID, difficulty, sessionID, serverIPaddr:port
 #global variables: difficulty, sessionID, serverIPandPort, gs
 #this client writes its status to a text file log called, conveniently,
 #"log#.txt"
+
+#Difficulties: 0 = Random, <more here>
 
 class AIClient:
 
@@ -24,10 +27,10 @@ class AIClient:
     def __init__(self, diff, sID, IPnPort):
         self.log = open('log'+str(diff)+'.txt', 'w')
         #self.log = open('log1.txt', 'w')
-        self.log.write("AI created.\n")
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort
+        self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
     # join a game given a session ID, also load gamestate and playerID
     def connect(self):
@@ -64,7 +67,12 @@ class AIClient:
             self.log.write("Therefore I have sent a gamechange request.\n")
         elif(int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
-            m = RandomAI.getMove(self.gs, self.playerID)
+            if(self.difficulty == 0):        
+                m = RandomAI.getMove(self.gs, self.playerID)
+            #ADD ELIFS HERE AS AI'S progress
+            else: #empty move
+                m = str(self.playerID) + "/"
+                
             move = str(m)
             self.log.write(str("Move: " + move + " \n"))
             connection = http.client.HTTPConnection(self.serverIPandPort)
