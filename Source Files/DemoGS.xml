@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Gamestate>
-	<Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>
+<Gamestate xSize="1000" ySize="1000">
+	<Players activePlayer="1" turnNumber="0" cycleNumber="0"/>
 	<PlanetList>
 		<Planet
 			idNum="1"

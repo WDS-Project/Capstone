@@ -22,6 +22,7 @@ public class Gamestate {
 	private int activePlayer,
 	turnNumber = 0,
 	cycleNumber = 0;
+	private int xSize, ySize;
 	private Planet[] pList;
 	private Region[] rList;
 	private TreeSet<Connection> cList = new TreeSet<Connection>();
@@ -56,8 +57,8 @@ public class Gamestate {
 	 * 
 	 * @param xmlPath the filename for the XML file to be read into a Gamestate 
 	 */
-	public Gamestate(String xmlPath) {
-		loadXML(xmlPath);
+	public Gamestate(String xmlPath, int numPlayers) {
+		loadXML(xmlPath, numPlayers);
 	}
 
 	/** 
@@ -433,18 +434,22 @@ public class Gamestate {
 	 * 
 	 * @param xmlPath the filename for the XML file to be read into a Gamestate
 	 */
-	public void loadXML(String xmlPath) {
-		// 1. Load XML from the file
+	public void loadXML(String xmlPath, int numPlayers) {
+		// Load XML from the file
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(xmlPath);
 			NodeList root = doc.getChildNodes().item(0).getChildNodes(); // root = <Gamestate>
 
+			// 1. Game size
+			Element gsNode = (Element)doc.getChildNodes().item(0);
+			xSize = Integer.parseInt(gsNode.getAttribute("xSize"));
+			ySize = Integer.parseInt(gsNode.getAttribute("ySize"));
+			
 			// 2. Players & Turns
 			Element playerNode = (Element)getNode("Players", root);
 			activePlayer = Integer.parseInt(playerNode.getAttribute("activePlayer"));
-			int numPlayers = Integer.parseInt(playerNode.getAttribute("numPlayers"));
 			playerList = new int[numPlayers + 1]; // because player 0 = neutral
 			for (int i = 1; i <= numPlayers; i++)
 				playerList[i] = 1; // 1 = normal player; 0 = inactive player
@@ -518,15 +523,16 @@ public class Gamestate {
 			doc.appendChild(root);
 			Element gsRoot = doc.createElement("Gamestate");
 			root.appendChild(gsRoot);
+			
+			gsRoot.setAttribute("xSize", xSize+"");
+			gsRoot.setAttribute("ySize", ySize+"");
 
 			// 1. First we add information about the Players (& turns).
 			Element playerNode = doc.createElement("Players");
 			gsRoot.appendChild(playerNode);
-			playerNode.setAttribute("numPlayers", playerList.length+"");
 			playerNode.setAttribute("activePlayer", activePlayer+"");
 			playerNode.setAttribute("turnNumber", turnNumber+"");
 			playerNode.setAttribute("cycleNumber", cycleNumber+"");
-			// playerNode.getAttribute(arg0);
 
 			// 2. Then we add information about planets...
 			Element pListEl = doc.createElement("PlanetList");
