@@ -165,8 +165,11 @@ class Gamestate:
     ## XML Methods ##
 
     def loadXML(self, xmlString):
-        # dom = parseString(xmlString)
-        dom = parse(xmlString)
+        # Will attempt to read as a string; if not, assumes it's a filename
+        try:
+            dom = parseString(xmlString)
+        except:
+            dom = parse(xmlString)
 
         # Player data
         players = dom.getElementsByTagName("Players")[0]
