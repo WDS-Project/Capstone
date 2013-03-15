@@ -598,7 +598,7 @@ var Client = function() {
 		for(var i = 1; i < 6; i++) {
 			var aiDiff = document.getElementById("ai"+i);
 			ais[i-1] = aiDiff.options[aiDiff.selectedIndex].value;
-			if(ais[i-1] > 0)
+			if(ais[i-1] > -1)
 				counter++;
 		}
 		

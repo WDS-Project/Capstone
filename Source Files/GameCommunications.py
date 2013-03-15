@@ -61,6 +61,7 @@ class Move:
     def __init__(self, playerID):
         self.playerID = int(playerID)
         self.moves = []
+        self.currentMiniMove = 0
 
     def __str__(self):
         result = str(self.playerID) + "/"
@@ -70,3 +71,12 @@ class Move:
 
     def addMove(self, sourceID, destID, numFleets):
         self.moves.append( (sourceID, destID, numFleets) )
+
+    def hasNext(self):
+        if(self.currentMiniMove >= len(self.moves)):
+            return False
+        return True
+
+    def next(self):
+        self.currentMiniMove += 1
+        return self.moves[self.currentMiniMove-1]

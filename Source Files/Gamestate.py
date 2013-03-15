@@ -161,6 +161,10 @@ class Gamestate:
     def isConnected(self, p1, p2):
         if p1 > len(self.pList) or p2 > len(self.pList):
             print("Not a valid planet.", sys.stderr)
+        if p1 > p2:
+            temp = p2
+            p2 = p1
+            p1 = temp
         testSet = set()
         testSet.add(str(p1) + "," + str(p2))
         return self.cList.issuperset(testSet)
@@ -168,8 +172,8 @@ class Gamestate:
     ## XML Methods ##
 
     def loadXML(self, xmlString):
-        dom = parseString(xmlString)
-        # dom = parse(xmlString)
+        # dom = parseString(xmlString)
+        dom = parse(xmlString)
 
         # Player data
         players = dom.getElementsByTagName("Players")[0]
