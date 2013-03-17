@@ -55,6 +55,7 @@ public class GameEngine {
 	/** Loads a Gamestate into memory for this game. */
 	public void loadGamestate(String xmlPath, int numPlayers) throws Exception {
 		gs = new Gamestate(xmlPath, numPlayers);
+		gs.setActivePlayer(1);
 		originalGS = gs.copy();
 	}
 	/** Resets the current Gamestate to the last Gamestate that was loaded. */ 

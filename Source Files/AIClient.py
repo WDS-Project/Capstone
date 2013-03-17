@@ -67,7 +67,8 @@ class AIClient:
             self.log.write("Therefore I have sent a gamechange request.\n")
         elif(int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
-            if(self.difficulty == 0):        
+            if(self.difficulty == '0'):
+                self.log.write("AI type: random.\n")
                 m = RandomAI.getMove(self.gs, self.playerID)
             #ADD ELIFS HERE AS AI'S progress
             else: #empty move
