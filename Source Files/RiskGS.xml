@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding='utf'?>
+<Gamestate xSize="10000" ySize="10000">
+	<Players activePlayer="0" cycleNumber="0" turnNumber="0" />
+	<PlanetList>
+	<!-- North America (count: 9) -->
+		<Planet name="Alaska" idNum="1"	position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet name="Victoria" idNum="2" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet name="Mexico" idNum="3" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet name="Eastern US" idNum="4" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Greenland" idNum="5" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Canadice" idNum="6" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Quebec" idNum="7" position="1,1" color="#F0F" 
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Bisquick" idNum="8" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Western US" idNum="9" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		
+	<!-- South America (count: 4) -->
+		<Planet	name="Argenchile" idNum="10" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Brazil" idNum="11" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Guanademala" idNum="12" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Columbo" idNum="13" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		
+	<!-- Europe (count: 7) -->
+		<Planet	name="Britain" idNum="14" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Iceland" idNum="15" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Germafrance" idNum="16" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Scandinavia" idNum="17" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Greecaly" idNum="18" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Prussia" idNum="19" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Spaintugal" idNum="20" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		
+	<!-- Africa (count: 6) -->
+		<Planet	name="Congo" idNum="21" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Cote d'Ivore" idNum="22" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Egypt, I guess" idNum="23" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="MADAGASCAR" idNum="24" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Piratetown" idNum="25" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Cape Town" idNum="26" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+	
+	<!-- Asia (count: 12) -->
+		<Planet	name="Moscow" idNum="27" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="China" idNum="28" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="India" idNum="29" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Limeland" idNum="30" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Japan" idNum="31" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Baja Russia" idNum="32" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Palestisrael" idNum="33" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Mongolia" idNum="34" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Coda" idNum="35" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Part of Russia" idNum="36" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="More of Russia" idNum="37" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Siberia" idNum="38" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+	
+	<!-- Australia (count: 4) -->
+		<Planet	name="Koala Bearland" idNum="39" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Indonesia" idNum="40" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="New Guinea" idNum="41" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+		<Planet	name="Middle Earth" idNum="42" position="1,1" color="#F0F"
+			numFleets="5" owner="1" radius="20" />
+	</PlanetList>
+	
+	<!-- These are all correct. I think. 83 of them. -->
+	<ConnectionList>
+		<connection>23,25</connection>
+		<connection>36,37</connection>
+		<connection>34,36</connection>
+		<connection>35,40</connection>
+		<connection>22,33</connection>
+		<connection>39,42</connection>
+		<connection>1,6</connection>
+		<connection>27,33</connection>
+		<connection>1,2</connection>
+		<connection>10,12</connection>
+		<connection>10,11</connection>
+		<connection>21,22</connection>
+		<connection>23,33</connection>
+		<connection>2,9</connection>
+		<connection>16,18</connection>
+		<connection>39,41</connection>
+		<connection>2,7</connection>
+		<connection>2,6</connection>
+		<connection>1,32</connection>
+		<connection>16,17</connection>
+		<connection>6,7</connection>
+		<connection>7,8</connection>
+		<connection>7,9</connection>
+		<connection>5,8</connection>
+		<connection>4,7</connection>
+		<connection>3,9</connection>
+		<connection>3,4</connection>
+		<connection>18,23</connection>
+		<connection>4,9</connection>
+		<connection>4,8</connection>
+		<connection>5,6</connection>
+		<connection>5,7</connection>
+		<connection>18,25</connection>
+		<connection>28,36</connection>
+		<connection>28,37</connection>
+		<connection>28,34</connection>
+		<connection>15,17</connection>
+		<connection>11,25</connection>
+		<connection>14,20</connection>
+		<connection>18,19</connection>
+		<connection>3,13</connection>
+		<connection>19,27</connection>
+		<connection>29,35</connection>
+		<connection>27,28</connection>
+		<connection>28,35</connection>
+		<connection>16,20</connection>
+		<connection>29,33</connection>
+		<connection>32,38</connection>
+		<connection>20,25</connection>
+		<connection>5,15</connection>
+		<connection>24,26</connection>
+		<connection>36,38</connection>
+		<connection>40,41</connection>
+		<connection>30,36</connection>
+		<connection>30,34</connection>
+		<connection>31,34</connection>
+		<connection>30,32</connection>
+		<connection>19,33</connection>
+		<connection>21,26</connection>
+		<connection>31,32</connection>
+		<connection>21,25</connection>
+		<connection>14,17</connection>
+		<connection>14,16</connection>
+		<connection>14,15</connection>
+		<connection>30,38</connection>
+		<connection>22,23</connection>
+		<connection>27,29</connection>
+		<connection>12,13</connection>
+		<connection>22,26</connection>
+		<connection>22,25</connection>
+		<connection>22,24</connection>
+		<connection>41,42</connection>
+		<connection>18,33</connection>
+		<connection>32,34</connection>
+		<connection>17,19</connection>
+		<connection>27,37</connection>
+		<connection>40,42</connection>
+		<connection>19,37</connection>
+		<connection>16,19</connection>
+		<connection>11,12</connection>
+		<connection>11,13</connection>
+		<connection>28,29</connection>
+		<connection>18,20</connection>
+	</ConnectionList>
+	<RegionList>
+		<Region idNum="1" name="North America" owner="1" value="5" color="1">
+			<memberList>
+				<member>1</member>
+				<member>2</member>
+				<member>3</member>
+				<member>4</member>
+				<member>5</member>
+				<member>6</member>
+				<member>7</member>
+				<member>8</member>
+				<member>9</member>
+			</memberList>
+		</Region>
+		<Region idNum="2" name="South America" owner="1" value="2" color="1">
+			<memberList>
+				<member>10</member>
+				<member>11</member>
+				<member>12</member>
+				<member>13</member>
+			</memberList>
+		</Region>
+		<Region idNum="3" name="Europe" owner="1" value="5" color="1">
+			<memberList>
+				<member>14</member>
+				<member>15</member>
+				<member>16</member>
+				<member>17</member>
+				<member>18</member>
+				<member>19</member>
+				<member>20</member>
+			</memberList>
+		</Region>
+		<Region idNum="4" name="Africa" owner="1" value="3" color="1">
+			<memberList>
+				<member>21</member>
+				<member>22</member>
+				<member>23</member>
+				<member>24</member>
+				<member>25</member>
+				<member>26</member>
+
+			</memberList>
+		</Region>
+		<Region idNum="5" name="Asia" owner="1" value="7" color="1">
+			<memberList>
+				<member>27</member>
+				<member>28</member>
+				<member>29</member>
+				<member>30</member>
+				<member>31</member>
+				<member>32</member>
+				<member>33</member>
+				<member>34</member>
+				<member>35</member>
+				<member>36</member>
+				<member>37</member>
+				<member>38</member>
+			</memberList>
+		</Region>
+		<Region idNum="6" name="Australia" owner="1" value="2" color="1">
+			<memberList>
+				<member>39</member>
+				<member>40</member>
+				<member>41</member>
+				<member>42</member>
+			</memberList>
+		</Region>
+	</RegionList>
+</Gamestate>
+
+
+<!-- ABSOLUTE IDS
+A. North America - value = 5
+	1. Alaska (2, 6, 32)
+	2. Victoria (1, 6, 7, 9)
+	3. Mexico (4, 9, 13)
+	4. East US (3, 7, 8, 9)
+	5. Greenland (6, 7, 8, 15)
+	6. Canadice (1, 2, 5, 7)
+	7. Quebec (2, 4, 5, 6, 8, 9)
+	8. Bisquick (4, 5, 7)
+	9. Western US (2, 3, 4, 7)
+B. South America - value = 2
+	1 (10). Argenchile (11, 12)
+	2 (11). Brazil (10, 12, 13, 25)
+	3 (12). Guanademala (10, 11, 13)
+	4 (13). Columbo (11, 12, 3)
+C. Europe - value = 5
+	1 (14). Britain (15, 16, 17, 20)
+	2 (15). Iceland (14, 17, 5)
+	3 (16). Germafrance (14, 17, 18, 19, 20)
+	4 (17). Scandinavia (14, 15, 16, 19)
+	5 (18). Greecaly (16, 19, 20, 23, 25, 33)
+	6 (19). Prussia (16, 17, 18, 27, 33, 37)
+	7 (20). Spaintugal (14, 16, 18, 25)
+D. Africa - value = 3
+	1 (21). Congo (22, 25, 26)
+	2 (22). Cote d'Ivore (21, 23, 24, 25, 26, 33)
+	3 (23). Egypt, I guess (22, 25, 18, 33)
+	4 (24). MADAGASCAR (22, 26)
+	5 (25). Piratetown (21, 22, 23, 18, 20, 11)
+	6 (26). Cape Town (21, 22, 24)
+E. Asia - value = 7
+	1 (27). Moscow (28, 29, 33, 37, 19)
+	2 (28). China (27, 29, 34, 35, 36, 37)
+	3 (29). India (27, 28, 33, 35)
+	4 (30). Limeland (32, 34, 36, 38)
+	5 (31). Japan (32, 34)
+	6 (32). Baja Russia (30, 31, 34, 38, 1)
+	7 (33). Palestisrael (27, 29, 18, 19, 22, 23)
+	8 (34). Mongolia (28, 30, 31, 32, 36)
+	9 (35). Coda (28, 29, 40)
+	10 (36). Part of Russia (28, 30, 34, 37, 38)
+	11 (37). More of Russia (27, 28, 36, 19)
+	12 (38). Siberia (30, 32, 36)
+F. Australia - value = 2
+	1 (39). Koala Bearland (41, 42)
+	2 (40). Indonesia (41, 42, 35)
+	3 (41). New Guinea (39, 40, 42)
+	4 (42). Middle Earth (39, 40, 41) -->
