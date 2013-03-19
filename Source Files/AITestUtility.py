@@ -9,47 +9,58 @@
 
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
-from random import randint
+import sys
 import random
-import RandomAI
+from datetime import datetime
+import RandomAI, RandomAIBetter
 # import scripts here
 
 # diffs being a list of difficulties
 def setup(gsName, numAIs, diffs):
     gs.loadXML(gsName)
     for i in range(numAIs):
-        players.append(diffs[i])
+        players[i+1] = [diffs[i], True] # [difficulty code, status]
         moves.append(0)
-    print("Players loaded: " + str(players) + "\n")
+    #print("Players loaded: " + str(players) + "\n")
     distributePlanets()
-    print("Planets distributed: " + str(gs) + "\n")
+    #print("Planets distributed: " + str(gs) + "\n")
 
 def playGame():
-    print("Game Started! \n")
+    print("Game Started!")
+    
     winner = 0
     k = 0
     while (winner == 0):
         k += 1
     #for k in range(10):
-        print("Round " + str(k) + "...")
-        for i in range(1, len(players)):
-            #print("Player "+str(i)+" is moving.")
-            if(players[i] == 0):
-                m = RandomAI.getMove(gs, i)  #ADD ELIFS HERE
+        #print("Round " + str(k) + "...")
+        for p in players:
+            #print("Player list: " + str(players))
+            # If player is not active, ignore it
+            if not players[p][1]: continue
+            #print("Player "+str(p)+" is moving.")
+            diff = players[p][0]
+            if (diff == 0):
+                m = RandomAI.getMove(gs, p)  #ADD ELIFS HERE
+            elif (diff == 1):
+                m = RandomAIBetter.getMove(gs, p)
             else: #empty move
-                m = str(self.playerID) + "/"
+                print("Error: AI not found.", file=sys.stderr)
+                return
             #print("Player " + str(i) + "'s move is: " + str(m))
             processMove(m)
-            moves[i] += 1
-        for j in range(1, len(players)):
+            moves[p] += 1
+        for j in players:
             if(checkElimination(j)):
                 elimOrder.append(j)
-                players.pop(j)
-            winner = checkWin()
-    print("Game over\n")
+        winner = checkWin()
+        #input("WINNER = "+str(winner)+"; PRESS ENTER TO CONTINUE...")
+    print("Game over: "+str(k)+" rounds elapsed.")
+    #print("Winner: "+str(winner)+"; player list: "+str(players))
+    return winner
 
 def printStats():
-    print(str("Winner: " + winner + "\n"), file=sys.stdout)
+    print(str("Winner: " + winner), file=sys.stdout)
     eliminationStr = ""
     for i in range(len(elimOrder)):
         eliminiationStr += str(elimOrder[i] + " ")
@@ -138,45 +149,61 @@ def processAttack(sourceFleets, destFleets):
 
     #return [sourceFleets, destFleets]
 
-def checkElimination(id):
-    for i in range(1, len(gs.pList)):
-        if(gs.pList[i].owner == id):
+def checkElimination(playerID):
+    for p in gs.pList:
+        if p is not None and p.owner is int(playerID):
             return False
-    print("Player " + str(id) + " eliminated.\n")
-    players[id] = -1
-    return True
+    else:
+        print("Player " + str(playerID) + " eliminated.")
+        players[playerID][1] = False # sets player status to False (inactive)
+        return True
     
 def checkWin():
-    count = 0
+    active = None
     for p in players:
-        if p is not None and p != -1:
-            count += 1
-    return count == 1
+        status = players[p][1]
+        if status is False: continue
+
+        # If we get here, status is nonzero -> at least 1 active player
+        if active is None:
+            # If we haven't already found an active player, now we have
+            active = p
+        else:
+            return 0 # otherwise, no winner
+    return active # return ID of remaining active player
 
 def distributePlanets():
-    minFleets = 1
-    plyr = randint(1, (len(players)-1))
-    planetIDs = []
-    for i in range(len(gs.pList)-1):
-        planetIDs.append(i + 1)
-    random.shuffle(planetIDs)
-    for i in range(len(planetIDs)):
-        gs.pList[planetIDs[i]].owner = plyr
-        gs.pList[planetIDs[i]].numFleets = minFleets
-        plyr = (plyr + 1) % (len(players) - 1)
+    minFleets = 5
+    plyr = random.choice(list(players.keys()))
+    planetList = list(gs.pList)
+    random.shuffle(planetList)
+    for p in planetList:
+        if p is None: continue
+        p.owner = plyr
+        p.numFleets = minFleets
+        plyr = (plyr + 1) % len(players)
         if(plyr == 0):
-            plyr = (len(players) - 1)
+            plyr = len(players)
 
 if __name__ == '__main__':
-    #PLAYERS START AT 0
-    players = []
-    players.append(None)
-    gs = Gamestate()
-    moves = []
-    moves.append(None)
-    elimOrder = []
+    startTime = datetime.now()
+    numGames = 100
+    victories = [None, 0, 0]
+    for i in range(numGames):
+        print("\n---------------\nRound "+str(i+1))
+        players = {}
+        gs = Gamestate()
+        moves = []
+        moves.append(None)
+        elimOrder = []
 
-    #setup("AIGS.xml", 2, [0,0])
-    setup("DemoGS.xml", 2, [0,0])
-    playGame()
+        #setup("AIGS.xml", 2, [0,0])
+        #setup("DemoGS.xml", 2, [1, 0])
+        setup("GenGS1.xml", 2, [1, 0])
+        winner = playGame()
+        victories[winner] += 1
+    totalTime = datetime.now() - startTime
+    print("\n\nElapsed time: "+str(totalTime)+
+          "\nAverage time per game: "+str(totalTime / numGames) )
+    print("Wins: "+str(victories))
     
