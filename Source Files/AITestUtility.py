@@ -50,6 +50,7 @@ def playGame():
             #print("Player " + str(i) + "'s move is: " + str(m))
             processMove(m)
             moves[p] += 1
+            gs.updateRegions()
         for j in players:
             if(checkElimination(j)):
                 elimOrder.append(j)

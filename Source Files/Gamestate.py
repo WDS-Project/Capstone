@@ -194,6 +194,7 @@ class Gamestate:
         regionList = regionListEl.getElementsByTagName("Region")
         for r in regionList:
             self.rList.append(Region(r))
+        self.updateRegions()
         
         return dom
 
