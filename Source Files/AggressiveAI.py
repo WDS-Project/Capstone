@@ -48,7 +48,9 @@ def generateMoves(gsLocal, move):
 # Generates a random deployments to an outer planet
 def generateDeployments(gsLocal, move):
     outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
+    if len(outerPlanets) < 1: return
     deployCount = gsLocal.getPlayerQuota(move.playerID)
+    dest = random.choice(outerPlanets)
     dest.numFleets += deployCount # update the local Gamestate
     move.addMove(0, dest.idNum, deployCount)
     return
