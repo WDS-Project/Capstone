@@ -12,7 +12,7 @@ from GameCommunications import Gamechange, Move
 import sys
 import random
 from datetime import datetime
-import RandomAI, RandomAIBetter
+import RandomAI, RandomAIBetter, PrioritizingAI
 # import scripts here
 
 # diffs being a list of difficulties
@@ -23,6 +23,7 @@ def setup(gsName, numAIs, diffs):
         moves.append(0)
     #print("Players loaded: " + str(players) + "\n")
     distributePlanets()
+    gs.updateRegions()
     #print("Planets distributed: " + str(gs) + "\n")
 
 def playGame():
@@ -44,6 +45,8 @@ def playGame():
                 m = RandomAI.getMove(gs, p)  #ADD ELIFS HERE
             elif (diff == 1):
                 m = RandomAIBetter.getMove(gs, p)
+            elif (diff == 2):
+                m = PrioritizingAI.getMove(gs, p)
             else: #empty move
                 print("Error: AI not found.", file=sys.stderr)
                 return
@@ -117,45 +120,44 @@ def processMove(m):
 
 def processAttack(sourceFleets, destFleets):
     #print("Processing attack: " + str(sourceFleets) + " vs. " + str(destFleets) + "\n")
-    res = []
-    if(sourceFleets > destFleets):
-        res.append(sourceFleets - destFleets)
-        res.append(0)
-    elif(sourceFleets < destFleets):
-        res.append(0)
-        res.append(destFleets - sourceFleets)
-    else:
-        res.append(1)
-        res.append(1)
-    return res
+    #res = []
+    #if(sourceFleets > destFleets):
+    #    res.append(sourceFleets - destFleets)
+    #    res.append(0)
+    #elif(sourceFleets < destFleets):
+    #    res.append(0)
+    #    res.append(destFleets - sourceFleets)
+    #else:
+    #    res.append(1)
+    #    res.append(1)
+    #return res
 
-    #retreating = False
-    #sourceOrig = sourceFleets
+    retreating = False
+    sourceOrig = sourceFleets
 
-    #while(destFleets > 0 and not(retreating)):
-    #    print("We made it in the while loop\n")
-    #    smaller = min(sourceFleets, destFleets)
-    #    for i in range(smaller):
-    #        sNum = randint(1,6)
-    #        dNum = randint(1,6)
-    #        if(sNum > dNum):
-    #            destFleets -= 1
-    #        elif(dNum > sNum):
-    #            sourceFleets -= 1
-    #
-    #    if(sourceFleets *4 > sourceOrig):
-    #        if(randint(0,1) == 0):
-    #            retreating = True
-    #print("We made it out of the while loop\n")
+    while(destFleets > 0 and not(retreating)):
+        smaller = min(sourceFleets, destFleets)
+        for i in range(smaller):
+            sNum = random.randint(1,6)
+            dNum = random.randint(1,6)
+            if(sNum > dNum):
+                destFleets -= 1
+            elif(dNum > sNum):
+                sourceFleets -= 1
+    
+        if(sourceFleets *4 < sourceOrig):
+            if(random.randint(0,1) == 0):
+                retreating = True
 
-    #return [sourceFleets, destFleets]
+    return [sourceFleets, destFleets]
 
 def checkElimination(playerID):
     for p in gs.pList:
         if p is not None and p.owner is int(playerID):
             return False
     else:
-        print("Player " + str(playerID) + " eliminated.")
+        if(players[playerID][1]):
+            print("Player " + str(playerID) + " eliminated.")
         players[playerID][1] = False # sets player status to False (inactive)
         return True
     
@@ -189,20 +191,23 @@ def distributePlanets():
 if __name__ == '__main__':
     startTime = datetime.now()
     numGames = 100
-    victories = [None, 0, 0]
-    for i in range(numGames):
-        print("\n---------------\nRound "+str(i+1))
-        players = {}
-        gs = Gamestate()
-        moves = []
-        moves.append(None)
-        elimOrder = []
+    victories = [None, 0, 0, 0, 0]
+    try:
+        for i in range(numGames):
+            print("\n---------------\nGame "+str(i+1))
+            players = {}
+            gs = Gamestate()
+            moves = []
+            moves.append(None)
+            elimOrder = []
 
-        #setup("AIGS.xml", 2, [0,0])
-        #setup("DemoGS.xml", 2, [1, 0])
-        setup("GenGS1.xml", 2, [1, 0])
-        winner = playGame()
-        victories[winner] += 1
+            setup("RiskGS.xml", 4, [1,1,2,2])
+            #setup("DemoGS.xml", 2, [1, 0])
+            #setup("GenGS1.xml", 2, [1, 0])
+            winner = playGame()
+            victories[winner] += 1
+    except:
+        pass
     totalTime = datetime.now() - startTime
     print("\n\nElapsed time: "+str(totalTime)+
           "\nAverage time per game: "+str(totalTime / numGames) )

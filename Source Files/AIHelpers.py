@@ -76,4 +76,24 @@ def addConnection(cList, start, end):
         end = temp
     cList.append(str(start) + "," + str(end))
 
+# Returns a list of Planet objects owned by the given player
+def getOwnedPlanets(gs, idNum):
+    ownedPlanets = []
+    for p in gs.pList:
+        if p is None:
+            continue
+        if p.owner is idNum:
+            ownedPlanets.append(p.idNum)
+    return ownedPlanets
 
+# returns a set of planet IDs that are outer in the region,
+# that is, that connect to a planet outside it
+# pass in a Gamestate and a Region object
+def getOuterPlanetsInRegion(gs, region):
+    outers = set()
+    for p in region.members:
+        for c in gs.getConnections(p):
+            c = int(c)
+            if c not in region.members:
+                outers.add(p)
+    return outers
