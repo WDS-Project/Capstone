@@ -37,7 +37,7 @@ var Planet = function(el) {
 		var position = el.getAttribute("position").split(',');
 		self.xPos = position[0];
 		self.yPos = position[1];
-		self.radius = el.getAttribute("radius");
+		self.radius = Number(el.getAttribute("radius"));
 		self.color = el.getAttribute("color");
 	};
 	
@@ -61,13 +61,28 @@ var Planet = function(el) {
 	// on whether this planet is selected or not.
 	self.draw = function(ctx, view, isSelection) {
 		ctx.save();
-		ctx.fillStyle = self.color;
-		ctx.strokeStyle = (isSelection ? '#f11' : '#fff');
-		ctx.lineWidth = (isSelection ? 3 : 2);
 		
+		// Outermost circle: selection circle
+		if (isSelection) {
+			ctx.fillStyle = '#f11';
+			ctx.beginPath();
+			ctx.arc(self.xPos - view.offsetX, self.yPos - view.offsetY,
+				self.radius+5, 0, 2*Math.PI, true);
+			ctx.fill();
+			ctx.closePath();
+		}
+		
+		// Middle circle: planet color
+		ctx.fillStyle = gs.playerList[self.owner].color;
+		ctx.lineWidth = 5;
+		
+		// Inner circle: player color
+		ctx.strokeStyle = self.color;
+		
+		// Draws middle & inner circles
 		ctx.beginPath();
 		ctx.arc(self.xPos - view.offsetX, self.yPos - view.offsetY,
-			self.radius, 0, 2*Math.PI, true);
+			self.radius-2, 0, 2*Math.PI, true);
 		ctx.fill();
 		ctx.stroke();
 		ctx.closePath();
@@ -301,21 +316,6 @@ var Connection = function(el) {
 var Gamestate = function() {
 	var self = this;
 	
-	// Increments the turn counter.
-	self.nextTurn = function() {
-		// Finds the next valid active player
-		self.activePlayer++;
-		while (self.playerList[self.activePlayer] != 0)
-			self.activePlayer++;
-		
-		// Increments the turn counter
-		self.turnNumber++;
-		
-		// Increments the cycle number (in theory)
-		if (self.activePlayer == self.playerList[1])
-			self.cycleNumber++;
-	};
-	
 	// Returns the Gamestate as a giant string mess. When do we use this? I don't know.
 	self.toString = function() {
 		// First, the Gamestate itself.
@@ -472,10 +472,28 @@ var Gamestate = function() {
 		for (var i = 0; i < regionList.length; i++)
 			self.rList.push(new Region(regionList[i]));
 		
-		// 5. Set player colors - HIGHLY PRELIMINARY
-		for (var i = 1; i < self.pList.length; i++) {
-			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
-			if (self.pList[i].owner == 3) self.pList[i].color = 'green';
+		// 5. Set player colors - SOMEWHAT PRELIMINARY
+		var colorList = [null, 'cyan', 'orange', 'blue', 'magenta',
+				   'green', 'purple', 'yellow', 'pink'];
+		
+		// Handle player color choice (prevent duplicate colors)
+		playerColor = window.localStorage.getItem("playerColor");
+		if (playerColor != null) {
+			var idx = colorList.indexOf(playerColor);
+			var temp = colorList.slice(1, idx).concat(colorList.slice(idx+1));
+			colorList = [null].concat(colorList[idx]).concat(temp);
+		} else { } // if no color is found, just use normal order
+		
+		// Find number of players
+		var numPlayers = 0;
+		for (i = 1; i < self.pList.length; i++) {
+			numPlayers = Math.max(numPlayers, self.pList[i].owner);
+		}
+		
+		// Assign colors
+		for (i = 1; i <= numPlayers; i++) {
+			self.playerList[i] = {};
+			self.playerList[i].color = colorList[i];
 		}
 		
 		self.updateRegions();
@@ -603,11 +621,11 @@ var Client = function() {
 		//this collects all the AI difficulties
 		var counter = 0;
 		var ais = [];
-		for(var i = 1; i < 6; i++) {
-			var aiDiff = document.getElementById("ai"+i);
-			ais[i-1] = aiDiff.options[aiDiff.selectedIndex].value;
-			if(ais[i-1] > -1)
-				counter++;
+		var aiDiff = document.getElementById("ai1");
+		while (aiDiff !== null) {
+			ais[counter] = aiDiff.options[aiDiff.selectedIndex].value;
+			counter++;
+			aiDiff = document.getElementById("ai" + (counter+1));
 		}
 		
 		//This creates the request string
@@ -626,6 +644,9 @@ var Client = function() {
 			if (self.request.status==200 && self.request.readyState == 4) {
 				response = self.request.responseText;
 				window.localStorage.setItem("gsString", response);
+				var colorChoice = document.getElementById("color");
+				window.localStorage.setItem("playerColor",
+					colorChoice.options[colorChoice.selectedIndex].value);
 				location.href = "gamepage.html";
 			} else if (self.request.status != 200) {
 				if(confirm("A connection to the server could not be established.\n Try again?"))
