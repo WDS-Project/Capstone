@@ -22,6 +22,20 @@ body {
 	font-weight:bold;
 	text-shadow:2px 2px 2px #ffffff;	
 }
+
+#options {
+	float:center;
+	padding:1em;
+	border:3px solid black;
+	margin:3em;
+	margin-left:150px;
+	font-family: "Courier New", Helvetica, Serif;
+	font-size:18px;
+	text-align:center;
+	width:70%;
+	height:80%;
+	background-color:#878787;	
+}
 #gamestate {
 	font-size:1em;
 	font-family: "Courier New", Helvetica, Sans-Serif;
@@ -77,66 +91,77 @@ html {
 <script src="ClientGUI.js"></script>
 <script type = "text/javascript">
 	var client = new Client();
+	
+	function aiInput() {	
+		document.getElementById("row").innerHTML = 'AI 1: <select id="ai1" size="1">' +
+						'<option value="0">Random</option>' +
+						'<option value="1">RandomBetter</option>' +
+						'<option value="2">Prioritization</option>' +
+						'<option value="3">Aggressive</option>' +
+						'</select>';
+		for(var i = 2; i <= Number(document.getElementById("ais").value); i++) {
+			document.getElementById("row").innerHTML += 'AI ' + i +': <select id="ai' + i + '" size="1">' +
+						'<option value="0">Random</option>' +
+						'<option value="1">RandomBetter</option>' +
+						'<option value="2">Prioritization</option>' +
+						'<option value="3">Aggressive</option>' +
+						'</select>';
+			if(i % 2 == 0) document.getElementById("row").innerHTML += "<br>";
+		}
+		
+		document.getElementById("row").innerHTML += "</td></tr>";
+	}
+	
 </script>
-
+<div id = "options">
 <table align = center>
+
 <tr>
 <td>Color:</td>
 <td><select id = "color" size="1">
-<option value="red">Red</option>
-<option value="green">Green</option>
+<option value="orange">Orange</option>
 <option value="blue">Blue</option>
+<option value="cyan">Cyan</option>
+<option value="magenta">Magenta</option>
+<option value="purple">Purple</option>
+<option value="yellow">Yellow</option>
+<option value="pink">Pink</option>
 </select></td></tr>
 <tr><td></td><td></td></tr>
-<!--Number of AI opponents:
-<input type = "number" min = "1" max = "10" step = "1" value = "2" size = "6">
-<p></p><!-->
+
 <tr>
-<td>AI Opponents: Select their difficulties. <br>Leave fields of undesired AIs as "None."<br>
-You must play with at least 1 AI. <br><br></td>
-<td margin-left=2px>AI 1: <select id="ai1" size="1" value >
-<option value="0">Easy</option>
-<option value="1">Medium</option>
-<option value="2">Hard</option>
-</select>
-  AI 2: <select id="ai2" size="1" value >
-<option value="-1">None</option>
-<option value="0">Easy</option>
-<option value="1">Medium</option>
-<option value="2">Hard</option>
-</select>
-  AI 3: <select id="ai3" size="1" value >
-<option value="-1">None</option>
-<option value="0">Easy</option>
-<option value="1">Medium</option>
-<option value="2">Hard</option>
-</select><br>
-  AI 4: <select id="ai4" size="1" value >
-<option value="-1">None</option>
-<option value="0">Easy</option>
-<option value="1">Medium</option>
-<option value="2">Hard</option>
-</select>
-  AI 5: <select id="ai5" size="1" value >
-<option value="-1">None</option>
-<option value="0">Easy</option>
-<option value="1">Medium</option>
-<option value="2">Hard</option>
-</select></td></tr>
-<tr><td></td><td></td></tr>
-<!-- right now these all refer to the same gamestate <!-->
-<tr>
-<td><br>Difficulty of Game:</td>
+<td>Game Settings:</td>
 <td><select id="gamestate" size="1">
-<option value="TestGS6">10 Planets</option>
-<option value="DemoGS">13 Planets</option>
-<option value="TestGS6">50 Planets</option>
-</select></td>
-</tr>
+<option value="RiskGS">Risk Board GameState</option>
+<option value="DemoGS">Demo GameState (13 Planets)</option>
+<option value="TestGS6">Test GameState (10 Planets)</option>
+</select></td></tr>
 <tr><td></td><td></td></tr>
-</table><br><br>
+
+<tr>
+<td>Number of AI opponents:</td>
+<td>
+<input type = "number" id = "ais" min = "1" max = "10" step = "1" value = "1" size = "6"
+ style = "float:center;font-family: 'Courier New', Helvetica, Serif; font-size:1em;
+		font-weight:bold; text-align:center;" onchange="aiInput();">
+</td>
+<tr><td></td><td></td></tr>
+
+<tr>
+<td>Types of AIs:</td>
+<td margin-left=2px id = "row">AI 1: <select id="ai1" size="1">
+<option value="0">Random</option>
+<option value="1">RandomBetter</option>
+<option value="2">Prioritization</option>
+<option value="3">Aggressive</option>
+</select></td>
+<tr><td></td><td></td></tr>
+
+</table><br>
+</div>
+
 <div align=center>
-<input type="submit" value="Start Game" style = "font-family: 'Courier New', Helvetica, Serif; font-size:30px; padding:.5em;
+<input type="submit" value="Start Game" style = "float:center;font-family: 'Courier New', Helvetica, Serif; font-size:30px; padding:.5em;
 		font-weight:bold; text-align:center;" onClick = "client.connect()" > </div>
 
 </body>
