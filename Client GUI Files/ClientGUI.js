@@ -400,11 +400,6 @@ var Gamestate = function() {
 			p.owner = change.changes[i][1];
 			p.numFleets = change.changes[i][2];
 		}
-		// 5. Set player colors - HIGHLY PRELIMINARY
-		for (var i = 1; i < self.pList.length; i++)
-			self.pList[i].color = ( (self.pList[i].owner == 1) ? 'cyan' : 'yellow');
-		self.updateRegions();
-		self.updateConnections();
 	};
 	
 	// Returns the number of fleets the given player can deploy.
@@ -660,7 +655,7 @@ var Client = function() {
 	
 	self.go = function(){
 		//if it's not our turn, send a gamechange request
-		if(gs.activePlayer != self.playerID) {
+		if (gs.activePlayer != self.playerID) {
 			self.request = new XMLHttpRequest();
 			self.request.open("POST", "http://" +self.serverIPandPort + "/gamechange/", true);
 			self.request.send(self.playerID);
@@ -670,7 +665,7 @@ var Client = function() {
 					self.dealWithResponse(response);
 				} else if (self.request.status != 200) {
 					alert("Response status: " + self.request.status);
-					if(confirm("We did not successfully receive the gamechange.\n Try again?"))
+					if(!confirm("We did not successfully receive the gamechange.\n Try again?"))
 						self.go();
 				}
 			}
@@ -690,6 +685,7 @@ var Client = function() {
 		var gc = new Gamechange();
 		gc.loadXML(res);
 		gs.update(gc);
+		self.go();
 	}
 	
 	self.deploy = function(source) {
