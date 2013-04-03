@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding='UTF-8'?>
-<Gamestate xSize="1300" ySize="1000">
+<Gamestate xSize="1000" ySize="1300">
 	<Players activePlayer="0" cycleNumber="0" turnNumber="0" />
 	<PlanetList>
 	<!-- North America (count: 9) -->
