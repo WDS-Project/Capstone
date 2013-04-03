@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding='utf'?>
+<?xml version="1.0" encoding='UTF-8'?>
 <Gamestate xSize="1300" ySize="1000">
 	<Players activePlayer="0" cycleNumber="0" turnNumber="0" />
 	<PlanetList>
