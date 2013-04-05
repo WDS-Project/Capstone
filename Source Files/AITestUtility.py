@@ -12,100 +12,116 @@ from GameCommunications import Gamechange, Move
 import sys
 import random
 from datetime import datetime
-import RandomAI, RandomAIBetter, PrioritizingAI
-# import scripts here
 
-# diffs being a list of difficulties
-def setup(gsName, numAIs, diffs):
-    gs.loadXML(gsName)
+# Remember to import any AI scripts you want to use.
+import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
+
+# Returns a pointer to the getMove method of the specified AI type
+def findAIType(diff):
+    # List of AIs matched with difficulties.
+    if (diff == 0):
+        move = RandomAI.getMove
+    elif (diff == 1):
+        move = RandomAIBetter.getMove
+    elif (diff == 2):
+        move = AggressiveAI.getMove
+    elif (diff == 3):
+        move = PrioritizingAI.getMove
+    else: # Undefined AI type
+        print("Error: AI not found.", file=sys.stderr)
+    return move
+
+# Prepares to simulate a game.
+# - gsName: name of map to use
+# - numAIs: number of AI players
+# - diffs: array containing difficulties of each AI
+def setup(gsMap, numAIs, diffs):
+    # Load gamestate
+    gs.loadXML(gsMap)
+
+    # Load AI players
     for i in range(numAIs):
-        players[i+1] = [diffs[i], True] # [difficulty code, status]
-        moves.append(0)
-    #print("Players loaded: " + str(players) + "\n")
+        players[i+1] = [None, True] # [getMove, status]
+        # This finds the getMove function for the given difficulty
+        players[i+1][0] = findAIType(diffs[i])
+
+    # Setup gamestate
     distributePlanets()
     gs.updateRegions()
-    #print("Planets distributed: " + str(gs) + "\n")
 
 def playGame():
-    print("Game Started!")
-    
+    print("Started!")
     winner = 0
-    k = 0
+    rounds = 0
+    currElim = 0
+    
     while (winner == 0):
-        k += 1
-    #for k in range(10):
-        #print("Round " + str(k) + "...")
+        rounds += 1
+        #print("Round " + str(rounds) + "...")
         for p in players:
-            #print("Player list: " + str(players))
             # If player is not active, ignore it
             if not players[p][1]: continue
             #print("Player "+str(p)+" is moving.")
-            diff = players[p][0]
-            if (diff == 0):
-                m = RandomAI.getMove(gs, p)  #ADD ELIFS HERE
-            elif (diff == 1):
-                m = RandomAIBetter.getMove(gs, p)
-            elif (diff == 2):
-                m = PrioritizingAI.getMove(gs, p)
-            else: #empty move
-                print("Error: AI not found.", file=sys.stderr)
-                return
-            #print("Player " + str(i) + "'s move is: " + str(m))
+            
+            # Gets a move from the AI
+            m = players[p][0](gs, p)
+            #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
-            moves[p] += 1
             gs.updateRegions()
+
+        # After each move, check player status
         for j in players:
-            if(checkElimination(j)):
-                elimOrder.append(j)
+            # Check only if the player is actually active
+            if (players[j][1] and checkElimination(j, currElim)):
+                currElim += 1
         winner = checkWin()
         #input("WINNER = "+str(winner)+"; PRESS ENTER TO CONTINUE...")
-    print("Game over: "+str(k)+" rounds elapsed.")
-    #print("Winner: "+str(winner)+"; player list: "+str(players))
+    
+    print("Game over: "+str(rounds)+" rounds elapsed.")
     return winner
 
-def printStats():
-    print(str("Winner: " + winner), file=sys.stdout)
-    eliminationStr = ""
-    for i in range(len(elimOrder)):
-        eliminiationStr += str(elimOrder[i] + " ")
-    print(str("Order of elimination: " + eliminationStr), file=sys.stdout)
-
 def processMove(m):
-    #print("Beginning of move: " + str(gs))
+    #print("Processing move: " + str(gs))
     quota = gs.getPlayerQuota(m.playerID)
     while(m.hasNext()):
         miniMove = m.next()
-        #print("miniMove: " + str(miniMove))
         dest = miniMove[1] 
         fleets = miniMove[2]
-
-        #deployment
-        if(miniMove[0] == 0):
-            if(fleets > quota):
-                print("Illegal move: quota exceeded. Quota: " + str(quota) + " Fleets: " + str(fleets) + "\n")
-                return #turn is passed up for illegal action
-            quota -= fleets
-            gs.pList[dest].numFleets += fleets
-            continue
-
         source = miniMove[0]
 
-        if(not(gs.isConnected(source, dest))):
-            print("Illegal move: planets " + str(source) + " and " + str(dest) + " are not connected")
-            return #another illegal action
+        # Deployment
+        if (source == 0):
+            if(fleets > quota):
+                print("Illegal move: quota exceeded. Quota: " + str(quota)
+                      + " Fleets: " + str(fleets) + "\n")
+                # If an AI makes an illegal move, it forfeits its turn
+                return
+            else:
+                quota -= fleets
+                gs.pList[dest].numFleets += fleets
+            continue
 
-        if(fleets >= gs.pList[source].numFleets):
+        # Now we check if the planets are valid
+        if (not gs.isConnected(source, dest)):
+            print("Illegal move: planets " + str(source) + " and "
+                  + str(dest) + " are not connected")
+            return
+        # ... and if there are sufficient fleets
+        if (fleets >= gs.pList[source].numFleets):
             print("Illegal move: not enough fleets ("+str(fleets)+" requested,"
                   +" but planet "+str(source)+" only has " +
                   str(gs.pList[source].numFleets)+".)")
-            return #another illegal action
+            return
 
-        #reinforcement
-        if(gs.pList[source].owner == gs.pList[dest].owner):
+        # Reinforcement
+        if(m.playerID == gs.pList[dest].owner):
             gs.pList[source].numFleets -= fleets
             gs.pList[dest].numFleets += fleets
-        #attack
+            
+        # Attack
         else:
+            stats.avgAttacks[m.playerID] += 1
+            stats.avgFleets[m.playerID] += fleets
             results = processAttack(fleets, gs.pList[dest].numFleets)
             #attacker won
             if(results[1] == 0):
@@ -117,21 +133,25 @@ def processMove(m):
                 gs.pList[source].numFleets += (results[0] - fleets)
                 gs.pList[dest].numFleets = results[1]
 
+# This method for testing purposes only
+def processAttackNonRandom(sourceFleets, destFleets):
+    #print("Processing attack: " + str(sourceFleets) + " vs. " + str(destFleets) + "\n")
+    res = []
+    if(sourceFleets > destFleets):
+        res.append(sourceFleets - destFleets)
+        res.append(0)
+    elif(sourceFleets < destFleets):
+        res.append(0)
+        res.append(destFleets - sourceFleets)
+    else:
+        res.append(1)
+        res.append(1)
+    return res
 
+# Calculates the results of an attack. The result is in the following format:
+# [attacker fleets remaining, defending fleets remaining]
 def processAttack(sourceFleets, destFleets):
     #print("Processing attack: " + str(sourceFleets) + " vs. " + str(destFleets) + "\n")
-    #res = []
-    #if(sourceFleets > destFleets):
-    #    res.append(sourceFleets - destFleets)
-    #    res.append(0)
-    #elif(sourceFleets < destFleets):
-    #    res.append(0)
-    #    res.append(destFleets - sourceFleets)
-    #else:
-    #    res.append(1)
-    #    res.append(1)
-    #return res
-
     retreating = False
     sourceOrig = sourceFleets
 
@@ -144,35 +164,37 @@ def processAttack(sourceFleets, destFleets):
                 destFleets -= 1
             elif(dNum > sNum):
                 sourceFleets -= 1
-    
+
+        # Retreating calculation
         if(sourceFleets *4 < sourceOrig):
             if(random.randint(0,1) == 0):
                 retreating = True
 
     return [sourceFleets, destFleets]
 
-def checkElimination(playerID):
+def checkElimination(playerID, currElim):
     for p in gs.pList:
         if p is not None and p.owner is int(playerID):
             return False
     else:
-        if(players[playerID][1]):
-            print("Player " + str(playerID) + " eliminated.")
         players[playerID][1] = False # sets player status to False (inactive)
+        stats.elimOrder[playerID][currElim] += 1
         return True
     
 def checkWin():
     active = None
     for p in players:
-        status = players[p][1]
-        if status is False: continue
+        if players[p][1] is False: continue # Player not active
 
-        # If we get here, status is nonzero -> at least 1 active player
+        # If we get here, there is at least 1 active player
+        
+        # If we haven't already found an active player, now we have
         if active is None:
-            # If we haven't already found an active player, now we have
             active = p
         else:
-            return 0 # otherwise, no winner
+            # Otherwise, there's more than one active player, and
+            # therefore no winner
+            return 0
     return active # return ID of remaining active player
 
 def distributePlanets():
@@ -188,28 +210,85 @@ def distributePlanets():
         if(plyr == 0):
             plyr = len(players)
 
-if __name__ == '__main__':
+def run(diffList, gsMap='RiskGS.xml', numGames=50):
+    # Reset global results variables
+    gs = Gamestate()
+    players = {}
+    stats.__init__()
+    for d in range(1, len(diffList)+1):
+        stats.victories.append(0)
+        stats.avgAttacks.append(0)
+        stats.avgFleets.append(0)
+        stats.elimOrder.append([])
+        for d2 in range(1, len(diffList)):
+            stats.elimOrder[d].append(0)
     startTime = datetime.now()
-    numGames = 100
-    victories = [None, 0, 0, 0, 0]
-    try:
-        for i in range(numGames):
-            print("\n---------------\nGame "+str(i+1))
-            players = {}
-            gs = Gamestate()
-            moves = []
-            moves.append(None)
-            elimOrder = []
 
-            setup("RiskGS.xml", 4, [1,1,2,2])
-            #setup("DemoGS.xml", 2, [1, 0])
-            #setup("GenGS1.xml", 2, [1, 0])
+    # Run the games
+    if (True):
+    #try:
+        for i in range(1, int(numGames)+1):
+            print("\nGame "+str(i), end=': ')
+
+            # Play the game & store the results
+            setup(gsMap, len(diffList), diffList)
             winner = playGame()
-            victories[winner] += 1
-    except:
-        pass
+            stats.victories[winner] += 1
+    #except:
+    #    pass # for allowing a keyboard interrupt
+
+    # Calculate final results
     totalTime = datetime.now() - startTime
-    print("\n\nElapsed time: "+str(totalTime)+
-          "\nAverage time per game: "+str(totalTime / numGames) )
-    print("Wins: "+str(victories))
+    for a in range(1, len(diffList)+1):
+        stats.avgAttacks[a] /= i
+        stats.avgFleets[a] /= (stats.avgAttacks[a] * i)
+
+    # Print the final results
+    print("\n\nSimulations completed: "+str(i),
+          "Elapsed time: "+str(totalTime),
+          "Average time per game: "+str(totalTime / i),
+          "Wins: "+str(stats.victories)+"\n", sep='\n')
+
+def printInstructions():
+    print("-----------------------------",
+          "To use this utility: \"run(...)\"",
+          "--> diffList: array containing difficulty codes of AIs",
+          "--> [gsMap]: gamestate file to use (default: RiskGS.xml)",
+          "--> [numGames]: number of games to simulate (default: 50)",
+          "-----------------------------", sep='\n')
+
+# Class for storing the results of a series of games
+class Statistics:
+    def __init__(self):
+        self.victories = [None] # total number of victories
+        self.avgFleets = [None] # avg num fleets per attack
+        self.avgAttacks = [None] # avg num of attacks per game
+        self.elimOrder = [None] # record of time eliminated per player
+
+    def printStats(self):
+        print("Victories: " + str(self.victories))
+        print("-----------------------------------")
+        print("Avg fleets per attack:")
+        for i in range(1, len(self.avgFleets)):
+            print("Player "+str(i)+": %.2f" % self.avgFleets[i])
+        print("-----------------------------------")
+        print("Avg attacks per game:")
+        for i in range(1, len(self.avgAttacks)):
+            print("Player "+str(i)+": %.1f" % self.avgAttacks[i])
+        print("-----------------------------------")
+        print("Elimination order:")
+        for i in range(1, len(self.avgAttacks)):
+            print("Player "+str(i)+": "+str(self.elimOrder[i]))
+        print("-----------------------------------")
+
+# These global variables are used by all methods. This way they can be
+# queried at runtime in the interpreter.
+gs = Gamestate()
+players = {}
+stats = Statistics()
+
+if __name__ == '__main__':
+    printInstructions()
+    run([1, 2, 2], numGames=10)
+    
     
