@@ -22,10 +22,8 @@ public class HandleJoin implements HttpHandler {
 
 	public void handle(HttpExchange exchange) {
 		try {
-			String nextPlayerIP = exchange.getRemoteAddress().getAddress().getHostAddress();
-			System.out.println("Join game request from " + nextPlayerIP);
-			String req = exchange.getRequestMethod();
-			if(req.equalsIgnoreCase("OPTIONS")) {
+			String reqType = exchange.getRequestMethod();
+			if(reqType.equalsIgnoreCase("OPTIONS")) {
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
 				header.add("Access-Control-Allow-Methods", "POST");
@@ -39,7 +37,10 @@ public class HandleJoin implements HttpHandler {
 				response.write("ok".getBytes());
 				response.close();
 			}
-			else if(req.equalsIgnoreCase("POST")) {
+			else if(reqType.equalsIgnoreCase("POST")) {
+				String nextPlayerIP = exchange.getRemoteAddress().getAddress().getHostAddress();
+				System.out.println("Join game request from " + nextPlayerIP);
+				
 				//all this header nonsense that I really don't know why we have to do
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");

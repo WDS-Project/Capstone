@@ -18,14 +18,9 @@ public class HandleGameChange implements HttpHandler {
 
 	public void handle(HttpExchange exchange) {
 		try {
-
-			//get the IP
-			String playerIP = exchange.getRemoteAddress().getAddress().getHostAddress();  
-			System.out.println("GameChange request from " + playerIP);
-
-			String req = exchange.getRequestMethod();
+			String reqType = exchange.getRequestMethod();
 			//it should actually be a GET
-			if(req.equalsIgnoreCase("OPTIONS")) {
+			if(reqType.equalsIgnoreCase("OPTIONS")) {
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
 				header.add("Access-Control-Allow-Methods", "POST");
@@ -39,7 +34,10 @@ public class HandleGameChange implements HttpHandler {
 				response.write("ok".getBytes());
 				response.close();
 			}
-			else if(req.equalsIgnoreCase("POST")) {
+			else if(reqType.equalsIgnoreCase("POST")) {
+				String playerIP = exchange.getRemoteAddress().getAddress().getHostAddress(); 
+				System.out.println("GameChange request from " + playerIP);
+				
 				//all this header nonsense that I really don't know why we have to do
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
@@ -65,14 +63,19 @@ public class HandleGameChange implements HttpHandler {
 					System.out.println("Attempt to get a GameChange by bad player ID: " + playerIP + ":" + request);
                                         return;
                                 }
-
+                                
+                                // Synchronize with the other players
 				Player player = engine.findPlayer(playerIP+":"+request);
-				if(engine.eliminate(player.getID())) { //if this player should be eliminated
-                                    engine.eliminatePlayer(player.getID()); //get rid of them in the engine
-                                    server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
-                                    player.setResponse("eliminated"); //tell the player
-				}
 				player.synchronizedRequest("gamechange", engine);
+				
+				// Check if the player was eliminated.
+				if(player.getStatus() == 0) {
+					server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
+					player.setResponse("eliminated"); //tell the player
+					System.out.println("Player "+player.getID()+" has been eliminated.");
+				}
+				
+				// Send the response
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
 				responseBody.write(player.getResponse().getBytes());

@@ -293,27 +293,18 @@ public class GameEngine {
 
 		System.out.println("Done processing move.");
 	} // end processMove()
-
-	/**
-	 * Checks to see if a certain player should be eliminated.
-	 * This should be called on the defeated planet owner at
-	 * the end of attacks
-	 * @param player    The candidate for elimination
-	 * @return          True if the candidate should be eliminated, false if not
-	 */
-	public boolean eliminate(int player) {
-		Planet[] planets = gs.getPlanets();
-		for(int i = 1; i < planets.length; i++) {
-			Planet pl = planets[i];
-			if(pl.getOwner() == player)
-				return false;
+	
+	/** Checks all players to see if they should be eliminated. */
+	public void checkEliminations() {
+		for (int i = 1; i < players.size()+1; i++) {
+			Player p = findPlayer(i);
+			if ( !(p.getStatus() == 0) &&
+			    gs.checkPlayerStatus(i) == 0) {
+				gs.setPlayerInactive(i);
+				p.setStatus(0);
+				System.out.println("Player "+i+" eliminated.");
+			}
 		}
-		return true;
-	}
-
-	public void eliminatePlayer(int player) {
-		findPlayer(player).setStatus(0); //eliminate him/her
-		gs.setPlayerInactive(player);
 	}
 
 	/**
@@ -380,6 +371,12 @@ public class GameEngine {
 				try {
 					if(player.getStatus() != 0)
 						player.setResponse(change.writeToXML());
+					// Check if the player was eliminated.
+					/*else {
+						server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
+						player.setResponse("eliminated"); //tell the player
+						System.out.println("Player "+player.getID()+" has been eliminated.");
+					}*/
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

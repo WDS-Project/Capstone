@@ -53,6 +53,7 @@ public class HandleDefineGame implements HttpHandler {
 			else if (reqType.equalsIgnoreCase("POST")) {
 				String player1IP = exchange.getRemoteAddress().getAddress().getHostAddress();
 				System.out.println("Define game request from " + player1IP);
+				
 				try {
 					//for browser portability, if the request method is POST,
 					//the headers must be adjusted to allow all types of requests

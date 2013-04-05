@@ -20,13 +20,8 @@ public class HandleMove implements HttpHandler {
 
 	public void handle(HttpExchange exchange) {
 		try {
-			//get the IP
-			String playerIP = exchange.getRemoteAddress().getAddress().getHostAddress();
-
-			System.out.println("Move request from " + playerIP);
-
-			String req = exchange.getRequestMethod();
-			if(req.equalsIgnoreCase("OPTIONS")) {
+			String reqType = exchange.getRequestMethod();
+			if(reqType.equalsIgnoreCase("OPTIONS")) {
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
 				header.add("Access-Control-Allow-Methods", "POST");
@@ -40,7 +35,10 @@ public class HandleMove implements HttpHandler {
 				response.write("ok".getBytes());
 				response.close();
 			}
-			else if(req.equalsIgnoreCase("POST")) {
+			else if(reqType.equalsIgnoreCase("POST")) {
+				String playerIP = exchange.getRemoteAddress().getAddress().getHostAddress();
+				System.out.println("Move request from " + playerIP);
+				
 				//all this header nonsense that I really don't know why we have to do
 				Headers header = exchange.getResponseHeaders();
 				header.add("Access-Control-Allow-Origin", "*");
@@ -71,12 +69,15 @@ public class HandleMove implements HttpHandler {
 				Player player = engine.findPlayer(playerIP+":"+m.getPlayerID());                        
 
 				engine.processMove(m);
-				if(engine.eliminate(player.getID())) { //if this player should be eliminated
-					engine.eliminatePlayer(player.getID()); //get rid of them in the engine
-					server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
-					player.setResponse("eliminated"); //tell the player
-				}
+				engine.checkEliminations(); // eliminate players if needed
 				player.synchronizedRequest("gamechange", engine);
+				
+				// Check if the player has won.
+				if (engine.checkWin() == player.getID()) {
+					System.out.println("Player "+player.getID()+" has won!");
+					player.setResponse("winner:"+player.getID());
+				}
+				
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
 				responseBody.write(player.getResponse().getBytes());
