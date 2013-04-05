@@ -244,7 +244,7 @@ public class Gamestate {
 	 * Each planet gets a default 1 fleet after being distributed.
 	 */
 	public void distributePlanets() {
-			int minFleets = 1;
+			int minFleets = 5;
 			//start with a random player
 			Random rand = new Random();
 			int player = rand.nextInt(playerList.length-1) + 1; //this goes from 0 to numPlayers + 1
