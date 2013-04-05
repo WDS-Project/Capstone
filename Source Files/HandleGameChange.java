@@ -75,8 +75,6 @@ public class HandleGameChange implements HttpHandler {
 				player.synchronizedRequest("gamechange", engine);
 				exchange.sendResponseHeaders(200,0);
 				OutputStream responseBody = exchange.getResponseBody();
-				System.out.println("Sending response to player " + player.getID());
-				System.out.println(player.getResponse());
 				responseBody.write(player.getResponse().getBytes());
 				responseBody.close();
 			}

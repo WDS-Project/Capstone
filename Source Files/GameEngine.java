@@ -19,8 +19,7 @@ public class GameEngine {
 	private GameChange change;
 	// For players, it's an <IP:ID, Player object> map
 	private TreeMap<String, Player> players;
-	private CyclicBarrier roundBegin,
-	roundEnd;
+	private CyclicBarrier roundBegin, roundEnd;
 	private boolean randomize = true; // Flag to disable RNG for testing
 
 	private int ID = -1;
@@ -37,7 +36,7 @@ public class GameEngine {
 	private int winner = -1;
 
 	/*** Methods ***/
-	// Constructor, I guess? Also related init methods.
+	// A default constructor with related init methods.
 	public GameEngine(int id) {
 		init();
 		ID = id;
@@ -48,7 +47,6 @@ public class GameEngine {
 	/** Initialize (or reinitialize) the engine. */
 	private void init() {
 		players = new TreeMap<String, Player>();
-		setRandomize(false); // *** NOTE: For testing purposes only
 		// Note that the engine is unusable until players are defined.
 	}
 
@@ -367,6 +365,12 @@ public class GameEngine {
 
 		else if(stateOfGame == IN_PROGRESS) {
 			// If it has, send a GameChange
+			try {
+				System.out.println("Sending gamechange to "+
+					"all players:\n"+change.writeToXML());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
 				Player player = players.get(key);
@@ -380,6 +384,7 @@ public class GameEngine {
 					e.printStackTrace();
 				}
 			}
+			System.out.println("Done sending responses.");
 		}
 		else { //the game must be over
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
@@ -401,16 +406,15 @@ public class GameEngine {
 			gs.nextTurn();
 			change.setTurnStatus(gs.getActivePlayer(), gs.getTurnNumber(), gs.getCycleNumber());
 		}
-
 		setResponses();
 
 		if(stateOfGame == NOT_STARTED)
 			stateOfGame = IN_PROGRESS; 
 
+		System.out.println("Turn complete. Player list:");
 		for(int p : gs.getPlayerList())
 			System.out.print(p + " ");
-
-		System.out.println("active player: " + gs.getActivePlayer() + "\n");
+		System.out.println("\n----------------------------------");
 	}
 
 	/** Adjusts the player population for players being eliminated and whatnot. */
