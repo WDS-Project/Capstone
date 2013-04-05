@@ -186,7 +186,7 @@
 		<connection>18,20</connection>
 	</ConnectionList>
 	<RegionList>
-		<Region idNum="1" name="North America" owner="1" value="5" color="1">
+		<Region idNum="1" name="North America" owner="1" value="5" color="#8B2252">
 			<memberList>
 				<member>1</member>
 				<member>2</member>
@@ -199,7 +199,7 @@
 				<member>9</member>
 			</memberList>
 		</Region>
-		<Region idNum="2" name="South America" owner="1" value="2" color="1">
+		<Region idNum="2" name="South America" owner="1" value="2" color="#1E90FF">
 			<memberList>
 				<member>10</member>
 				<member>11</member>
@@ -207,7 +207,7 @@
 				<member>13</member>
 			</memberList>
 		</Region>
-		<Region idNum="3" name="Europe" owner="1" value="5" color="1">
+		<Region idNum="3" name="Europe" owner="1" value="5" color="#7CCD7C">
 			<memberList>
 				<member>14</member>
 				<member>15</member>
@@ -218,7 +218,7 @@
 				<member>20</member>
 			</memberList>
 		</Region>
-		<Region idNum="4" name="Africa" owner="1" value="3" color="1">
+		<Region idNum="4" name="Africa" owner="1" value="3" color="#FFC125">
 			<memberList>
 				<member>21</member>
 				<member>22</member>
@@ -229,7 +229,7 @@
 
 			</memberList>
 		</Region>
-		<Region idNum="5" name="Asia" owner="1" value="7" color="1">
+		<Region idNum="5" name="Asia" owner="1" value="7" color="#FFC1C1">
 			<memberList>
 				<member>27</member>
 				<member>28</member>
@@ -245,7 +245,7 @@
 				<member>38</member>
 			</memberList>
 		</Region>
-		<Region idNum="6" name="Australia" owner="1" value="2" color="1">
+		<Region idNum="6" name="Australia" owner="1" value="2" color="#E0E0E0">
 			<memberList>
 				<member>39</member>
 				<member>40</member>

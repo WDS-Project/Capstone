@@ -13,16 +13,17 @@ body {
 	font-weight:bold;
 	margin-left:3em;
 	color:white;
-	text-shadow:2px 2px 2px #000000;
+	/*text-shadow:2px 2px 2px #000000;*/
 }
-#color {
-	font-size:1em;
+#aitable {
+	float:center;
+	font-size:1.5em;
 	font-family: "Courier New", Helvetica, Sans-Serif;
 	margin:1em;
 	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
+	text-shadow:2px 2px 2px #000000;
+	text-align:center;	
 }
-
 #options {
 	float:center;
 	padding:1em;
@@ -32,51 +33,9 @@ body {
 	font-family: "Courier New", Helvetica, Serif;
 	font-size:18px;
 	text-align:center;
-	width:70%;
+	width:60%;
 	height:80%;
 	background-color:#878787;	
-}
-#gamestate {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
-}
-#ai1 {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
-}
-#ai2 {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
-}
-#ai3 {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
-}
-#ai4 {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
-}
-#ai5 {
-	font-size:1em;
-	font-family: "Courier New", Helvetica, Sans-Serif;
-	margin:1em;
-	font-weight:bold;
-	text-shadow:2px 2px 2px #ffffff;	
 }
 html { 
         background: url("background2.jpg");
@@ -93,14 +52,22 @@ html {
 	var client = new Client();
 	
 	function aiInput() {	
-		document.getElementById("row").innerHTML = 'AI 1: <select id="ai1" size="1">' +
+		document.getElementById("row").innerHTML = 'AI 1: <select id="ai1" size="1"' +
+						"style = 'font-size:0.8em;" +
+						'font-family: "Courier New", Helvetica, Sans-Serif;' +
+						"font-weight:bold;" +
+						"text-align:center;'>" +
 						'<option value="0">Random</option>' +
 						'<option value="1">RandomBetter</option>' +
 						'<option value="2">Prioritization</option>' +
 						'<option value="3">Aggressive</option>' +
 						'</select>';
 		for(var i = 2; i <= Number(document.getElementById("ais").value); i++) {
-			document.getElementById("row").innerHTML += 'AI ' + i +': <select id="ai' + i + '" size="1">' +
+			document.getElementById("row").innerHTML += 'AI ' + i +': <select id="ai' + i + '" size="1"' +
+						"style = 'font-size:0.8em; " +
+						'font-family: "Courier New", Helvetica, Sans-Serif;' +
+						"font-weight:bold;" +
+						"text-align:center;'>" +
 						'<option value="0">Random</option>' +
 						'<option value="1">RandomBetter</option>' +
 						'<option value="2">Prioritization</option>' +
@@ -114,11 +81,16 @@ html {
 	
 </script>
 <div id = "options">
-<table align = center>
+<table align = center id = "aitable">
 
 <tr>
 <td>Color:</td>
-<td><select id = "color" size="1">
+<td><select id = "color" size="1"
+style = 'font-size:0.8em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-align:center;	'>
 <option value="orange">Orange</option>
 <option value="blue">Blue</option>
 <option value="cyan">Cyan</option>
@@ -131,7 +103,12 @@ html {
 
 <tr>
 <td>Game Settings:</td>
-<td><select id="gamestate" size="1">
+<td><select id="gamestate" size="1"
+style = 'font-size:0.8em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-align:center;	'>
 <option value="RiskGS">Risk Board GameState</option>
 <option value="DemoGS">Demo GameState (13 Planets)</option>
 <option value="TestGS6">Test GameState (10 Planets)</option>
@@ -142,14 +119,21 @@ html {
 <td>Number of AI opponents:</td>
 <td>
 <input type = "number" id = "ais" min = "1" max = "10" step = "1" value = "1" size = "6"
- style = "float:center;font-family: 'Courier New', Helvetica, Serif; font-size:1em;
-		font-weight:bold; text-align:center;" onchange="aiInput();">
+style = 'font-size:0.8em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-align:center;	' onchange="aiInput();">
 </td>
 <tr><td></td><td></td></tr>
 
 <tr>
 <td>Types of AIs:</td>
-<td margin-left=2px id = "row">AI 1: <select id="ai1" size="1">
+<td margin-left=2px id = "row">AI 1: <select id="ai1" size="1" style = 'font-size:0.8em;
+	font-family: "Courier New", Helvetica, Sans-Serif;
+	margin:1em;
+	font-weight:bold;
+	text-align:center;	'>
 <option value="0">Random</option>
 <option value="1">RandomBetter</option>
 <option value="2">Prioritization</option>

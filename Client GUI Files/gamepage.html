@@ -40,11 +40,24 @@
 	background-color:#878787;
 }
 
+#color_key {
+	float:left;
+	padding:1em;
+	margin:1em;
+	width:10%;	
+	font-family: "Courier New", Helvetica, Serif;
+	font-size:18px;
+	font-weight:bold;
+	text-align:center;
+	color:white;
+	text-shadow:2px 2px 2px #000000;
+}
+
 </style>
 <title>WDS Game Screen</title>
 
 </head>
-<body background = "background.jpg">  
+<body background = "background3.jpg">  
 	<div id = "header"> World Domination Simulator </div>
 	<div id = "player_controls"> 
 		<div id = "move_list" >
@@ -60,13 +73,27 @@
 	<div id = "board">
 	<canvas id="c" style="border: solid 3px green;"></canvas>  
 	</div>
-	<div id = "footer"> ARGH THIS IS BAD CHANGE THIS.</div>
+	<div id = "key"> </div>
+	<div id = "footer"> </div>
 </body>
 <script src="ClientGUI.js"> </script>
 <script src="ClientGUICanvas.js"></script>
 <script type = "text/javascript">
 	var gs = new Gamestate();
 	gs.loadXML(window.localStorage.getItem("gsString"));
+	
+	for(var i = 1; i < gs.playerList.length; i++) {
+		document.getElementById("key").innerHTML += 
+		" <div id = 'color_key' style = 'background-color:" 
+		+ gs.playerList[i].color + ";' > Player " + i + " </div>";
+	}
+	
+	for(var i = 1; i < gs.rList.length; i++) {
+		document.getElementById("key").innerHTML += 
+		" <div id = 'color_key' style = 'background-color:" 
+		+ gs.rList[i].color + ";' > " + gs.rList[i].name + " </div>";
+	}
+	
 	var client = new Client();
 	// Prepare for deployment
 	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
