@@ -400,6 +400,8 @@ var Gamestate = function() {
 			p.owner = change.changes[i][1];
 			p.numFleets = change.changes[i][2];
 		}
+		self.updateConnections();
+		self.updateRegions();
 	};
 	
 	// Returns the number of fleets the given player can deploy.
@@ -653,26 +655,28 @@ var Client = function() {
 	// A round of requests, that is, make a move if it's our turn, if not,
 	// request a gamechange.
 	
-	self.go = function(){
+	self.checkTurn = function(){
 		//if it's not our turn, send a gamechange request
 		if (gs.activePlayer != self.playerID) {
 			self.request = new XMLHttpRequest();
 			self.request.open("POST", "http://" +self.serverIPandPort + "/gamechange/", true);
 			self.request.send(self.playerID);
 			self.request.onreadystatechange=function() {
-				if (self.request.status==200 && self.request.readyState == 4) {
-					response = self.request.responseText;
-					self.dealWithResponse(response);
-				} else if (self.request.status != 200) {
-					alert("Response status: " + self.request.status);
-					if(!confirm("We did not successfully receive the gamechange.\n Try again?"))
-						self.go();
+				// We only do something if the request is finished
+				if (self.request.readyState == 4) {
+					if (self.request.status==200) {
+						response = self.request.responseText;
+						self.dealWithResponse(response);
+					} else {
+						alert("Bad request. Response status: " + self.request.status);
+					}
 				}
 			}
+		} else {
+		// If it is our turn, we wait on the user to click the "Submit"
+		// button, which will submit the move and reset to deployment
+		// by calling... something, I dunno.
 		}
-		//if it is, everything will wait on the user to click the
-		//"Submit" button, which will cause a move to be made, and the move is automatically
-		//in deployment phase
 	}
 	
 	// Deal with responses from server
@@ -685,7 +689,13 @@ var Client = function() {
 		var gc = new Gamechange();
 		gc.loadXML(res);
 		gs.update(gc);
-		self.go();
+		// The footer must be reset after the update to ensure it gets
+		// the correct quota
+		document.getElementById("footer").innerHTML =
+		"Click on another planet to deploy more fleets, " +
+		"or click End Deployment to move to attack phase. " +
+		"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+		self.checkTurn();
 	}
 	
 	self.deploy = function(source) {
@@ -779,7 +789,7 @@ var Client = function() {
 			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
 			return;
 		} else
-		gs.pList[source].numFleets -= fleets;
+			gs.pList[source].numFleets -= fleets;
 		
 		self.currentMove.addMove(source, dest, fleets);
 		
@@ -800,27 +810,23 @@ var Client = function() {
 		self.request.send(move);
 		
 		self.request.onreadystatechange=function() {
-			if (self.request.status==200 && self.request.readyState == 4) {
-				response = self.request.responseText;
-				self.dealWithResponse(response);
-				self.go();
-			} else if (self.request.status != 200) {
-				if(confirm("We did not successfully receive the gamechange.\n Try again?"))
-					self.submitMove();
+			// We only do something if the request is finished
+			if (self.request.readyState == 4) {
+				if (self.request.status==200) {
+					response = self.request.responseText;
+					self.dealWithResponse(response);
+				} else {
+					alert("Bad request. Response status: " + self.request.status);
+				}
 			}
-		}
+		};
 		
 		// Reset for deployment
 		selection = null;
 		self.deployment = true;
 		self.currentMove.clear();
 		document.getElementById("submitButton").value = "End Deployment";
-		document.getElementById("submitButton").onclick = client.endDeploy;
-		
-		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-		"or click End Deployment to move to attack phase. " +
-		"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
-		
+		document.getElementById("submitButton").onclick = client.endDeploy;	
 		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
 		"<b>_____________________________________</b><br><br>";
 	}
