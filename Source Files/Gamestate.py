@@ -171,6 +171,9 @@ class Gamestate:
         except:
             dom = parse(xmlString)
 
+        # Dumps any existing data
+        self.__init__()
+
         # Player data
         players = dom.getElementsByTagName("Players")[0]
         self.activePlayer = int(players.getAttribute("activePlayer"))
