@@ -64,20 +64,51 @@ var Planet = function(el) {
 		
 		// Outermost circle: selection circle
 		if (isSelection) {
-			ctx.fillStyle = '#f11';
+			// FANCY SELECTION MAGIC
+			ctx.strokeStyle = '#ff0';
+			ctx.fillStyle = '#fff';
+			numPts = 8; // must be divisible by 2
+			tick = 360 / numPts;
+			pts = [];
+			for (i = 0; i < numPts; i++) {
+				xPt = Number(self.xPos) + 1.4 * self.radius * Math.cos((self.spin + (tick * i)) * (Math.PI/180));
+				yPt = Number(self.yPos) + 1.4 * self.radius * Math.sin((self.spin + (tick * i)) * (Math.PI/180));
+				pts.push([xPt, yPt]);
+			}
+			/*pts = [ // this is a triangle (for example)
+				[Number(self.xPos) + 2 * self.radius * Math.cos(self.spin * (Math.PI/180)),
+				Number(self.yPos) + 2*self.radius * Math.sin(self.spin * (Math.PI/180))],
+				[Number(self.xPos) + 2*self.radius * Math.cos((self.spin + 120) * (Math.PI/180)),
+				Number(self.yPos) + 2*self.radius * Math.sin((self.spin + 120) * (Math.PI/180))],
+				[Number(self.xPos) + 2*self.radius * Math.cos((self.spin + 240) * (Math.PI/180)),
+				Number(self.yPos) + 2*self.radius * Math.sin((self.spin + 240) * (Math.PI/180))],
+			];*/
+			
+			// Draw the shape by cycling through all points
 			ctx.beginPath();
-			ctx.arc(self.xPos - view.offsetX, self.yPos - view.offsetY,
-				self.radius+5, 0, 2*Math.PI, true);
+			ctx.moveTo(self.xPos - view.offsetX, self.yPos - view.offsetY);
+			for (i = 0; i < numPts; i += 2) {
+				ctx.lineTo(pts[i][0] - view.offsetX, pts[i][1] - view.offsetY);
+				ctx.lineTo(pts[i+1][0] - view.offsetX, pts[i+1][1] - view.offsetY);
+				ctx.lineTo(self.xPos - view.offsetX, self.yPos - view.offsetY);
+			}
 			ctx.fill();
+			ctx.stroke();
 			ctx.closePath();
+			
+			self.spin += 1;
+			self.spin %= 360;
+
+			ctx.strokeStyle = '#ddd'; //'yellow';
+		} else {
+			// If this planet isn't selected, don't highlight it
+			ctx.strokeStyle = 'grey';
 		}
 		
-		// Middle circle: planet color
 		ctx.fillStyle = gs.playerList[self.owner].color;
+		//ctx.fillStyle = 'black';
 		ctx.lineWidth = 5;
-		
-		// Inner circle: player color
-		ctx.strokeStyle = self.color;
+		//ctx.strokeStyle = self.color;
 		
 		// Draws middle & inner circles
 		ctx.beginPath();
@@ -94,8 +125,12 @@ var Planet = function(el) {
 		var fontSize = (isSelection ? 28 : 25);
 		ctx.font = fontSize + 'pt Calibri';
 		ctx.fillStyle = 'red';
-		ctx.fillText(self.numFleets, self.xPos - view.offsetX - fontSize/3,
-			self.yPos - view.offsetY + fontSize/3);
+		// This next bit looks fancy, but it really just changes the
+		// location of the text based on how many digits numFleets is
+		offset = Math.floor(Math.log(String(self.numFleets).length+1) * Math.LN10);
+		offset = (fontSize * offset) / 2.7;
+		ctx.fillText(self.numFleets, self.xPos - view.offsetX - offset,
+			self.yPos - view.offsetY + fontSize/2.7);
 		ctx.fill();
 		ctx.closePath();
 		ctx.restore();
@@ -110,6 +145,7 @@ var Planet = function(el) {
 	} else {
 		self.loadXML(el);
 	}
+	self.spin = 0; // for drawing - in degrees
 };
 var Region = function(el) {
 	var self = this;
@@ -127,6 +163,7 @@ var Region = function(el) {
 			var m = memberList[i];
 			self.members.push(Number(m.childNodes[0].data));
 		}
+		self.findPoints();
 	};
 	
 	// Returns this region as a string
@@ -134,6 +171,112 @@ var Region = function(el) {
 		return ("Region " + self.idNum + ", " + self.name +
 			". Owner: " + self.owner + "; value: " + self.value +
 			". List of members: " + self.members + ".");
+	};
+	
+	// ---------------------------------------------
+	// The following code calculates the convex hull of the planets in this
+	// region. Credit goes to en.literateprograms.org/Quickhull_(Javascript)
+	function getDistant(cpt, bl) {
+		var Vy = bl[1][0] - bl[0][0];
+		var Vx = bl[0][1] - bl[1][1];
+		return (Vx * (cpt[0] - bl[0][0]) + Vy * (cpt[1] -bl[0][1]))
+	}
+	function findMostDistantPointFromBaseLine(baseLine, points) {
+		var maxD = 0;
+		var maxPt = new Array();
+		var newPoints = new Array();
+		for (var idx in points) {
+			var pt = points[idx];
+			var d = getDistant(pt, baseLine);
+			
+			if ( d > 0) {
+				newPoints.push(pt);
+			} else {
+				continue;
+			}
+			
+			if ( d > maxD ) {
+				maxD = d;
+				maxPt = pt;
+			}
+			
+		} 
+		return {'maxPoint':maxPt, 'newPoints':newPoints}
+	}
+	function buildConvexHull(baseLine, points) {
+		var convexHullBaseLines = new Array();
+		var t = findMostDistantPointFromBaseLine(baseLine, points);
+		if (t.maxPoint.length) { // if there is still a point "outside" the base line
+			convexHullBaseLines = 
+			convexHullBaseLines.concat( 
+				buildConvexHull( [baseLine[0],t.maxPoint], t.newPoints) );
+			convexHullBaseLines = 
+			convexHullBaseLines.concat( 
+				buildConvexHull( [t.maxPoint,baseLine[1]], t.newPoints) );
+			return convexHullBaseLines;
+		} else { // if there is no more point "outside" the base line, the current base line is part of the convex hull
+			return [baseLine];
+		}    
+	}
+	function getConvexHull(points) {
+		//find first baseline
+		var maxX, minX;
+		var maxPt, minPt;
+		for (var idx in points) {
+			var pt = points[idx];
+			if (pt[0] > maxX || !maxX) {
+				maxPt = pt;
+				maxX = pt[0];
+			}
+			if (pt[0] < minX || !minX) {
+				minPt = pt;
+				minX = pt[0];
+			}
+		}
+		var ch = [].concat(buildConvexHull([minPt, maxPt], points),
+			buildConvexHull([maxPt, minPt], points))
+		return ch;
+	}
+	// end of convex hull code
+	// ---------------------------------------------
+	
+	// Finds the points needed for drawing this region. Called on initialization.
+	self.findPoints = function() {
+		// Get all points from members
+		var allPts = []
+		for (i = 0; i < self.members.length; i++) {
+			x = Number(gs.pList[self.members[i]].xPos);
+			y = Number(gs.pList[self.members[i]].yPos);
+			allPts.push([x, y]);
+		}
+		
+		var cHull = getConvexHull(allPts);
+		
+		// cHull contains line segments, not points. For drawing, we
+		// only need the points, so the final result strips what we
+		// don't need.
+		self.drawPoints = [];
+		for (i = 0; i < cHull.length; i++) {
+			self.drawPoints.push([cHull[i][0][0], cHull[i][0][1]]);
+		}
+	};
+	
+	self.draw = function(ctx, view) {
+		ctx.save();
+		ctx.fillStyle = self.color;
+		ctx.beginPath();
+
+		ctx.moveTo(self.drawPoints[0][0] - view.offsetX,
+			self.drawPoints[0][1] - view.offsetY);
+		for (i = 1; i < self.drawPoints.length; i++) {
+			ctx.lineTo(self.drawPoints[i][0] - view.offsetX,
+				self.drawPoints[i][1] - view.offsetY);
+		}
+		ctx.lineTo(self.drawPoints[0][0] - view.offsetX,
+			self.drawPoints[0][1] - view.offsetY);
+		ctx.fill();
+		ctx.closePath();
+		ctx.restore();
 	};
 	
 	// Basic setup
@@ -260,7 +403,8 @@ var Connection = function(el) {
 		var p2 = gs.pList[self.p2];
 		
 		ctx.save();
-		ctx.strokeStyle = '#F0F';
+		//ctx.strokeStyle = '#F0F';
+		ctx.strokeStyle = 'white';
 		ctx.lineWidth = 3;
 		ctx.beginPath(); // You NEED THIS for it to draw successfully
 		ctx.moveTo(p1.xPos - view.offsetX, p1.yPos - view.offsetY);

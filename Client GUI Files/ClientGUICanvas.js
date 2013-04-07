@@ -167,19 +167,21 @@ var clear = function() {
 
 // Draws the given Gamestate on the canvas.
 var draw = function(gs) {
-	// 1. Draw connections.
 	ctx.save();
+	
+	// 1. Draw regions.
+	for (var i = 1; i < gs.rList.length; i++)
+		gs.rList[i].draw(ctx, view);
+	
+	// 2. Draw connections.
 	for (var i = 1; i < gs.cList.length; i++)
 		gs.cList[i].draw(ctx, view);
-		
 	
-	// 2. Draw Planets.
-	for (var i = 1; i < gs.pList.length; i++) {
-		var planet = gs.pList[i];
-		planet.draw(ctx, view, false);
-	}
+	// 3. Draw Planets.
+	for (var i = 1; i < gs.pList.length; i++)
+		gs.pList[i].draw(ctx, view, false);
 
-	// 3. Draw the selected planet's connections.
+	// 4. Draw the selected planet's connections (i.e. active connections).
 	for (var i = 1; i < gs.cList.length; i++) {
 		var con = gs.cList[i];
 		if (con.p1 == selection)
@@ -188,11 +190,9 @@ var draw = function(gs) {
 			gs.cList[i].drawActive(ctx, view, 2);
 	}
 	
-	// 4. Draw the selected planet itself.
-	if (selection != null) {
-		var planet = gs.pList[selection];
-		planet.draw(ctx, view, true);
-	}
+	// 5. Redraw the selected planet itself.
+	if (selection != null)
+		gs.pList[selection].draw(ctx, view, true);
 };
 
 
