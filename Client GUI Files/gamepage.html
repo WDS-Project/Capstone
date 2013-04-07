@@ -88,12 +88,6 @@
 		+ gs.playerList[i].color + ";' > Player " + i + " </div>";
 	}
 	
-	for(var i = 1; i < gs.rList.length; i++) {
-		document.getElementById("key").innerHTML += 
-		" <div id = 'color_key' style = 'background-color:" 
-		+ gs.rList[i].color + ";' > " + gs.rList[i].name + " </div>";
-	}
-	
 	var client = new Client();
 	// Prepare for deployment
 	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
