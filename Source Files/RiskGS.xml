@@ -3,7 +3,7 @@
 	<Players activePlayer="0" cycleNumber="0" turnNumber="0" />
 	<PlanetList>
 	<!-- North America (count: 9) -->
-		<Planet name="Alaska" idNum="1"	position="100,100" color="#FF0"
+		<Planet name="Alaska" idNum="1"	position="100,50" color="#FF0"
 			numFleets="5" owner="1" radius="20" />
 		<Planet name="Victoria" idNum="2" position="200,200" color="#FF0"
 			numFleets="5" owner="1" radius="20" />
@@ -73,7 +73,7 @@
 			numFleets="5" owner="1" radius="20" />
 		<Planet	name="Japan" idNum="31" position="1100,350" color="#0F0"
 			numFleets="5" owner="1" radius="20" />
-		<Planet	name="Baja Russia" idNum="32" position="1150,100" color="#0F0"
+		<Planet	name="Baja Russia" idNum="32" position="1150,50" color="#0F0"
 			numFleets="5" owner="1" radius="20" />
 		<Planet	name="Palestisrael" idNum="33" position="700,500" color="#0F0"
 			numFleets="5" owner="1" radius="20" />
