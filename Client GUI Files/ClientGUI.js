@@ -124,11 +124,10 @@ var Planet = function(el) {
 		ctx.beginPath();
 		var fontSize = (isSelection ? 28 : 25);
 		ctx.font = fontSize + 'pt Calibri';
-		ctx.fillStyle = 'red';
+		ctx.fillStyle = 'black'; //'red';
 		// This next bit looks fancy, but it really just changes the
 		// location of the text based on how many digits numFleets is
-		offset = Math.floor(Math.log(String(self.numFleets).length+1) * Math.LN10);
-		offset = (fontSize * offset) / 2.7;
+		offset = String(self.numFleets).length * fontSize / 2.7;
 		ctx.fillText(self.numFleets, self.xPos - view.offsetX - offset,
 			self.yPos - view.offsetY + fontSize/2.7);
 		ctx.fill();
@@ -264,6 +263,7 @@ var Region = function(el) {
 	self.draw = function(ctx, view) {
 		ctx.save();
 		ctx.fillStyle = self.color;
+		ctx.globalAlpha = 0.7;
 		ctx.beginPath();
 
 		ctx.moveTo(self.drawPoints[0][0] - view.offsetX,
