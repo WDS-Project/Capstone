@@ -224,7 +224,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50):
     # Selects whether to load a map or make a new one
     if gsMap is None:
         print("No map given; generating a new one... ")
-        m.generateFromParameters()
+        m.generate(30, 4)
         print("Map generation complete.")
         gs.loadXML(m.out.toxml())
         print("----------------------------")
@@ -264,6 +264,11 @@ To use this utility: run(...)
 (Note: if gsMap is None, a map will be automatically generated instead,
 according to m.params. See m.printParams() for more information.)
 --> [numGames]: number of games to simulate (default: 50)
+-----------------------------
+After games have been run, view the results in the following variables:
+--> stats: log of all statistics; use stats.printStats() to view
+--> gs: final gamestate of the final game
+--> [m]: mapmaker used to generate the map (if applicable)
 -----------------------------""")
 
 # Class for storing the results of a series of games
@@ -299,7 +304,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    #run([1, 2, 2], numGames=10)
-    run([1, 2, 2], gsMap=None, numGames=10)
+    run([1, 2, 2], numGames=10)
+    #run([1, 2, 2], gsMap=None, numGames=10)
     
     

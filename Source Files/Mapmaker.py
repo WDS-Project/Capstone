@@ -41,24 +41,27 @@ class Mapmaker:
 --> [connectivity]: avg. # of connections per planet (default: 2.0)
 --> [elasticity]: randomness in generating connections (default: 1.05)
 --> [seed]: random seed to use (default: random)""")
-
-    # Generates a map from the stored parameters.
-    def generateFromParameters(self):
-        return self.generate(self.params.numPlanets,
-                             self.params.numRegions,
-                             self.params.aspectRatio,
-                             self.params.minDistance,
-                             self.params.connectivity,
-                             self.params.elasticity,
-                             self.params.seed)
     
-    def generate(self, numPlanets, numRegions, aspectRatio=1.0,
-                 minDistance=75, connectivity=2.0, elasticity=1.05, seed=None):
+    def generate(self, numPlanets, numRegions, aspectRatio=None,
+                 minDistance=None, connectivity=None, elasticity=None,
+                 seed=None):
         # Step 0: Input validation
         if (numRegions > numPlanets / 3):
             raise Exception("Error: too few planets for that many regions.")
         if (aspectRatio < 0):
             raise Exception("Error: invalid aspect ratio.")
+
+        # Get default values from params object.
+        if aspectRatio is None:
+            aspectRatio = self.params.aspectRatio
+        if minDistance is None:
+            minDistance = self.params.minDistance
+        if connectivity is None:
+            connectivity = self.params.connectivity
+        if elasticity is None:
+            elasticity = self.params.elasticity
+        if seed is None:
+            seed = self.params.seed
 
         # Declares needed variables
         self.gs = Gamestate() # clear the existing gamestate
@@ -420,19 +423,19 @@ def getClosestRegion(dists, target, rList):
 #------------------------------------------------------------
 class MapmakerParameters:
     def __init__(self):
-        self.numPlanets = 10
-        self.numRegions = 2
+        # These are the default values for all parameters
         self.aspectRatio = 1.0
         self.minDistance = 75
         self.connectivity = 2.0
         self.elasticity = 1.05
         self.seed = None
 
+    def reset(self):
+        self.__init__()
+
     def printParams(self):
         print("Parameters for Mapmaker object:",
               "-------------------------------",
-              "--> numPlanets: "+str(self.numPlanets),
-              "--> numRegions: "+str(self.numRegions),
               "--> aspectRatio: "+str(self.aspectRatio),
               "--> minDistance: "+str(self.minDistance),
               "--> connectivity: "+str(self.connectivity),
