@@ -9,6 +9,7 @@
 
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
+from Mapmaker import Mapmaker
 import sys
 import random
 from datetime import datetime
@@ -28,17 +29,13 @@ def findAIType(diff):
     elif (diff == 3):
         move = PrioritizingAI.getMove
     else: # Undefined AI type
-        print("Error: AI not found.", file=sys.stderr)
+        raise Exception("Error: AI not found.")
     return move
 
 # Prepares to simulate a game.
-# - gsName: name of map to use
 # - numAIs: number of AI players
 # - diffs: array containing difficulties of each AI
-def setup(gsMap, numAIs, diffs):
-    # Load gamestate
-    gs.loadXML(gsMap)
-
+def setup(numAIs, diffs):
     # Load AI players
     for i in range(numAIs):
         players[i+1] = [None, True] # [getMove, status]
@@ -212,7 +209,7 @@ def distributePlanets():
 
 def run(diffList, gsMap='RiskGS.xml', numGames=50):
     # Reset global results variables
-    gs = Gamestate()
+    baseGS = Gamestate()
     players = {}
     stats.__init__()
     for d in range(1, len(diffList)+1):
@@ -224,14 +221,25 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50):
             stats.elimOrder[d].append(0)
     startTime = datetime.now()
 
+    # Selects whether to load a map or make a new one
+    if gsMap is None:
+        print("No map given; generating a new one... ")
+        m = Mapmaker()
+        m.generate(30, 4)
+        print("Map generation complete.")
+        gs.loadXML(m.out.toxml())
+        print("----------------------------")
+    else:
+        gs.loadXML(gsMap)
+    
     # Run the games
-    if (True):
+    if True:
     #try:
         for i in range(1, int(numGames)+1):
             print("\nGame "+str(i), end=': ')
 
             # Play the game & store the results
-            setup(gsMap, len(diffList), diffList)
+            setup(len(diffList), diffList)
             winner = playGame()
             stats.victories[winner] += 1
     #except:
@@ -289,6 +297,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 2, 2], numGames=10)
+    #run([1, 2, 2], numGames=10)
+    run([1, 2, 2], gsMap=None, numGames=10)
     
     
