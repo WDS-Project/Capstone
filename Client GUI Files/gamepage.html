@@ -82,12 +82,6 @@
 	var gs = new Gamestate();
 	gs.loadXML(window.localStorage.getItem("gsString"));
 	
-	for(var i = 1; i < gs.playerList.length; i++) {
-		document.getElementById("key").innerHTML += 
-		" <div id = 'color_key' style = 'background-color:" 
-		+ gs.playerList[i].color + ";' > Player " + i + " </div>";
-	}
-	
 	var client = new Client();
 	// Prepare for deployment
 	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +

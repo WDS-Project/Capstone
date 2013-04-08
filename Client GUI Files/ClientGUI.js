@@ -546,7 +546,45 @@ var Gamestate = function() {
 		}
 		self.updateConnections();
 		self.updateRegions();
+		
+		//see if someone was eliminated
+		for(var i = 1; i < self.playerList.length; i++) {
+			elim = true;
+			for(var j = 1; j < self.pList.length; j++) {
+				if(self.pList[j].owner == i)
+					elim = false;
+			}
+			if(elim)
+				self.playerList[i].status = 0;
+		}
+		
+		self.drawPlayers();
 	};
+	
+	self.drawPlayers = function() {
+		document.getElementById("key").innerHTML = "";
+	
+		//players
+		for(var i = 1; i < self.playerList.length; i++) {
+			if(self.playerList[i].status == 1) {
+				document.getElementById("key").innerHTML += 
+				" <div id = 'color_key' style = 'background-color:" 
+				+ self.playerList[i].color + ";' > Player " + i + " </div>";
+			} else {
+				document.getElementById("key").innerHTML += 
+				" <div id = 'color_key' style = 'background-color:" 
+				+ self.playerList[i].color + ";' > Player " + i + " <br> eliminated </div>";
+			}
+		}	
+		
+		//regions while we're at it
+		for(var i = 1; i < self.rList.length; i++) {
+			document.getElementById("key").innerHTML +=
+				" <div id = 'color_key' style = 'background-color:" 
+				+ self.rList[i].color + ";' > " + self.rList[i].name
+				+ "<br>Value: " + self.rList[i].value + " </div>";
+		}
+	}
 	
 	// Returns the number of fleets the given player can deploy.
 	self.getPlayerQuota = function(playerID) {
@@ -631,14 +669,16 @@ var Gamestate = function() {
 			numPlayers = Math.max(numPlayers, self.pList[i].owner);
 		}
 		
-		// Assign colors
+		// Assign colors and status
 		for (i = 1; i <= numPlayers; i++) {
 			self.playerList[i] = {};
+			self.playerList[i].status = 1;
 			self.playerList[i].color = colorList[i];
 		}
 		
 		self.updateRegions();
 		self.updateConnections();
+		self.drawPlayers();
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
