@@ -1,4 +1,5 @@
 # Contains functions for generating new XML gamestates.
+# For more details, see Mapmaker.printInstructions().
 #
 # Josh Polkinghorn
 
@@ -30,6 +31,16 @@ class Mapmaker:
 
     def printParams(self):
         self.params.printParams()
+
+    def printInstructions():
+        print("""To generate maps: m.generate(...)
+--> numPlanets: number of planets
+--> numRegions: number of regions
+--> [aspectRatio]: size of the world as (x/y) (default: 1.0)
+--> [minDistance]: minimum distance between planets in pixels (default: 75)
+--> [connectivity]: avg. # of connections per planet (default: 2.0)
+--> [elasticity]: randomness in generating connections (default: 1.05)
+--> [seed]: random seed to use (default: random)""")
 
     # Generates a map from the stored parameters.
     def generateFromParameters(self):
@@ -381,10 +392,6 @@ def getClosestPlanet(dists, selected, members):
         else: # Each planet starts with zero distance
             totalDists.append(0)
             for m in members:
-##                print("planet = " + str(planet))
-##                print("totalDists[planet] = "+str(totalDists))
-##                print("m = "+str(m))
-##                print("dists[planet] = "+str(dists[planet]))
                 totalDists[planet] += dists[planet][m]
     
     # Selects the shortest positive distance
@@ -422,24 +429,21 @@ class MapmakerParameters:
         self.seed = None
 
     def printParams(self):
-        print("--> numPlanets: "+str(self.numPlanets),
-          "--> numRegions: "+str(self.numRegions),
-          "--> aspectRatio: "+str(self.aspectRatio),
-          "--> minDistance: "+str(self.minDistance),
-          "--> connectivity: "+str(self.connectivity),
-          "--> elasticity: "+str(self.connectivity),
-          "--> seed: "+str(self.seed), sep='\n')
+        print("Parameters for Mapmaker object:",
+              "-------------------------------",
+              "--> numPlanets: "+str(self.numPlanets),
+              "--> numRegions: "+str(self.numRegions),
+              "--> aspectRatio: "+str(self.aspectRatio),
+              "--> minDistance: "+str(self.minDistance),
+              "--> connectivity: "+str(self.connectivity),
+              "--> elasticity: "+str(self.connectivity),
+              "--> seed: "+str(self.seed), sep='\n')
+        print("For more details on each parameter, see",
+              "Mapmaker.printInstructions().")
 
 if __name__ == '__main__':
     m = Mapmaker()
-    print("To generate maps: m.generate(...)",
-          "--> numPlanets: number of planets",
-          "--> numRegions: number of regions",
-          "--> [aspectRatio]: size of the world as (x/y) (default: 1.0)",
-          "--> [minDistance]: minimum distance between planets in pixels (default: 75)",
-          "--> [connectivity]: avg. # of connections per planet (default: 2.0)",
-          "--> [elasticity]: randomness in generating connections (default: 1.05)",
-          "--> [seed]: random seed to use (default: random)", sep='\n')
+    Mapmaker.printInstructions()
     #test = m.generate(15, 3, connectivity=2.0)
     #try:
     #    print(test.toprettyxml())

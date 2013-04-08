@@ -224,8 +224,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50):
     # Selects whether to load a map or make a new one
     if gsMap is None:
         print("No map given; generating a new one... ")
-        m = Mapmaker()
-        m.generate(30, 4)
+        m.generateFromParameters()
         print("Map generation complete.")
         gs.loadXML(m.out.toxml())
         print("----------------------------")
@@ -258,12 +257,14 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50):
           "Wins: "+str(stats.victories)+"\n", sep='\n')
 
 def printInstructions():
-    print("-----------------------------",
-          "To use this utility: \"run(...)\"",
-          "--> diffList: array containing difficulty codes of AIs",
-          "--> [gsMap]: gamestate file to use (default: RiskGS.xml)",
-          "--> [numGames]: number of games to simulate (default: 50)",
-          "-----------------------------", sep='\n')
+    print("""-----------------------------
+To use this utility: run(...)
+--> diffList: array containing difficulty codes of AIs
+--> [gsMap]: gamestate file to use (default: RiskGS.xml)
+(Note: if gsMap is None, a map will be automatically generated instead,
+according to m.params. See m.printParams() for more information.)
+--> [numGames]: number of games to simulate (default: 50)
+-----------------------------""")
 
 # Class for storing the results of a series of games
 class Statistics:
@@ -292,6 +293,7 @@ class Statistics:
 # These global variables are used by all methods. This way they can be
 # queried at runtime in the interpreter.
 gs = Gamestate()
+m = Mapmaker()
 players = {}
 stats = Statistics()
 
