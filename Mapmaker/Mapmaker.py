@@ -11,6 +11,7 @@ import queue
 class Mapmaker:
     def __init__(self):
         self.gs = Gamestate()
+        self.params = MapmakerParameters()
         self.MIN_RADIUS = 15
         self.MAX_RADIUS = 30
 
@@ -26,6 +27,19 @@ class Mapmaker:
         except:
             raise Exception("Error: unable to open file.")
         return
+
+    def printParams(self):
+        self.params.printParams()
+
+    # Generates a map from the stored parameters.
+    def generateFromParameters(self):
+        return self.generate(self.params.numPlanets,
+                             self.params.numRegions,
+                             self.params.aspectRatio,
+                             self.params.minDistance,
+                             self.params.connectivity,
+                             self.params.elasticity,
+                             self.params.seed)
     
     def generate(self, numPlanets, numRegions, aspectRatio=1.0,
                  minDistance=75, connectivity=2.0, elasticity=1.05, seed=None):
@@ -392,6 +406,29 @@ def getClosestRegion(dists, target, rList):
     # Selects the shortest distance
     minDist = min(x for x in avgDists if x is not None)
     return avgDists.index(minDist)
+
+# -----------------------------------------------------------
+# This class provides easy encapsulation for all the possible
+# Mapmaker parameters.
+#------------------------------------------------------------
+class MapmakerParameters:
+    def __init__(self):
+        self.numPlanets = 10
+        self.numRegions = 2
+        self.aspectRatio = 1.0
+        self.minDistance = 75
+        self.connectivity = 2.0
+        self.elasticity = 1.05
+        self.seed = None
+
+    def printParams(self):
+        print("--> numPlanets: "+str(self.numPlanets),
+          "--> numRegions: "+str(self.numRegions),
+          "--> aspectRatio: "+str(self.aspectRatio),
+          "--> minDistance: "+str(self.minDistance),
+          "--> connectivity: "+str(self.connectivity),
+          "--> elasticity: "+str(self.connectivity),
+          "--> seed: "+str(self.seed), sep='\n')
 
 if __name__ == '__main__':
     m = Mapmaker()
