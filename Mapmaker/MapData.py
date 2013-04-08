@@ -197,14 +197,21 @@ class Planet:
 # A class to store the game data for a region.
 class Region:
     # Initializes all variables to default values.
-    def __init__(self, members, idNum, value):
+    def __init__(self, idNum, value=0, members=set(), color='#fff'):
         self.name = "PMET" + str(idNum)
         self.idNum = int(idNum)
         self.value = int(value)
         self.owner = int(-1)
+        self.color = color
         self.members = set()
         for m in members:
             self.members.add(m)
+
+    # Returns true if the member was successfully added
+    def addMember(self, mem):
+        oldSize = len(self.members)
+        self.members.add(mem)
+        return oldSize < len(self.members)
 
     # Returns a string representation of this object.
     def __str__(self):
@@ -215,10 +222,10 @@ class Region:
     # Writes this planet to an XML document <RegionList> node.
     def writeToXML(self, node, doc):
         node.setAttribute("idNum", str(self.idNum))
-        node.setAttribute("name", str(self.idNum))
-        node.setAttribute("value", str(self.idNum))
-        node.setAttribute("owner", str(self.idNum))
-        node.setAttribute("color", str(self.idNum))
+        node.setAttribute("name", str(self.name))
+        node.setAttribute("value", str(self.value))
+        node.setAttribute("owner", str(self.owner))
+        node.setAttribute("color", str(self.color))
         
         mList = doc.createElement("memberList")
         node.appendChild(mList)

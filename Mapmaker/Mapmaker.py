@@ -6,34 +6,34 @@ from MapData import Gamestate, Planet, Region
 import random
 import math
 import operator
+import queue
 
 class Mapmaker:
     def __init__(self):
         self.gs = Gamestate()
-        self.MIN_RADIUS = 20
-        self.MAX_RADIUS = 50
+        self.MIN_RADIUS = 15
+        self.MAX_RADIUS = 30
 
     # Writes the currently stored Gamestate to a file.
     def write(self, file):
         if len(self.gs.pList) == 1:
-            print("Error: no gamestate stored. Use \"this.generate(...)\""+
-                  " to generate a map.")
-            return
+            raise Exception("Error: no gamestate stored. Use "+
+                  "\"this.generate(...)\" to generate a map.")
         try:
             f = open(file+".xml", mode='w')
             f.write(self.gs.writeToXML().toprettyxml())
             print("Successfully wrote to file.")
         except:
-            print("Error: unable to open file.")
+            raise Exception("Error: unable to open file.")
         return
     
     def generate(self, numPlanets, numRegions, aspectRatio=1.0,
                  minDistance=75, connectivity=2.0, elasticity=1.05, seed=None):
         # Step 0: Input validation
-        if (numRegions > numPlanets / 2):
-            return "Error: too few planets for that many regions."
+        if (numRegions > numPlanets / 3):
+            raise Exception("Error: too few planets for that many regions.")
         if (aspectRatio < 0):
-            return "Error: invalid aspect ratio."
+            raise Exception("Error: invalid aspect ratio.")
 
         # Declares needed variables
         self.gs = Gamestate() # clear the existing gamestate
@@ -76,31 +76,76 @@ class Mapmaker:
         # ---------------------------------------------------
         # Step 3: Generate random connections & validate them
         # ---------------------------------------------------
-        self.gs.cList = generateConnections(self.gs.pList, connectivity,
-                                            elasticity)
+        valid = False
+        dists = findDistances(self.gs.pList) # we reuse this later
+        while not valid:
+            self.gs.cList = generateConnections(self.gs.pList, dists, 
+                                                connectivity, elasticity)
+            
+            # Ensures that any planet can be reached from any other planet
+            connected = set()
+            toSearch = queue.Queue()
+            connected.add(self.gs.pList[1].idNum) # Seed the queue
+            for con in self.gs.getConnections(self.gs.pList[1].idNum):
+                toSearch.put(con)
+            while not toSearch.empty():
+                test = int(toSearch.get())
+                # If we haven't searched this planet already...
+                if test not in connected:
+                    # ... add it
+                    connected.add(test)
+                    for con in self.gs.getConnections(self.gs.pList[test].idNum):
+                        toSearch.put(con)
 
-       
+            # If these are equal, all planets are fully connected
+            if len(connected) is len(self.gs.pList) - 1:
+                valid = True
+        # end while valid
 
         # -------------------------------------
         # Step 4: Find regions covering planets
         # -------------------------------------
-        # TODO actually do this
-        members = []
-        for i in range(numPlanets+1):
-            if i == 0: continue
-            members.append(i)
-        r = Region(members, 1, 10)
-        self.gs.rList.append(r)
+        self.gs.rList = generateRegions(self.gs.pList, dists, numRegions)
 
+        # Region values are calculated here because they depend on the
+        # entire Gamestate.
+        for r in self.gs.rList:
+            if r is None: continue
+            # Value depends on two things: first, the number of planets
+            # in the region...
+            score = len(r.members)
 
+            # ... and second, the number of unique connections between this
+            # region and other regions.
+            allCons = []
+            for m in r.members:
+                allCons.extend(self.gs.getConnections(m))
+            # Get the set of all planets connected to this region
+            uniqueCons = set(allCons)
+            for con in uniqueCons:
+                # Increment score if the connection is external
+                if con not in r.members:
+                    score += 1
+            
+            r.value = math.floor(score / 3) + 1
+            #print("Value for this region is "+str(r.value))
 
+        # --------------------------------
+        # Step 5: Breathe a sigh of relief
+        # --------------------------------
         # Finally, output resulting gamestate
-        result = self.gs.writeToXML()
-        return result
+        self.out = self.gs.writeToXML()
+        return self.out
 
 # ----------------------------------
 # ---       Helper Methods       ---
 # ----------------------------------
+
+# Returns a random hex color in the format "#F0F0F0"
+def getRandomColor():
+    result = str(hex(random.randint(0, 16777215)))
+    result = '#' + result[2:].zfill(6)
+    return result
 
 # -------
 # Planets
@@ -132,8 +177,7 @@ def generatePlanets(numPlanets, sizeX, sizeY, minRad, maxRad, minDistance):
             else: # If the for loop isn't exited with the break...
                 pList.append(p1) # ...then the planet is safe to add.
                 # Color only needs to be calculated once.
-                p1.color = str(hex(random.randint(0, 16777215)))
-                p1.color = '#' + p1.color[2:].zfill(6)
+                p1.color = getRandomColor()
                 addSuccess = True
 
     print("Done.")
@@ -144,23 +188,22 @@ def generatePlanets(numPlanets, sizeX, sizeY, minRad, maxRad, minDistance):
 # -----------
 
 # Generates a random set of connections between planets.
+# - dists: the output of findDistances(pList)
 # - connectivity: average connections per planet
 #       (minimum of 2.0; maximum of numPlanets-1)
 # - elasticity: randomness in determining distance
 #       (1.0 indicates no randomness; higher means more random)
-def generateConnections(pListIn, connectivity, elasticity):
+def generateConnections(pListIn, dists, connectivity, elasticity):
     # Validate parameters
     if (connectivity < 2.0) or (connectivity >= len(pListIn) - 1):
-        print("Error: illegal connectivity: "+str(connectivity)+
-              "\nAcceptable values are [1.0, "+str(len(pListIn)-1)+"].")
-        return
+        raise Exception("Error: illegal connectivity: "+str(connectivity)+
+              "\nAcceptable values are [2, "+str(len(pListIn)-1)+"].")
 
     # Setup needed variables
     print("Generating connections...", end=' ')
     cList = set()
     pList = list(pListIn) # copies the list to avoid changing it
     totalConnections = math.ceil(len(pList) * connectivity / 2)
-    dists = findDistances(pList)
 
     # Generate connections
     while (totalConnections > len(cList)):
@@ -201,7 +244,7 @@ def findDistances(pList):
                 dist = math.sqrt( (p1.xPos - p2.xPos)**2 +
                                   (p1.yPos - p2.yPos)**2 )
             if (dist < 0):
-                print("Error: distance between",p1,"and",p2,"is",str(dist))
+                raise Exception("Error: distance between",p1,"and",p2,"is",str(dist))
             result[p1.idNum][p2.idNum] = dist
         result[p1.idNum].pop(p1.idNum) # gets rid of the self-referencing dist
     return result
@@ -212,15 +255,143 @@ def addConnection(cList, p1, p2):
         temp = p1
         p1 = p2
         p2 = temp
+    # Error handling shoudn't be necessary in this case, but it's there anyway
     if p1 == p2:
-        print("Error: connections must have different start and end points.", sys.stderr)
+        raise Exception("Error: connections must have different"+
+                        " start and end points.")
     if p1 == 0 or p2 == 0:
-        print("Error: Cannot connect to planet 0.", sys.stderr)
+        raise Exception("Error: Cannot connect to planet 0.")
 
     # Adds the connection, checking to see if it was added successfully
     size = len(cList)
     cList.add(str(p1) + ',' + str(p2))
     return (size < len(cList))
+
+# -------
+# Regions
+# -------
+
+# Finds semi-random minimal regions covering all planets.
+# - dists: the output of findDistances(pList)
+def generateRegions(pListIn, dists, numRegions):
+    print("Generating regions... ", end='')
+    
+    # First, we find a random starting planet.
+    # ----------------------------------------
+    start = None
+    while start is None:
+        start = random.choice(pListIn)
+    startPlanet = start.idNum
+
+    # Then we find the planets farthest away from planets we've already found
+    # -----------------------------------------------------------------------
+    selectedPlanets = set()
+    selectedPlanets.add(startPlanet)
+    # While we still need more planets...
+    while len(selectedPlanets) < numRegions:
+        cumDists = [0]
+        # ... loop through all the remaining planets...
+        for p in pListIn:
+            if p is None: continue
+            # (skip already added planets)
+            if p.idNum in selectedPlanets:
+                cumDists.append(0)
+                continue
+            distSum = 0
+            # ... and find the total distance between that planet...
+            for sp in selectedPlanets:
+                # ... and every previously selected planet.
+                distSum += dists[sp][p.idNum]
+            cumDists.append(distSum)
+        # Now find the planet with the greatest distance.
+        toAdd = cumDists.index(max(cumDists))
+        # Ugh this is a mess
+        selectedPlanets.add(toAdd)
+    # Now we have n planets a maximum distance apart.
+    
+    # TESTING PURPOSES ONLY
+    for sp in selectedPlanets:
+        pListIn[sp].color = 'white'
+    # NO SERIOUSLY GUYS
+
+    # Now we can setup the initial region list.
+    # -----------------------------------------
+    rList = [None]
+    regionIsFull = [None]
+    for sp in selectedPlanets:
+        rList.append(Region(len(rList)))
+        rList[len(rList)-1].addMember(sp)
+        regionIsFull.append(False) # i.e. not full yet
+    
+    # Next we assign a minimum number of planets to each region.
+    # ----------------------------------------------------------
+    for i in range(1, 3):
+        for r in rList: # For each region...
+            if r is None: continue
+            # ... find the next closest planet...
+            closest = getClosestPlanet(dists, selectedPlanets, r.members)
+            # ... and add it to the region.
+            r.addMember(closest)
+            selectedPlanets.add(closest)
+    
+    # Now we assign the remaining planets.
+    # ------------------------------------
+    # This gets a set of all unassigned planets
+    unassigned = set(range(1, len(pListIn))).difference(selectedPlanets)
+    while len(unassigned) > 0:
+        toAdd = unassigned.pop()
+        targetRegion = getClosestRegion(dists, toAdd, rList)
+        selectedPlanets.add(toAdd)
+        rList[targetRegion].addMember(toAdd)
+    
+    # Whew.
+    # -----
+    # Anyway, as a final flourish, throw some colors on them.
+    for r in rList:
+        if r is not None:
+            r.color = getRandomColor()
+
+    print("Done.")
+    return rList
+
+# Finds the planet with the smallest total distance to
+# the members of a given region.
+# - dists: output of findDistances
+# - selected: set of planets to ignore
+# - members: list of planets for distance checking
+def getClosestPlanet(dists, selected, members):
+    totalDists = [None]
+    for planet in dists.keys():
+        if planet in selected: # First, ignore already selected planets
+            totalDists.append(-1)
+        else: # Each planet starts with zero distance
+            totalDists.append(0)
+            for m in members:
+##                print("planet = " + str(planet))
+##                print("totalDists[planet] = "+str(totalDists))
+##                print("m = "+str(m))
+##                print("dists[planet] = "+str(dists[planet]))
+                totalDists[planet] += dists[planet][m]
+    
+    # Selects the shortest positive distance
+    minDist = min(x for x in totalDists if x is not None and x > 0)
+    return totalDists.index(minDist)
+
+# Finds the region closest to the target planet.
+def getClosestRegion(dists, target, rList):
+    totalDists = [None] # between target and rList
+    for r in rList:
+        if r is None: continue
+        totalDists.append(0)
+        for m in r.members:
+            totalDists[len(totalDists)-1] += dists[target][m]
+    avgDists = list(totalDists)
+    for i in range(1, len(avgDists)):
+        avgDists[i] /= len(rList[i].members)
+
+    # Selects the shortest distance
+    minDist = min(x for x in avgDists if x is not None)
+    return avgDists.index(minDist)
 
 if __name__ == '__main__':
     m = Mapmaker()
@@ -232,8 +403,6 @@ if __name__ == '__main__':
           "--> [connectivity]: avg. # of connections per planet (default: 2.0)",
           "--> [elasticity]: randomness in generating connections (default: 1.05)",
           "--> [seed]: random seed to use (default: random)", sep='\n')
-    #self, numPlanets, numRegions, aspectRatio=1.0,
-    #minDistance=75, connectivity=2.0, elasticity=1.05, seed=None
     #test = m.generate(15, 3, connectivity=2.0)
     #try:
     #    print(test.toprettyxml())
