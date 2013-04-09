@@ -41,7 +41,7 @@ def prioritizeMyPlanets(myGS, playerID):
         if r is not None:
             for p in AIHelpers.getOuterPlanetsInRegion(myGS, r):
                 if p in myPlanets.keys():
-                    myPlanets[p] += 5
+                    myPlanets[p] += 1
     
     # prioritize planets with more hostile connections
     # for key, value in myPlanets.iteritems():
@@ -49,11 +49,13 @@ def prioritizeMyPlanets(myGS, playerID):
         myPlanets[p] += len(AIHelpers.getHostileConnections(myGS,myGS.pList[p]))
 
     # prioritize planets in regions with higher values
+    # unless we own the region already
     for r in myGS.rList:
         if r is not None:
-            for p in myPlanets.keys():
-                if p in r.members:
-                    myPlanets[p] += r.value
+            if int(r.owner) != int(playerID):
+                for p in myPlanets.keys():
+                    if p in r.members:
+                        myPlanets[p] += r.value
 
     return myPlanets
 
@@ -71,7 +73,7 @@ def prioritizeTheirPlanets(myGS, playerID):
         if r is not None:
             for p in r.members:
                 if p not in AIHelpers.getOuterPlanetsInRegion(myGS, r) and p in theirPlanets.keys():
-                    theirPlanets[p] += 5
+                    theirPlanets[p] += 1
     
     # prioritize planets with more hostile connections (that is, connections to me)
     # this is how to use a dict --> for key, value in myPlanets.iteritems():
@@ -82,7 +84,7 @@ def prioritizeTheirPlanets(myGS, playerID):
         for c in conns:
             if c in mine:
                 count += 1
-        theirPlanets[p] += count
+        theirPlanets[p] += count*2
 
     # prioritize planets in regions with higher values
     for r in myGS.rList:
@@ -122,7 +124,7 @@ def generateDeployments(myGS, move, myPriorities):
 
 #Generate attacks; higher priority of theirs get attacked first
 #only attack if we're gonna win
-#can we attack from two sides?
+#can we attack from two sides?  YES
 def generateAttacks(myGS, move, theirPriorities):
     toAttack = dict()  #this is a map of hostile planets to planets that we could potentially attack with
     alreadyDefeated = list()
@@ -152,6 +154,7 @@ def generateAttacks(myGS, move, theirPriorities):
                     alreadyDefeated.append(dest)
                     #update ourselves
                     myGS.pList[source].numFleets -= fleets
+                    myGS.pList[dest].numFleets = 1
                 #otherwise, let's add it to what we can do later
                 else:
                     toAttack[dest].append(source)
@@ -163,7 +166,7 @@ def generateAttacks(myGS, move, theirPriorities):
         needed = myGS.pList[dest].numFleets+1
         used = 0
         for i in source:
-            sm += i
+            sm += myGS.pList[i].numFleets
         if sm > needed:
             #we can do it!
             if(used < needed):
