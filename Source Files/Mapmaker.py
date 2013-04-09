@@ -48,7 +48,7 @@ class Mapmaker:
         # Step 0: Input validation
         if (numRegions > numPlanets / 3):
             raise Exception("Error: too few planets for that many regions.")
-        if (aspectRatio < 0):
+        if (aspectRatio is not None and aspectRatio < 0):
             raise Exception("Error: invalid aspect ratio.")
 
         # Get default values from params object.

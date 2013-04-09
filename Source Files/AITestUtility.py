@@ -11,7 +11,7 @@ from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
 from Mapmaker import Mapmaker
 import sys
-import random
+import random, math
 from datetime import datetime
 
 # Remember to import any AI scripts you want to use.
@@ -207,7 +207,8 @@ def distributePlanets():
         if(plyr == 0):
             plyr = len(players)
 
-def run(diffList, gsMap='RiskGS.xml', numGames=50):
+def run(diffList, gsMap='RiskGS.xml', numGames=50,
+        numPlanets=None, numRegions=None):
     # Reset global results variables
     baseGS = Gamestate()
     players = {}
@@ -224,7 +225,14 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50):
     # Selects whether to load a map or make a new one
     if gsMap is None:
         print("No map given; generating a new one... ")
-        m.generate(30, 4)
+
+        # If we aren't given # planets or regions, figure them out
+        # "by hand"
+        if numPlanets is None:
+            numPlanets = len(stats.victories) * 5 # 5 planets per player
+        if numRegions is None:
+            numRegions = math.ceil(numPlanets / 5) # ~5 planets per region
+        m.generate(numPlanets, numRegions)
         print("Map generation complete.")
         gs.loadXML(m.out.toxml())
         print("----------------------------")
@@ -263,6 +271,7 @@ To use this utility: run(...)
 --> [gsMap]: gamestate file to use (default: RiskGS.xml)
 (Note: if gsMap is None, a map will be automatically generated instead,
 according to m.params. See m.printParams() for more information.)
+--> [numPlanets], [numRegions]: parameters for map creation if gsMap is None
 --> [numGames]: number of games to simulate (default: 50)
 -----------------------------
 After games have been run, view the results in the following variables:
