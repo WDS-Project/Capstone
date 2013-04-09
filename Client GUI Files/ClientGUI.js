@@ -561,7 +561,29 @@ var Gamestate = function() {
 		self.drawPlayers();
 	};
 	
-	self.drawPlayers = function() {
+	// Returns the number of fleets the given player can deploy.
+	self.getPlayerQuota = function(playerID) {
+		var quota = 5;
+		for (var i = 1; i < self.rList.length; i++)
+			if (self.rList[i].owner == playerID)
+			quota += self.rList[i].value;
+		return quota;
+	};
+	
+	// Updates all connections' states to reflect the currently selected planet.
+	self.setActivePlanet = function(selectID) {
+		for (var i = 1; i < self.cList.length; i++) {
+			var con = self.cList[i];
+			if (con.p1 == selectID)
+				con.direct = 1;
+			else if (con.p2 == selectID)
+				con.direct = 2;
+			else
+				con.direct = 0;
+		}
+	};
+	
+	self.updatePlayers = function() {
 		document.getElementById("key").innerHTML = "";
 	
 		//players
@@ -583,28 +605,6 @@ var Gamestate = function() {
 				" <div id = 'color_key' style = 'background-color:" 
 				+ self.rList[i].color + ";' > " + self.rList[i].name
 				+ "<br>Value: " + self.rList[i].value + " </div>";
-		}
-	}
-	
-	// Returns the number of fleets the given player can deploy.
-	self.getPlayerQuota = function(playerID) {
-		var quota = 5;
-		for (var i = 1; i < self.rList.length; i++)
-			if (self.rList[i].owner == playerID)
-			quota += self.rList[i].value;
-		return quota;
-	};
-	
-	// Updates all connections' states to reflect the currently selected planet.
-	self.setActivePlanet = function(selectID) {
-		for (var i = 1; i < self.cList.length; i++) {
-			var con = self.cList[i];
-			if (con.p1 == selectID)
-				con.direct = 1;
-			else if (con.p2 == selectID)
-				con.direct = 2;
-			else
-				con.direct = 0;
 		}
 	};
 	
@@ -669,16 +669,14 @@ var Gamestate = function() {
 			numPlayers = Math.max(numPlayers, self.pList[i].owner);
 		}
 		
-		// Assign colors and status
+		// Assign colors
 		for (i = 1; i <= numPlayers; i++) {
 			self.playerList[i] = {};
-			self.playerList[i].status = 1;
 			self.playerList[i].color = colorList[i];
 		}
 		
 		self.updateRegions();
 		self.updateConnections();
-		self.drawPlayers();
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
@@ -781,20 +779,19 @@ This is a class that handles the interaction of the client with the server.
 */
 
 var Client = function() {
-	var self = this;
-	//self.gs = new Gamestate();
-	self.playerID = 1; //the human player is always player 1
-	self.request;	//this is the xmlHTTP request, which is reinstantiated every time
+	var self = this; // should properly be "that", but "self" works better with Python
+	self.playerID = 1; // the human player is always player 1 (for the time being)
+	self.request; // this is the xmlHTTP request, which is recreated every time
 	self.serverIPandPort = "localhost:12345"; //CHANGE THIS!!!
 	self.deployment = true; //for move states
 	self.count = 0; //for counting up to quota
 	self.currentMove = new Move(self.playerID);
+	self.skipMoves = false; // flag for skipping AI moves
+	self.turnDelay = 1000; // delay between turns in ms
 	
 	// This function connects to the server and defines a game
 	// based on the parameters chosen by the user.
-	
 	self.connect = function() {
-		
 		//this gets the user's selected gamestate file
 		var gsFile = document.getElementById("gamestate");
 		var definition = gsFile.options[gsFile.selectedIndex].value + "/1/";
@@ -836,35 +833,27 @@ var Client = function() {
 		}
 	}
 	
-	// A round of requests, that is, make a move if it's our turn, if not,
-	// request a gamechange.
-	
-	self.checkTurn = function(){
-		//if it's not our turn, send a gamechange request
-		if (gs.activePlayer != self.playerID) {
-			self.request = new XMLHttpRequest();
-			self.request.open("POST", "http://" +self.serverIPandPort + "/gamechange/", true);
-			self.request.send(self.playerID);
-			self.request.onreadystatechange=function() {
-				// We only do something if the request is finished
-				if (self.request.readyState == 4) {
-					if (self.request.status==200) {
-						response = self.request.responseText;
-						self.dealWithResponse(response);
-					} else {
-						alert("Bad request. Response status: " + self.request.status);
-					}
+	// Gets a gamechange from the server.
+	self.getGamechange = function() {
+		self.request = new XMLHttpRequest();
+		self.request.open("POST", "http://" +self.serverIPandPort + "/gamechange/", true);
+		self.request.send(self.playerID);
+		self.request.onreadystatechange=function() {
+			// We only do something if the request is finished
+			if (self.request.readyState == 4) {
+				if (self.request.status==200) {
+					response = self.request.responseText;
+					self.dealWithResponse(response);
+				} else {
+					alert("Bad request. Response status: " + self.request.status);
 				}
 			}
-		} else {
-		// If it is our turn, we wait on the user to click the "Submit"
-		// button, which will submit the move and reset to deployment
-		// by calling... something, I dunno.
 		}
-	}
+	};
 	
 	// Deal with responses from server
 	self.dealWithResponse = function(res) {
+//		alert("Dealing with response:\n"+res+"\nskipMoves = "+self.skipMoves);
 		if(res == "eliminated")
 			alert("Sorry, you lost.");
 		else if (res == ("winner:" + self.playerID))
@@ -873,13 +862,28 @@ var Client = function() {
 		var gc = new Gamechange();
 		gc.loadXML(res);
 		gs.update(gc);
-		// The footer must be reset after the update to ensure it gets
-		// the correct quota
-		document.getElementById("footer").innerHTML =
-		"Click on another planet to deploy more fleets, " +
-		"or click End Deployment to move to attack phase. " +
-		"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
-		self.checkTurn();
+//		alert("New active player: "+gs.activePlayer);
+		
+		//if it's not our turn, send a gamechange request
+		button = document.getElementById("submitButton");
+		if (gs.activePlayer != self.playerID) {
+			if (self.skipMoves) {
+				button.value = "Next Step: Player " + gs.activePlayer;
+				button.onclick = function() {};
+				setTimeout(self.getGamechange, self.turnDelay);
+			} else {
+				button.value = "Next Step: Player " + gs.activePlayer;
+				button.onclick = client.getGamechange;
+			}
+		} else {
+			// If it is our turn, we setup for deployment
+			button.value = "End Deployment";
+			button.onclick = client.endDeploy;
+			document.getElementById("footer").innerHTML =
+			"Click on another planet to deploy more fleets, " +
+			"or click End Deployment to move to attack phase. " +
+			"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+		}
 	}
 	
 	self.deploy = function(source) {
@@ -985,12 +989,23 @@ var Client = function() {
 			("Attack " + gs.pList[dest].name + " with " + fleets + " fleets <br><br>");
 		}
 		
+		selection = null; // clear selection after submitting a move
 	}
 	
 	self.submitMove = function() {
+		// Send move request to server
 		self.request = new XMLHttpRequest();
 		self.request.open("POST", "http://" + self.serverIPandPort + "/move/", true)
 		var move = self.currentMove.toString();
+		
+		
+		// Reset display variables
+		selection = null;
+		self.deployment = true;
+		self.currentMove.clear();	
+		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
+		"<b>_____________________________________</b><br><br>";
+		
 		self.request.send(move);
 		
 		self.request.onreadystatechange=function() {
@@ -1004,15 +1019,6 @@ var Client = function() {
 				}
 			}
 		};
-		
-		// Reset for deployment
-		selection = null;
-		self.deployment = true;
-		self.currentMove.clear();
-		document.getElementById("submitButton").value = "End Deployment";
-		document.getElementById("submitButton").onclick = client.endDeploy;	
-		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
-		"<b>_____________________________________</b><br><br>";
 	}
 };
 
