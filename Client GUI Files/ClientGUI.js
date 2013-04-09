@@ -558,7 +558,7 @@ var Gamestate = function() {
 				self.playerList[i].status = 0;
 		}
 		
-		self.drawPlayers();
+		self.updatePlayers();
 	};
 	
 	// Returns the number of fleets the given player can deploy.
@@ -673,10 +673,12 @@ var Gamestate = function() {
 		for (i = 1; i <= numPlayers; i++) {
 			self.playerList[i] = {};
 			self.playerList[i].color = colorList[i];
+			self.playerList[i].status = 1; // active
 		}
 		
 		self.updateRegions();
 		self.updateConnections();
+		self.updatePlayers();
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
