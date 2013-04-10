@@ -1,0 +1,530 @@
+<?xml version="1.0" ?>
+<Gamestate xSize="1797" ySize="1797">
+	<Players activePlayer="0" cycleNumber="0" turnNumber="0"/>
+	<PlanetList>
+		<Planet color="#8a938f" idNum="1" name="TEMP1" numFleets="1" owner="1" position="414,842" radius="19"/>
+		<Planet color="#0cecc7" idNum="2" name="TEMP2" numFleets="1" owner="1" position="556,1454" radius="27"/>
+		<Planet color="#856ebb" idNum="3" name="TEMP3" numFleets="1" owner="1" position="911,1551" radius="26"/>
+		<Planet color="#bc27c1" idNum="4" name="TEMP4" numFleets="1" owner="1" position="1059,354" radius="30"/>
+		<Planet color="#207753" idNum="5" name="TEMP5" numFleets="1" owner="1" position="409,1242" radius="30"/>
+		<Planet color="#e49870" idNum="6" name="TEMP6" numFleets="1" owner="1" position="724,1031" radius="20"/>
+		<Planet color="#9b4550" idNum="7" name="TEMP7" numFleets="1" owner="1" position="790,1140" radius="16"/>
+		<Planet color="#fe2fe5" idNum="8" name="TEMP8" numFleets="1" owner="1" position="1066,1069" radius="23"/>
+		<Planet color="#7cc95a" idNum="9" name="TEMP9" numFleets="1" owner="1" position="898,479" radius="19"/>
+		<Planet color="#c0ca34" idNum="10" name="TEMP10" numFleets="1" owner="1" position="231,443" radius="15"/>
+		<Planet color="#d9ca5f" idNum="11" name="TEMP11" numFleets="1" owner="1" position="187,713" radius="20"/>
+		<Planet color="#eb51f3" idNum="12" name="TEMP12" numFleets="1" owner="1" position="1170,1624" radius="17"/>
+		<Planet color="#8ece82" idNum="13" name="TEMP13" numFleets="1" owner="1" position="1140,609" radius="29"/>
+		<Planet color="#2a9810" idNum="14" name="TEMP14" numFleets="1" owner="1" position="360,239" radius="19"/>
+		<Planet color="#7a5692" idNum="15" name="TEMP15" numFleets="1" owner="1" position="816,244" radius="15"/>
+		<Planet color="#ddb0cd" idNum="16" name="TEMP16" numFleets="1" owner="1" position="640,1625" radius="23"/>
+		<Planet color="white" idNum="17" name="TEMP17" numFleets="1" owner="1" position="1381,1592" radius="27"/>
+		<Planet color="#5532db" idNum="18" name="TEMP18" numFleets="1" owner="1" position="950,1432" radius="18"/>
+		<Planet color="#81e04f" idNum="19" name="TEMP19" numFleets="1" owner="1" position="298,1060" radius="18"/>
+		<Planet color="#e2d354" idNum="20" name="TEMP20" numFleets="1" owner="1" position="742,1273" radius="30"/>
+		<Planet color="#ae0464" idNum="21" name="TEMP21" numFleets="1" owner="1" position="1041,920" radius="24"/>
+		<Planet color="#f093a3" idNum="22" name="TEMP22" numFleets="1" owner="1" position="834,761" radius="29"/>
+		<Planet color="#88f014" idNum="23" name="TEMP23" numFleets="1" owner="1" position="1526,975" radius="21"/>
+		<Planet color="#0510b7" idNum="24" name="TEMP24" numFleets="1" owner="1" position="1244,996" radius="18"/>
+		<Planet color="#515117" idNum="25" name="TEMP25" numFleets="1" owner="1" position="1103,770" radius="27"/>
+		<Planet color="#2b09f3" idNum="26" name="TEMP26" numFleets="1" owner="1" position="411,467" radius="23"/>
+		<Planet color="#87fc85" idNum="27" name="TEMP27" numFleets="1" owner="1" position="929,1185" radius="23"/>
+		<Planet color="white" idNum="28" name="TEMP28" numFleets="1" owner="1" position="1468,1250" radius="24"/>
+		<Planet color="#426c27" idNum="29" name="TEMP29" numFleets="1" owner="1" position="1527,1453" radius="17"/>
+		<Planet color="#fc789d" idNum="30" name="TEMP30" numFleets="1" owner="1" position="220,1239" radius="22"/>
+		<Planet color="#42b4aa" idNum="31" name="TEMP31" numFleets="1" owner="1" position="712,167" radius="21"/>
+		<Planet color="#b4046c" idNum="32" name="TEMP32" numFleets="1" owner="1" position="523,362" radius="22"/>
+		<Planet color="#324478" idNum="33" name="TEMP33" numFleets="1" owner="1" position="1324,545" radius="27"/>
+		<Planet color="#2ca6ad" idNum="34" name="TEMP34" numFleets="1" owner="1" position="510,963" radius="29"/>
+		<Planet color="#e5a1db" idNum="35" name="TEMP35" numFleets="1" owner="1" position="1362,812" radius="16"/>
+		<Planet color="#33b212" idNum="36" name="TEMP36" numFleets="1" owner="1" position="1192,1438" radius="15"/>
+		<Planet color="#5ff733" idNum="37" name="TEMP37" numFleets="1" owner="1" position="732,854" radius="26"/>
+		<Planet color="#3e5cf2" idNum="38" name="TEMP38" numFleets="1" owner="1" position="484,740" radius="16"/>
+		<Planet color="#18f7bf" idNum="39" name="TEMP39" numFleets="1" owner="1" position="936,185" radius="19"/>
+		<Planet color="white" idNum="40" name="TEMP40" numFleets="1" owner="1" position="119,1511" radius="15"/>
+		<Planet color="#4b0ecc" idNum="41" name="TEMP41" numFleets="1" owner="1" position="334,689" radius="28"/>
+		<Planet color="#a32847" idNum="42" name="TEMP42" numFleets="1" owner="1" position="1174,1175" radius="25"/>
+		<Planet color="white" idNum="43" name="TEMP43" numFleets="1" owner="1" position="234,233" radius="22"/>
+		<Planet color="white" idNum="44" name="TEMP44" numFleets="1" owner="1" position="1603,541" radius="23"/>
+		<Planet color="#86d9e6" idNum="45" name="TEMP45" numFleets="1" owner="1" position="1252,377" radius="16"/>
+		<Planet color="#8ba00c" idNum="46" name="TEMP46" numFleets="1" owner="1" position="1074,491" radius="27"/>
+		<Planet color="#56d2f3" idNum="47" name="TEMP47" numFleets="1" owner="1" position="920,1674" radius="21"/>
+		<Planet color="#2bb3c8" idNum="48" name="TEMP48" numFleets="1" owner="1" position="1667,1028" radius="28"/>
+		<Planet color="#5e0683" idNum="49" name="TEMP49" numFleets="1" owner="1" position="888,1321" radius="28"/>
+		<Planet color="#c23400" idNum="50" name="TEMP50" numFleets="1" owner="1" position="1232,245" radius="18"/>
+	</PlanetList>
+	<ConnectionList>
+		<connection>
+			10,32
+		</connection>
+		<connection>
+			4,39
+		</connection>
+		<connection>
+			14,26
+		</connection>
+		<connection>
+			8,42
+		</connection>
+		<connection>
+			17,29
+		</connection>
+		<connection>
+			17,28
+		</connection>
+		<connection>
+			36,42
+		</connection>
+		<connection>
+			3,18
+		</connection>
+		<connection>
+			24,35
+		</connection>
+		<connection>
+			6,37
+		</connection>
+		<connection>
+			12,47
+		</connection>
+		<connection>
+			6,34
+		</connection>
+		<connection>
+			3,12
+		</connection>
+		<connection>
+			25,35
+		</connection>
+		<connection>
+			5,19
+		</connection>
+		<connection>
+			33,45
+		</connection>
+		<connection>
+			21,27
+		</connection>
+		<connection>
+			21,24
+		</connection>
+		<connection>
+			21,25
+		</connection>
+		<connection>
+			21,22
+		</connection>
+		<connection>
+			4,45
+		</connection>
+		<connection>
+			4,46
+		</connection>
+		<connection>
+			2,20
+		</connection>
+		<connection>
+			1,11
+		</connection>
+		<connection>
+			17,36
+		</connection>
+		<connection>
+			1,41
+		</connection>
+		<connection>
+			27,49
+		</connection>
+		<connection>
+			27,42
+		</connection>
+		<connection>
+			10,14
+		</connection>
+		<connection>
+			4,50
+		</connection>
+		<connection>
+			6,7
+		</connection>
+		<connection>
+			2,30
+		</connection>
+		<connection>
+			22,37
+		</connection>
+		<connection>
+			26,32
+		</connection>
+		<connection>
+			5,30
+		</connection>
+		<connection>
+			38,41
+		</connection>
+		<connection>
+			11,41
+		</connection>
+		<connection>
+			7,37
+		</connection>
+		<connection>
+			23,35
+		</connection>
+		<connection>
+			34,37
+		</connection>
+		<connection>
+			12,17
+		</connection>
+		<connection>
+			28,29
+		</connection>
+		<connection>
+			34,38
+		</connection>
+		<connection>
+			28,48
+		</connection>
+		<connection>
+			7,49
+		</connection>
+		<connection>
+			13,25
+		</connection>
+		<connection>
+			23,24
+		</connection>
+		<connection>
+			13,46
+		</connection>
+		<connection>
+			7,27
+		</connection>
+		<connection>
+			24,42
+		</connection>
+		<connection>
+			23,28
+		</connection>
+		<connection>
+			7,20
+		</connection>
+		<connection>
+			9,46
+		</connection>
+		<connection>
+			2,5
+		</connection>
+		<connection>
+			4,9
+		</connection>
+		<connection>
+			2,16
+		</connection>
+		<connection>
+			13,33
+		</connection>
+		<connection>
+			33,46
+		</connection>
+		<connection>
+			20,49
+		</connection>
+		<connection>
+			33,44
+		</connection>
+		<connection>
+			14,32
+		</connection>
+		<connection>
+			23,48
+		</connection>
+		<connection>
+			26,41
+		</connection>
+		<connection>
+			16,47
+		</connection>
+		<connection>
+			15,39
+		</connection>
+		<connection>
+			20,27
+		</connection>
+		<connection>
+			15,31
+		</connection>
+		<connection>
+			3,16
+		</connection>
+		<connection>
+			31,32
+		</connection>
+		<connection>
+			12,36
+		</connection>
+		<connection>
+			3,47
+		</connection>
+		<connection>
+			19,30
+		</connection>
+		<connection>
+			3,49
+		</connection>
+		<connection>
+			19,34
+		</connection>
+		<connection>
+			8,27
+		</connection>
+		<connection>
+			8,24
+		</connection>
+		<connection>
+			14,43
+		</connection>
+		<connection>
+			8,21
+		</connection>
+		<connection>
+			35,44
+		</connection>
+		<connection>
+			1,38
+		</connection>
+		<connection>
+			10,26
+		</connection>
+		<connection>
+			1,34
+		</connection>
+		<connection>
+			45,50
+		</connection>
+		<connection>
+			30,40
+		</connection>
+		<connection>
+			18,47
+		</connection>
+		<connection>
+			46,50
+		</connection>
+		<connection>
+			29,36
+		</connection>
+		<connection>
+			10,41
+		</connection>
+		<connection>
+			10,43
+		</connection>
+		<connection>
+			9,13
+		</connection>
+		<connection>
+			14,31
+		</connection>
+		<connection>
+			9,15
+		</connection>
+		<connection>
+			18,49
+		</connection>
+		<connection>
+			45,46
+		</connection>
+		<connection>
+			31,39
+		</connection>
+		<connection>
+			18,36
+		</connection>
+		<connection>
+			5,40
+		</connection>
+		<connection>
+			6,20
+		</connection>
+		<connection>
+			37,38
+		</connection>
+		<connection>
+			33,35
+		</connection>
+	</ConnectionList>
+	<RegionList>
+		<Region color="#4abaf2" idNum="1" name="PMET1" owner="-1" value="10">
+			<memberList>
+				<member>
+					1
+				</member>
+				<member>
+					2
+				</member>
+				<member>
+					5
+				</member>
+				<member>
+					6
+				</member>
+				<member>
+					7
+				</member>
+				<member>
+					40
+				</member>
+				<member>
+					34
+				</member>
+				<member>
+					19
+				</member>
+				<member>
+					20
+				</member>
+				<member>
+					30
+				</member>
+				<member>
+					37
+				</member>
+			</memberList>
+		</Region>
+		<Region color="#cb9876" idNum="2" name="PMET2" owner="-1" value="10">
+			<memberList>
+				<member>
+					33
+				</member>
+				<member>
+					4
+				</member>
+				<member>
+					39
+				</member>
+				<member>
+					9
+				</member>
+				<member>
+					44
+				</member>
+				<member>
+					13
+				</member>
+				<member>
+					46
+				</member>
+				<member>
+					45
+				</member>
+				<member>
+					50
+				</member>
+				<member>
+					22
+				</member>
+				<member>
+					25
+				</member>
+				<member>
+					15
+				</member>
+			</memberList>
+		</Region>
+		<Region color="#f0650b" idNum="3" name="PMET3" owner="-1" value="8">
+			<memberList>
+				<member>
+					32
+				</member>
+				<member>
+					43
+				</member>
+				<member>
+					38
+				</member>
+				<member>
+					41
+				</member>
+				<member>
+					10
+				</member>
+				<member>
+					11
+				</member>
+				<member>
+					14
+				</member>
+				<member>
+					26
+				</member>
+				<member>
+					31
+				</member>
+			</memberList>
+		</Region>
+		<Region color="#af69f3" idNum="4" name="PMET4" owner="-1" value="11">
+			<memberList>
+				<member>
+					35
+				</member>
+				<member>
+					36
+				</member>
+				<member>
+					8
+				</member>
+				<member>
+					42
+				</member>
+				<member>
+					48
+				</member>
+				<member>
+					21
+				</member>
+				<member>
+					23
+				</member>
+				<member>
+					24
+				</member>
+				<member>
+					27
+				</member>
+				<member>
+					28
+				</member>
+				<member>
+					29
+				</member>
+			</memberList>
+		</Region>
+		<Region color="#f43b82" idNum="5" name="PMET5" owner="-1" value="8">
+			<memberList>
+				<member>
+					3
+				</member>
+				<member>
+					49
+				</member>
+				<member>
+					12
+				</member>
+				<member>
+					47
+				</member>
+				<member>
+					16
+				</member>
+				<member>
+					17
+				</member>
+				<member>
+					18
+				</member>
+			</memberList>
+		</Region>
+	</RegionList>
+</Gamestate>
