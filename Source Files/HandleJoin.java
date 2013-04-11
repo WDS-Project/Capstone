@@ -51,7 +51,7 @@ public class HandleJoin implements HttpHandler {
 
 				//now deal with the actual request
 				InputStream stream = exchange.getRequestBody();
-				byte[] inbuf = new byte[100];
+				byte[] inbuf = new byte[1000];
 				int len = stream.read(inbuf);
 				byte[] inbufShort = Arrays.copyOfRange(inbuf, 0, len);
 				String request = new String(inbufShort);

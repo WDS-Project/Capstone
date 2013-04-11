@@ -48,7 +48,7 @@ public class HandleGameChange implements HttpHandler {
 
 				//now deal with the actual request
 				InputStream stream = exchange.getRequestBody();
-				byte[] inbuf = new byte[100];
+				byte[] inbuf = new byte[1000];
 				stream.read(inbuf);
 				String request = new String(inbuf).trim();
 

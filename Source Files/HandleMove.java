@@ -49,7 +49,7 @@ public class HandleMove implements HttpHandler {
 
 				//now deal with the actual request
 				InputStream stream = exchange.getRequestBody();
-				byte[] inbuf = new byte[100];
+				byte[] inbuf = new byte[1000];
 				stream.read(inbuf);
 				String move = new String(inbuf).trim();
 
