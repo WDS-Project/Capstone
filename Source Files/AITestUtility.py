@@ -240,8 +240,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
         gs.loadXML(gsMap)
     
     # Run the games
-    if True:
-    #try:
+    #if True:
+    try:
         for i in range(1, int(numGames)+1):
             print("\nGame "+str(i), end=': ')
 
@@ -249,8 +249,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             setup(len(diffList), diffList)
             winner = playGame()
             stats.victories[winner] += 1
-    #except:
-    #    pass # for allowing a keyboard interrupt
+    except:
+        pass # for allowing a keyboard interrupt
 
     # Calculate final results
     totalTime = datetime.now() - startTime
