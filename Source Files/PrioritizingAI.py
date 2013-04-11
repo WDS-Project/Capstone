@@ -46,16 +46,15 @@ def prioritizeMyPlanets(myGS, playerID):
     # prioritize planets with more hostile connections
     # for key, value in myPlanets.iteritems():
     for p in myPlanets.keys():
-        myPlanets[p] += len(AIHelpers.getHostileConnections(myGS,myGS.pList[p]))
+        myPlanets[p] += len(AIHelpers.getHostileConnections(myGS,myGS.pList[p]))*2
 
     # prioritize planets in regions with higher values
     # unless we own the region already
     for r in myGS.rList:
         if r is not None:
-            if int(r.owner) != int(playerID):
-                for p in myPlanets.keys():
-                    if p in r.members:
-                        myPlanets[p] += r.value
+            for p in myPlanets.keys():
+                if p in r.members:
+                    myPlanets[p] += r.value
 
     return myPlanets
 
@@ -84,7 +83,7 @@ def prioritizeTheirPlanets(myGS, playerID):
         for c in conns:
             if c in mine:
                 count += 1
-        theirPlanets[p] += count*2
+        theirPlanets[p] += count
 
     # prioritize planets in regions with higher values
     for r in myGS.rList:
@@ -144,12 +143,13 @@ def generateAttacks(myGS, move, theirPriorities):
         #are we connected to it?
         for p in hostiles:
             if str(highestKey) in hostiles[p]:
-                #do we have enough fleets to win?
+                #do we have enough fleets to win?  FIGURE OUT HOW MANY WE NEED TO USE
                 source = int(p)
                 dest = int(highestKey)
                 if(myGS.pList[source].numFleets > (myGS.pList[dest].numFleets + 1)):
                     #let's do it!
-                    fleets = myGS.pList[dest].numFleets + 1
+                    fleets = myGS.pList[source].numFleets - 1
+                    #print(str(source) + ", who has " + str(myGS.pList[source].numFleets) + " is attacking " + str(dest) + ", who has " + str(myGS.pList[dest].numFleets) + "fleets with " + str(fleets) + " fleets.\n")
                     move.addMove(source, dest, fleets)
                     alreadyDefeated.append(dest)
                     #update ourselves
@@ -173,7 +173,7 @@ def generateAttacks(myGS, move, theirPriorities):
                 for i in source:
                     if(myGS.pList[i].numFleets > 1):
                         move.addMove(i, dest, myGS.pList[i].numFleets -1)
-                        used = myGS.pList[i].numFleets -1
+                        used += myGS.pList[i].numFleets -1
                         myGS.pList[i].numFleets = 1
             else: #it's done
                 break
