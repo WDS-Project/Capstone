@@ -777,8 +777,8 @@ var Client = function() {
 	self.state = Client.states.PRE_GAME;
 	self.count = 0; //for counting up to quota
 	self.currentMove = new Move(self.playerID);
-	self.skipMoves = false; // flag for skipping AI moves
-	self.turnDelay = 1000; // delay between turns in ms
+	self.skipMoves = true; // flag for skipping AI moves
+	self.turnDelay = 100; // delay between turns in ms
 	
 	// This function connects to the server and defines a game
 	// based on the parameters chosen by the user.
@@ -867,21 +867,22 @@ var Client = function() {
 		
 		//if it's not our turn, send a gamechange request
 		button = document.getElementById("submitButton");
-		button.disabled = false;
 		if (gs.activePlayer != self.playerID) {
 			if (self.skipMoves) {
 				button.value = "Next Step: Player " + gs.activePlayer;
-				button.onclick = function() {};
+				button.disabled = true;
 				setTimeout(self.getGamechange, self.turnDelay);
 			} else {
 				button.value = "Next Step: Player " + gs.activePlayer;
 				button.onclick = client.getGamechange;
+				button.disabled = false;
 			}
 		} else {
 			if (self.state == Client.states.DEPLOYMENT) {
 				// If it is our turn, we setup for deployment
 				button.value = "End Deployment";
 				button.onclick = client.endDeploy;
+				button.disabled = false;
 				document.getElementById("footer").innerHTML =
 				"Click on another planet to deploy more fleets, " +
 				"or click End Deployment to move to attack phase. " +

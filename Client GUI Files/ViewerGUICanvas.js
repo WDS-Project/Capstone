@@ -23,8 +23,8 @@ var 	canvas = document.getElementById('c'), // Canvas variable
 	
 // Defines the viewport and sets the canvas to be that size
 var view = {
-	height: 600,
-	width: 800,
+	height: 700,
+	width: 1100,
 	offsetX: 0,
 	offsetY: 0
 };
