@@ -867,6 +867,7 @@ var Client = function() {
 		
 		//if it's not our turn, send a gamechange request
 		button = document.getElementById("submitButton");
+		button.disabled = false;
 		if (gs.activePlayer != self.playerID) {
 			if (self.skipMoves) {
 				button.value = "Next Step: Player " + gs.activePlayer;
@@ -886,7 +887,9 @@ var Client = function() {
 				"or click End Deployment to move to attack phase. " +
 				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
 			} else if (self.state == Client.states.CHOOSING) {
-				// CODE GOES HERE
+				// It's our turn, and we want a planet choice.
+				button.value = "Choose a planet";
+				button.disabled = true;
 			}
 		}
 	}
