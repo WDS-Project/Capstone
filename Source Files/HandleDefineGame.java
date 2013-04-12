@@ -70,7 +70,7 @@ public class HandleDefineGame implements HttpHandler {
 					InputStream stream = exchange.getRequestBody();
 					byte[] inbuf = new byte[1000]; //so the max is 1000 characters
 					stream.read(inbuf);
-					String definition = new String(inbuf).trim();			
+					String definition = new String(inbuf).trim();
 					String[] params = definition.split("/");
 					
 					//number of players
@@ -107,8 +107,8 @@ public class HandleDefineGame implements HttpHandler {
 					server.addPlayerToSession(player1IP + ":" + playerOne.getID(), engine);
 					
 					//start up the AI processes with the given difficulties
-					for(int i = 0; i <  AIs; i++) {
-						new PythonStarter(diffs[0], engine.getID(),
+					for(int i = 0; i < AIs; i++) {
+						new PythonStarter(diffs[i], engine.getID(),
 							server.getServerIP(), server.getServerPort());
 					}
 
