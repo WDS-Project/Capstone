@@ -529,7 +529,7 @@ var Gamestate = function() {
 		self.updateRegions();
 		
 		//see if someone was eliminated
-		if(client.state != Client.states.CHECKING) {
+		if(client.state != Client.states.CHOOSING) {
 			for(var i = 1; i < self.playerList.length; i++) {
 				elim = true;
 				for(var j = 1; j < self.pList.length; j++) {
