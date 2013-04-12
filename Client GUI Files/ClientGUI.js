@@ -529,17 +529,19 @@ var Gamestate = function() {
 		self.updateRegions();
 		
 		//see if someone was eliminated
-		for(var i = 1; i < self.playerList.length; i++) {
-			elim = true;
-			for(var j = 1; j < self.pList.length; j++) {
-				if(self.pList[j].owner == i)
-					elim = false;
+		if(client.state != Client.states.CHECKING) {
+			for(var i = 1; i < self.playerList.length; i++) {
+				elim = true;
+				for(var j = 1; j < self.pList.length; j++) {
+					if(self.pList[j].owner == i)
+						elim = false;
+				}
+				if(elim)
+					self.playerList[i].status = 0;
 			}
-			if(elim)
-				self.playerList[i].status = 0;
+			
+			self.updatePlayers();
 		}
-		
-		self.updatePlayers();
 	};
 	
 	// Returns the number of fleets the given player can deploy.
@@ -814,7 +816,7 @@ var Client = function() {
 				var colorChoice = document.getElementById("color");
 				window.localStorage.setItem("playerColor",
 					colorChoice.options[colorChoice.selectedIndex].value);
-				window.localStorage.setItem("numPlayers", counter);
+				window.localStorage.setItem("numPlayers", counter+1);
 				location.href = "gamepage.html";
 			} else if (self.request.status != 200) {
 				if(confirm("A connection to the server could not be established.\n Try again?"))
