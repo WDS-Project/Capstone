@@ -10,8 +10,7 @@ from http import client #for HTTP connections
 import sys      #for command-line arguments
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
-import RandomAI
-import PrioritizingAI
+import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
 import traceback # for printing errors to the log
 # add more imports for different AI difficulty levels
 
@@ -62,10 +61,10 @@ class AIClient:
     def go(self):
         self.log.write(str("Turn: " + str(self.gs.activePlayer) + " My ID: " + str(self.playerID) + "\n"))
         if (int(self.gs.activePlayer) != int(self.playerID)):
-            self.log.write("It's not our turn.\n")
+            self.log.write("It's not our turn.")
             connection = http.client.HTTPConnection(self.serverIPandPort)
             connection.request("POST", "/gamechange/", self.playerID)
-            self.log.write("Therefore I have sent a gamechange request.\n")
+            self.log.write(" Sending gamechange request...\n")
         elif (int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
             if (self.difficulty == '0'):
@@ -73,7 +72,7 @@ class AIClient:
                 m = RandomAI.getMove(self.gs, self.playerID, self.state)
             elif (self.difficulty == '1'):
                 self.log.write("AI type: RandomBetter.\n")
-                m = RandomBetterAI.getMove(self.gs, self.playerID, self.state)
+                m = RandomAIBetter.getMove(self.gs, self.playerID, self.state)
             elif (self.difficulty == '2'):
                 self.log.write("AI type: Aggressive.\n")
                 m = AggressiveAI.getMove(self.gs, self.playerID, self.state)
@@ -109,8 +108,8 @@ class AIClient:
                 if p is None: continue
                 if p.owner is 0:
                     stillChoosing = True
-            if stillChoosing:
-                self.state == 3
+            if not stillChoosing:
+                self.state = 3
 
     # yeah ... this doesnt tell us much
     def __str__(self):
