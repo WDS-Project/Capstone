@@ -28,17 +28,11 @@ public class GameEngine {
 
 	//these are to figure out where we are in the game
 	//in order to know what to send players in the executeRequests() method
-	private enum State {
-			NOT_STARTED, IN_PROGRESS, GAME_OVER
-	}
-	
-	private State stateOfGame;
-	
-	//private final int NOT_STARTED = 1;
-	//private final int IN_PROGRESS = 2;
-	//private final int GAME_OVER = 3;
+	private final int NOT_STARTED = 1;
+	private final int IN_PROGRESS = 2;
+	private final int GAME_OVER = 3;
 
-	//private int stateOfGame = 1;
+	private int stateOfGame = 1;
 	private int winner = -1;
 
 	/*** Methods ***/
@@ -311,7 +305,7 @@ public class GameEngine {
 
 		int winningPlayer = checkWin();
 		if(winningPlayer > 0) {
-			stateOfGame = State.GAME_OVER;
+			stateOfGame = GAME_OVER;
 			winner = winningPlayer;
 		}
 
@@ -359,7 +353,7 @@ public class GameEngine {
 
 		Set<String> keys = players.keySet();
 		//If the game hasn't started yet, send everyone a Gamestate
-		if(stateOfGame == State.NOT_STARTED) {
+		if(stateOfGame == NOT_STARTED) {
 			//distribute planets here
 			//System.out.println("Now distributing planets...");
 			//gs.distributePlanets();
@@ -379,7 +373,7 @@ public class GameEngine {
 			//System.out.println(gs);
 		}
 
-		else if(stateOfGame == State.IN_PROGRESS) {
+		else if(stateOfGame == IN_PROGRESS) {
 			// If it has, send a GameChange
 			try {
 				System.out.println("Sending gamechange to "+
@@ -424,14 +418,14 @@ public class GameEngine {
 		changePlayerPopulation(gs.getActivePlayers().length); //make sure we aren't waiting on inactive players
 
 		// Final part: setup for the next round.
-		if(stateOfGame == State.IN_PROGRESS) {
+		if(stateOfGame == IN_PROGRESS) {
 			gs.nextTurn();
 			change.setTurnStatus(gs.getActivePlayer(), gs.getTurnNumber(), gs.getCycleNumber());
 		}
 		setResponses();
 
-		if(stateOfGame == State.NOT_STARTED)
-			stateOfGame = State.IN_PROGRESS; 
+		if(stateOfGame == NOT_STARTED)
+			stateOfGame = IN_PROGRESS; 
 
 		System.out.println("Turn complete. Player list:");
 		for(int p : gs.getPlayerList())

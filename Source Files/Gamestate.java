@@ -271,8 +271,8 @@ public class Gamestate {
 		int unowned = 0;
 		
 		//set all planet owners to 0
-		for(Planet p : pList)
-			updatePlanet(p.getIDNum(), minFleets, unowned);
+		for(int i = 1; i < pList.length; i++)
+			updatePlanet(i, minFleets, unowned);
 		
 		//set all region owners to 0
 		updateRegions();
@@ -451,6 +451,7 @@ public class Gamestate {
 	 * @param xmlPath the filename for the XML file to be read into a Gamestate
 	 */
 	public void loadXML(String xmlPath, int numPlayers) {
+		System.out.println("Loading XML gamestate");
 		// Load XML from the file
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		try {
