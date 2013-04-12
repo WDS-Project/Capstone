@@ -215,7 +215,8 @@ public class GameEngine {
 		}
 
 		// Check that the request came from the right IP address
-		if(findPlayer(move.getIP()+":" + move.getPlayerID()) == null) {
+		ServerPlayer sender = findPlayer(move.getIP()+":" + move.getPlayerID());
+		if(sender == null) {
 			throw new RuntimeException("Move came from "+move.getIP()+", which isn't the right address.");
 		}
 
@@ -225,6 +226,8 @@ public class GameEngine {
 		while(move.hasNext()) {
 			int[] miniMove = move.next();
 			
+			// Case #1: Planet Choosing
+			// ------------------------
 			//Check to see if we are in the distribution phase; that is, that source and dest are 0
 			if(miniMove[0] == 0 && miniMove[1] == 0) {
 				//now claim ownership of the planet
@@ -246,11 +249,47 @@ public class GameEngine {
 				return;
 			}
 
+			// Case #2: Card Turnin
+			// --------------------
+			// Card turnins must be processed before the fleets they grant can be used.
+			if (miniMove[0] == -1) {
+				// Card turnins are special. They look like this:
+				// -1:<type>:<wildcards>
+				int type = miniMove[1]; // type: 1 => type 1, 2 => type 2, 3 => type 3, 4 => all 3
+				int wildcards = miniMove[2]; // wildcards: # of wildcards used, if any
+				
+				// Input validation
+				if (type < 1 || type > 4)
+					throw new RuntimeException("Invalid move: invalid card turnin type.");
+				if (wildcards < 0 || wildcards > 3)
+					throw new RuntimeException("Invalid move: invalid number of wildcards.");
+				if (wildcards > sender.getCards()[0])
+					throw new RuntimeException("Invalid move: insufficient wildcard cards for player "+
+						sender.getID());
+				if (type == 4 && wildcards > 0)
+					throw new RuntimeException("Invalid move: I don't want to deal with that. (wildcards in mixed turnin)");
+				
+				// Assuming that's good, actually process the request
+				if (type == 1 || type == 2 || type == 3) {
+					quota += 5; // TODO make fancier
+					sender.removeCards(type, 3 - wildcards);
+					sender.removeCards(0, wildcards);
+				} else if (type == 4) {
+					// TODO For now, you can't use wildcards for this type 
+					quota += 5; // TODO same thing
+					sender.removeCards(1, 1);
+					sender.removeCards(2, 1);
+					sender.removeCards(3, 1);
+				}
+			}
+			
 			// Grab these two, but before we can get source, we have to check case #1
 			Planet dest = gs.getPlanetByID(miniMove[1]);
 			int numFleets = miniMove[2];
 
-			// 1. If Source == 0 --> Deployment 
+			// Case #3: Deployments
+			// --------------------
+			// If Source == 0 --> Deployment 
 			if(miniMove[0] == 0) {
 				quota -= numFleets;
 				if (quota < 0)
@@ -275,14 +314,19 @@ public class GameEngine {
 					numFleets + ".");
 			}
 
-			// 2. If Source owner == Dest owner --> Reinforcement
+			// Case #4: Reinforcements
+			// -----------------------
+			// If Source owner == Dest owner --> Reinforcement
 			if(source.getOwner() == dest.getOwner()) {
 				source.addFleets((-1)*numFleets);
 				dest.addFleets(numFleets);
 				gc.addChange(source);
 				gc.addChange(dest);
 			}
-			// 3. Otherwise --> Attack. Two cases: attacker victory, or not.
+			
+			// Case #5: Attack
+			// ---------------
+			// In any other situation, we assume it's an attack.
 			else {
 				int[] results = processAttack(numFleets, dest.getFleets(), randomize);
 				if(results[1] == 0) { // the attacker has won

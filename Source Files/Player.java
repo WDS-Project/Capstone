@@ -29,8 +29,8 @@ public class Player {
 	public int getID() { return ID; }
 	public int getStatus() { return status; }
 	public void setStatus(int i) { status = i; }
-	public void addCard(int type, int count) { cards[type] += count; }
-	public void removeCard(int type, int count) { cards[type] -= count; }
+	public void addCards(int type, int count) { cards[type] += count; }
+	public void removeCards(int type, int count) { cards[type] -= count; }
 	public int[] getCards() { return cards; }
 }
 
