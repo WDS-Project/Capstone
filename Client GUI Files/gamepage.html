@@ -83,7 +83,8 @@
 	gs.loadXML(window.localStorage.getItem("gsString"));
 	
 	var client = new Client();
-	// Prepare for deployment
+	// Prepare for start of game
+	client.state = Client.states.CHOOSING;
 	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
 		"or click End Deployment to move to attack phase. " +
 		"<br>Remaining fleets: " + (gs.getPlayerQuota(1));

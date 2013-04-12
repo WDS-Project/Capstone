@@ -7,20 +7,6 @@
 
 // ********* How to load an XML string into the stuff we want. *********
 // *** Step 1: Load the XML into a Javascript object. ***
-// Incidentally, our target is TestGS3.xml (as always), reproduced here in glorious massive string form.
-/*var gsString = '<?xml version="1.0" encoding="UTF-8"?><Gamestate><Players numPlayers="2" activePlayer="1" turnNumber="0" cycleNumber="0"/>' +
-'<PlanetList><Planet idNum="1" name="Florida" owner="1" numFleets="5" color="#ffee33" position="135,125" radius="30" /><Planet idNum="2" name="Aruba"' +
-' owner="1" numFleets="5" color="#aabbcc" position="700,450" radius="35" /><Planet idNum="3" name="Manitoba" owner="1" numFleets="5" color="#00ffaa"'+
-' position="600,250" radius="25" /><Planet idNum="4" name="Sparta" owner="2" numFleets="5" color="#aa00ee" position="175,400" radius="25" /><Planet'+
-' idNum="5" name="Akihabara" owner="2" numFleets="5" color="#55cc11" position="400,450"	radius="30" /></PlanetList><ConnectionList><connection>1,2</connection>'+
-'<connection>1,3</connection><connection>1,4</connection><connection>1,5</connection><connection>2,3</connection><connection>2,4</connection>'+
-'<connection>2,5</connection><connection>3,4</connection><connection>3,5</connection><connection>4,5</connection></ConnectionList><RegionList>'+
-'<Region idNum="1" name="Eastern U.S." value="5" owner="0" color="#44aadd"><memberList><member>1</member><member>2</member><member>3</member>'+
-'<member>4</member><member>5</member></memberList></Region></RegionList></Gamestate>';
-
-var gcString = '<?xml version="1.0" encoding="UTF-8"?><GameChange><Players activePlayer="1" cycleNumber="1" turnNumber="1"/>' +
-'<Planets><Planet idNum="1" numFleets="4" owner="1"/><Planet idNum="2" numFleets="7" owner="1"/><Planet idNum="4" numFleets="1" owner="2"/>' +
-'</Planets></GameChange>';*/
 
 var drawLoop; // the game loop - see DrawLoop() below
 
@@ -75,14 +61,6 @@ var Planet = function(el) {
 				yPt = Number(self.yPos) + 1.4 * self.radius * Math.sin((self.spin + (tick * i)) * (Math.PI/180));
 				pts.push([xPt, yPt]);
 			}
-			/*pts = [ // this is a triangle (for example)
-				[Number(self.xPos) + 2 * self.radius * Math.cos(self.spin * (Math.PI/180)),
-				Number(self.yPos) + 2*self.radius * Math.sin(self.spin * (Math.PI/180))],
-				[Number(self.xPos) + 2*self.radius * Math.cos((self.spin + 120) * (Math.PI/180)),
-				Number(self.yPos) + 2*self.radius * Math.sin((self.spin + 120) * (Math.PI/180))],
-				[Number(self.xPos) + 2*self.radius * Math.cos((self.spin + 240) * (Math.PI/180)),
-				Number(self.yPos) + 2*self.radius * Math.sin((self.spin + 240) * (Math.PI/180))],
-			];*/
 			
 			// Draw the shape by cycling through all points
 			ctx.beginPath();
@@ -105,10 +83,13 @@ var Planet = function(el) {
 			ctx.strokeStyle = 'grey';
 		}
 		
-		ctx.fillStyle = gs.playerList[self.owner].color;
-		//ctx.fillStyle = 'black';
+		if (self.owner == 0)
+			ctx.fillStyle = '#000'; // unowned planets are black
+		else
+			ctx.fillStyle = gs.playerList[self.owner].color;
+		
 		ctx.lineWidth = 5;
-		//ctx.strokeStyle = self.color;
+
 		
 		// Draws middle & inner circles
 		ctx.beginPath();
@@ -124,7 +105,7 @@ var Planet = function(el) {
 		ctx.beginPath();
 		var fontSize = (isSelection ? 28 : 25);
 		ctx.font = fontSize + 'pt Calibri';
-		ctx.fillStyle = 'black'; //'red';
+		ctx.fillStyle = 'black';
 		// This next bit looks fancy, but it really just changes the
 		// location of the text based on how many digits numFleets is
 		offset = String(self.numFleets).length * fontSize / 2.7;
@@ -785,7 +766,13 @@ var Client = function() {
 	self.playerID = 1; // the human player is always player 1 (for the time being)
 	self.request; // this is the xmlHTTP request, which is recreated every time
 	self.serverIPandPort = "localhost:12345"; //CHANGE THIS!!!
-	self.deployment = true; //for move states
+	Client.states = { // Codes for possible states
+		PRE_GAME: 0,
+		CHOOSING: 1,
+		DEPLOYMENT: 2,
+		MOVING: 3
+	};
+	self.state = Client.states.PRE_GAME;
 	self.count = 0; //for counting up to quota
 	self.currentMove = new Move(self.playerID);
 	self.skipMoves = false; // flag for skipping AI moves
@@ -855,7 +842,6 @@ var Client = function() {
 	
 	// Deal with responses from server
 	self.dealWithResponse = function(res) {
-//		alert("Dealing with response:\n"+res+"\nskipMoves = "+self.skipMoves);
 		if(res == "eliminated")
 			alert("Sorry, you lost.");
 		else if (res == ("winner:" + self.playerID))
@@ -864,7 +850,17 @@ var Client = function() {
 		var gc = new Gamechange();
 		gc.loadXML(res);
 		gs.update(gc);
-//		alert("New active player: "+gs.activePlayer);
+		
+		// Check if we're done choosing planets.
+		if (self.state == Client.states.CHOOSING) {
+			var stillChoosing = false;
+			for (i = 1; i < gs.pList.length; i++) {
+				if (gs.pList[i].owner == 0)
+					stillChoosing = true;
+			}
+			if (!stillChoosing)
+				self.state = Client.states.DEPLOYMENT;
+		}
 		
 		//if it's not our turn, send a gamechange request
 		button = document.getElementById("submitButton");
@@ -878,14 +874,49 @@ var Client = function() {
 				button.onclick = client.getGamechange;
 			}
 		} else {
-			// If it is our turn, we setup for deployment
-			button.value = "End Deployment";
-			button.onclick = client.endDeploy;
-			document.getElementById("footer").innerHTML =
-			"Click on another planet to deploy more fleets, " +
-			"or click End Deployment to move to attack phase. " +
-			"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+			if (self.state == Client.states.DEPLOYMENT) {
+				// If it is our turn, we setup for deployment
+				button.value = "End Deployment";
+				button.onclick = client.endDeploy;
+				document.getElementById("footer").innerHTML =
+				"Click on another planet to deploy more fleets, " +
+				"or click End Deployment to move to attack phase. " +
+				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+			} else if (self.state == Client.states.CHOOSING) {
+				// CODE GOES HERE
+			}
 		}
+	}
+	
+	self.choose = function(target) {
+		// Chooses an available planet. Target is assumed to be unowned.
+		self.currentMove.addMove(0, 0, target);
+		
+		// Send move request to server
+		self.request = new XMLHttpRequest();
+		self.request.open("POST", "http://" + self.serverIPandPort + "/move/", true)
+		var move = self.currentMove.toString();
+		
+		
+		// Reset display variables
+		selection = null;
+		self.currentMove.clear();	
+		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
+		"<b>_____________________________________</b><br><br>";
+		
+		self.request.send(move);
+		
+		self.request.onreadystatechange=function() {
+			// We only do something if the request is finished
+			if (self.request.readyState == 4) {
+				if (self.request.status==200) {
+					response = self.request.responseText;
+					self.dealWithResponse(response);
+				} else {
+					alert("Bad request. Response status: " + self.request.status);
+				}
+			}
+		};
 	}
 	
 	self.deploy = function(source) {
@@ -898,7 +929,7 @@ var Client = function() {
 		//self.deployment is true; set this to false if quota expended or the user ends the phase
 		var quota = gs.getPlayerQuota(self.playerID);
 		
-		if(self.deployment) { 
+		if(self.state == Client.states.DEPLOYMENT) { 
 			//display a pop-up and get number of fleets
 			var fleets = prompt("Enter number of fleets to deploy to " + planet.name);
 			
@@ -935,7 +966,7 @@ var Client = function() {
 	}
 	
 	self.endDeploy = function() {
-		self.deployment = false;
+		self.state = Client.states.MOVING;
 		self.count = 0;
 		
 		document.getElementById("submitButton").value = "Submit Move";
@@ -1003,7 +1034,7 @@ var Client = function() {
 		
 		// Reset display variables
 		selection = null;
-		self.deployment = true;
+		self.state = Client.states.DEPLOYMENT; // i.e. deployment
 		self.currentMove.clear();	
 		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
 		"<b>_____________________________________</b><br><br>";

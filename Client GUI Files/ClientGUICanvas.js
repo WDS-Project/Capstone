@@ -85,14 +85,19 @@ canvas.onclick = function(e) {
 	mouse.yCanv = (mouse.y + view.offsetY - canvas.offsetTop);
 
 	for (var i = 1; i < gs.pList.length; i++) {
-		if (gs.pList[i].isInside(mouse.xCanv, mouse.yCanv) && gs.pList[i].owner == client.playerID) {
-			if(client.deployment == true)
-				client.deploy(i); //we're in deployment, so all we need is a planet
-							//otherwise wait for a connection to be clicked
-			else {
-				selection = i;
-				gs.setActivePlanet(i);
-			}				
+		if (gs.pList[i].isInside(mouse.xCanv, mouse.yCanv)) {
+			if (gs.pList[i].owner == client.playerID) {
+				if(client.state == Client.states.DEPLOYMENT) {
+					client.deploy(i); //we're in deployment, so all we need is a planet
+								//otherwise wait for a connection to be clicked
+				} else if (client.state == Client.states.MOVING) {
+					selection = i;
+					gs.setActivePlanet(i);
+				}
+			} else if (gs.pList[i].owner == 0 && 
+				client.state == Client.states.CHOOSING) {
+				client.choose(i);
+			}
 			return;
 		}
 	}
