@@ -57,29 +57,20 @@ html {
 			alert("Number of AIs must be between 1 and 10");
 			return;
 		}
-	
-		document.getElementById("row").innerHTML = 'AI 1: <select id="ai1" size="1"' +
-						"style = 'font-size:0.8em;" +
-						'font-family: "Courier New", Helvetica, Sans-Serif;' +
-						"font-weight:bold;" +
-						"text-align:center;'>" +
-						'<option value="0">Random</option>' +
-						'<option value="1">RandomBetter</option>' +
-						'<option value="2">Prioritization</option>' +
-						'<option value="3">Aggressive</option>' +
-						'</select>';
-		for(var i = 2; i <= Number(document.getElementById("ais").value); i++) {
-			document.getElementById("row").innerHTML += 'AI ' + i +': <select id="ai' + i + '" size="1"' +
-						"style = 'font-size:0.8em; " +
-						'font-family: "Courier New", Helvetica, Sans-Serif;' +
-						"font-weight:bold;" +
-						"text-align:center;'>" +
-						'<option value="0">Random</option>' +
-						'<option value="1">RandomBetter</option>' +
-						'<option value="2">Prioritization</option>' +
-						'<option value="3">Aggressive</option>' +
-						'</select>';
-			if(i % 2 == 0) document.getElementById("row").innerHTML += "<br>";
+		var row = document.getElementById("row");
+		row.innerHTML = '';
+
+		for(var i = 1; i <= Number(document.getElementById("ais").value); i++) {
+			row.innerHTML += 'AI ' + i +': <select id="ai' + i + '" size="1"' +
+				'style = "font-size:0.8em;' +
+				'font-family: Courier New, Helvetica, Sans-Serif;' +
+				'font-weight:bold;' +
+				'text-align:center;">' +
+				'<option value="0">Random</option>' +
+				'<option value="1">RandomBetter</option>' +
+				'<option value="2">Aggressive</option>' +
+				'<option value="3">Prioritization</option>' +
+				'</select><br>';
 		}
 		
 		document.getElementById("row").innerHTML += "</td></tr>";
