@@ -28,11 +28,17 @@ public class GameEngine {
 
 	//these are to figure out where we are in the game
 	//in order to know what to send players in the executeRequests() method
-	private final int NOT_STARTED = 1;
-	private final int IN_PROGRESS = 2;
-	private final int GAME_OVER = 3;
+	private enum State {
+			NOT_STARTED, IN_PROGRESS, GAME_OVER
+	}
+	
+	private State stateOfGame;
+	
+	//private final int NOT_STARTED = 1;
+	//private final int IN_PROGRESS = 2;
+	//private final int GAME_OVER = 3;
 
-	private int stateOfGame = 1;
+	//private int stateOfGame = 1;
 	private int winner = -1;
 
 	/*** Methods ***/
@@ -225,6 +231,24 @@ public class GameEngine {
 		// loop through the mini Moves
 		while(move.hasNext()) {
 			int[] miniMove = move.next();
+			
+			//Check to see if we are in the distribution phase; that is, that source and dest are 0
+			if(miniMove[0] == 0 && miniMove[1] == 0) {
+				//now claim ownership of the planet
+				Planet p = gs.getPlanetByID(miniMove[2]);
+				if(p.getOwner() != 0)
+					throw new RuntimeException("Invalid claim on ownership: planet " + miniMove[2] 
+							+ " is already owned by " + p.getOwner());
+				p.setOwner(move.getPlayerID());
+				gc.addChange(p);
+				
+				//we're not supposed to have any more miniMoves at this point
+				if(move.hasNext())
+					throw new RuntimeException("Invalid claim on owernship: you can only claim 1 planet at a time.");
+				
+				//we're done
+				break;
+			}
 
 			// Grab these two, but before we can get source, we have to check case #1
 			Planet dest = gs.getPlanetByID(miniMove[1]);
@@ -287,7 +311,7 @@ public class GameEngine {
 
 		int winningPlayer = checkWin();
 		if(winningPlayer > 0) {
-			stateOfGame = GAME_OVER;
+			stateOfGame = State.GAME_OVER;
 			winner = winningPlayer;
 		}
 
@@ -335,10 +359,11 @@ public class GameEngine {
 
 		Set<String> keys = players.keySet();
 		//If the game hasn't started yet, send everyone a Gamestate
-		if(stateOfGame == NOT_STARTED) {
+		if(stateOfGame == State.NOT_STARTED) {
 			//distribute planets here
 			//System.out.println("Now distributing planets...");
-			gs.distributePlanets();
+			//gs.distributePlanets();
+			gs.prepareForDistribution();
 			
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
@@ -354,7 +379,7 @@ public class GameEngine {
 			//System.out.println(gs);
 		}
 
-		else if(stateOfGame == IN_PROGRESS) {
+		else if(stateOfGame == State.IN_PROGRESS) {
 			// If it has, send a GameChange
 			try {
 				System.out.println("Sending gamechange to "+
@@ -399,14 +424,14 @@ public class GameEngine {
 		changePlayerPopulation(gs.getActivePlayers().length); //make sure we aren't waiting on inactive players
 
 		// Final part: setup for the next round.
-		if(stateOfGame == IN_PROGRESS) {
+		if(stateOfGame == State.IN_PROGRESS) {
 			gs.nextTurn();
 			change.setTurnStatus(gs.getActivePlayer(), gs.getTurnNumber(), gs.getCycleNumber());
 		}
 		setResponses();
 
-		if(stateOfGame == NOT_STARTED)
-			stateOfGame = IN_PROGRESS; 
+		if(stateOfGame == State.NOT_STARTED)
+			stateOfGame = State.IN_PROGRESS; 
 
 		System.out.println("Turn complete. Player list:");
 		for(int p : gs.getPlayerList())

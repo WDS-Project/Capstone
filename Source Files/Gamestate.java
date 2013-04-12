@@ -261,7 +261,23 @@ public class Gamestate {
 				if(player == 0) player = playerList.length -1; //if it's 0, it's the length, which is the last player ID
 			}
 	}
-
+	
+	/**
+	 * This method prepares for the distribution phase by setting
+	 * all region and planet owners to 0
+	 */
+	public void prepareForDistribution() {
+		int minFleets = 5;
+		int unowned = 0;
+		
+		//set all planet owners to 0
+		for(Planet p : pList)
+			updatePlanet(p.getIDNum(), minFleets, unowned);
+		
+		//set all region owners to 0
+		updateRegions();
+	}
+	
 	/** Returns a complete String representation of the current gamestate, including 
 	 * information on all Planets and Regions. */
 	@Override
