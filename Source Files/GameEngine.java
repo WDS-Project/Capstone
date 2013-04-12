@@ -241,7 +241,10 @@ public class GameEngine {
 					throw new RuntimeException("Invalid claim on owernship: you can only claim 1 planet at a time.");
 				
 				//we're done
-				break;
+				change = gc;
+				gs.update(change);
+				System.out.println("Done processing move. (Phase = distribution)");
+				return;
 			}
 
 			// Grab these two, but before we can get source, we have to check case #1
@@ -309,6 +312,7 @@ public class GameEngine {
 			winner = winningPlayer;
 		}
 
+		checkEliminations();
 		System.out.println("Done processing move.");
 	} // end processMove()
 	
@@ -369,6 +373,8 @@ public class GameEngine {
 						player.setResponse(gs.writeToXML());
 				}
 			}
+			System.out.println("Sending gamestate to "+
+					"all players:\n"+gs.writeToXML());
 			//System.out.println("Done distributing planets.");
 			//System.out.println(gs);
 		}

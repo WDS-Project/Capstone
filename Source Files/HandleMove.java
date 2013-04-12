@@ -69,7 +69,7 @@ public class HandleMove implements HttpHandler {
 				Player player = engine.findPlayer(playerIP+":"+m.getPlayerID());                        
 
 				engine.processMove(m);
-				engine.checkEliminations(); // eliminate players if needed
+				//engine.checkEliminations(); // eliminate players if needed
 				player.synchronizedRequest("gamechange", engine);
 				
 				// Check if the player has won.

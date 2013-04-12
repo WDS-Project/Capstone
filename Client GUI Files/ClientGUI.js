@@ -645,10 +645,10 @@ var Gamestate = function() {
 		} else { } // if no color is found, just use normal order
 		
 		// Find number of players
-		var numPlayers = 0;
-		for (i = 1; i < self.pList.length; i++) {
+		var numPlayers = window.localStorage.getItem("numPlayers");
+		/*for (i = 1; i < self.pList.length; i++) {
 			numPlayers = Math.max(numPlayers, self.pList[i].owner);
-		}
+		}*/
 		
 		// Assign colors
 		for (i = 1; i <= numPlayers; i++) {
@@ -814,6 +814,7 @@ var Client = function() {
 				var colorChoice = document.getElementById("color");
 				window.localStorage.setItem("playerColor",
 					colorChoice.options[colorChoice.selectedIndex].value);
+				window.localStorage.setItem("numPlayers", counter);
 				location.href = "gamepage.html";
 			} else if (self.request.status != 200) {
 				if(confirm("A connection to the server could not be established.\n Try again?"))
