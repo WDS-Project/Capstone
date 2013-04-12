@@ -106,6 +106,7 @@ class AIClient:
             # This is super hamfisted, but meh.
             stillChoosing = False
             for p in self.gs.pList:
+                if p is None: continue
                 if p.owner is 0:
                     stillChoosing = True
             if stillChoosing:
