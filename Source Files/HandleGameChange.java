@@ -65,7 +65,7 @@ public class HandleGameChange implements HttpHandler {
                                 }
                                 
                                 // Synchronize with the other players
-				Player player = engine.findPlayer(playerIP+":"+request);
+				ServerPlayer player = engine.findPlayer(playerIP+":"+request);
 				player.synchronizedRequest("gamechange", engine);
 				
 				// Check if the player was eliminated.

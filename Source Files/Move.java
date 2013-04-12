@@ -81,10 +81,6 @@ public class Move {
 			moves.add(new ArrayList<Integer>());
 			moves.get(i-1).add(Integer.parseInt(sourceDestFleets[0]));
 			moves.get(i-1).add(Integer.parseInt(sourceDestFleets[1]));
-
-			if(Integer.parseInt(sourceDestFleets[2]) <= 0)
-				throw new RuntimeException("You can't move 0 or fewer fleets.");
-
 			moves.get(i-1).add(Integer.parseInt(sourceDestFleets[2]));
 		}
 		currentMoveIndex = 0;

@@ -61,15 +61,14 @@ public class HandleMove implements HttpHandler {
 
 				//if the engine is not found, discard the request
 				if(engine == null) {
-					System.out.println("Attempt to move by bad player ID.");
+					System.out.println("Engine not found; possible attempt to move by bad player ID.");
 					return;
 				}               
 
 				//get the Player
-				Player player = engine.findPlayer(playerIP+":"+m.getPlayerID());                        
+				ServerPlayer player = engine.findPlayer(playerIP+":"+m.getPlayerID());                        
 
-				engine.processMove(m);
-				//engine.checkEliminations(); // eliminate players if needed
+				engine.processMove(m); // This should handle all input validation
 				player.synchronizedRequest("gamechange", engine);
 				
 				// Check if the player has won.

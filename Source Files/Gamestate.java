@@ -18,7 +18,7 @@ import java.lang.Math;
  */
 public class Gamestate {
 	/*** Fields ***/
-	private int[] playerList;
+	private Player[] playerList;
 	private int activePlayer,
 	turnNumber = 0,
 	cycleNumber = 0;
@@ -43,9 +43,10 @@ public class Gamestate {
 		   pList or rList because none of the objects are initialized, but
 		   it seemed like too much work to implement a whole suite of new
 		   methods to build them remotely. Just use the XML constructor. */
-		playerList = new int[numPlayers];
+		playerList = new Player[numPlayers];
+		playerList[0] = null;
 		for (int i = 1 ; i < numPlayers; i++) // because player 0 = neutral
-			playerList[i] = 1; // 1 = active; 0 = inactive
+			playerList[i] = new Player(i);
 
 		pList = new Planet[numPlanets];
 		rList = new Region[numRegions];
@@ -90,7 +91,7 @@ public class Gamestate {
 	/** Returns a specific Region object. */
 	public Region getRegionByID(int regionID) {	return rList[regionID];	}
 	/** Returns the list of valid player ID's. */
-	public int[] getPlayerList() { return playerList; }
+	public Player[] getPlayerList() { return playerList; }
 	/** Returns the ID of the currently active player. */
 	public int getActivePlayer() { return activePlayer; }
 	/** Returns the current turn number. */
@@ -105,7 +106,7 @@ public class Gamestate {
 		activePlayer = playerID;
 	}
 	/**Sets a player inactive upon elimination. */
-	public void setPlayerInactive(int playerID) { playerList[playerID] = 0; }
+	public void setPlayerInactive(int playerID) { playerList[playerID].setStatus(0); }
 	
 	/** Increments turn counters in preparation for the next turn. */
 	public void nextTurn() { 
@@ -113,14 +114,16 @@ public class Gamestate {
 		do {
 			activePlayer++;
 			activePlayer %= playerList.length; // wrap around
-		} while (playerList[activePlayer] == 0);
+			if (activePlayer == 0)
+				activePlayer++; // skip 0 because INDEXING
+		} while (playerList[activePlayer].getStatus() == 0);
 
 		// 2. turnNumber increments
 		turnNumber++;
 
 		// 3. cycleNumber increments only if it has been a full cycle
 		int leadPlayer = 1; // assume the lead player is player 1
-		while (playerList[leadPlayer] == 0)
+		while (playerList[leadPlayer].getStatus() == 0)
 			leadPlayer++; // search for the first active player
 		// Note that if there are no active players (which shouldn't happen),
 		// this will throw an exception.
@@ -241,7 +244,7 @@ public class Gamestate {
 	/**
 	 * This method distributes planets equally and randomly among all
 	 * active players.  It should only be called before the game begins.
-	 * Each planet gets a default 1 fleet after being distributed.
+	 * Each planet gets a default number of fleets after being distributed.
 	 */
 	public void distributePlanets() {
 			int minFleets = 5;
@@ -334,7 +337,7 @@ public class Gamestate {
 				continue; // We don't need to check unowned planets
 
 			// 2. All planets are owned by active players
-			if (playerList[pList[i].getOwner()] == 0) {
+			if (playerList[pList[i].getOwner()].getID() == 0) {
 				System.out.println("Issue 2: Planet "+i+" is owned by player "+
 						(pList[i].getOwner())+", who is not active.");
 				System.out.println(pList[i].toString());
@@ -367,8 +370,8 @@ public class Gamestate {
 
 	/** Updates all players' statuses. */
 	public void checkPlayerStatus() {
-		for (int i : playerList)
-			checkPlayerStatus(i);
+		for (Player p : playerList)
+			checkPlayerStatus(p.getID());
 	}
 
 	/** 
@@ -386,24 +389,24 @@ public class Gamestate {
 				pCount++;
 
 		if (pCount == 0) // A player with no planets...
-			playerList[playerID] = 0; // ... is inactive
-		return playerList[playerID];
+			playerList[playerID].setStatus(0); // ... is inactive
+		return playerList[playerID].getStatus();
 	}
 
 	/** Returns a list of all players with status "active" (1). */
 	public int[] getActivePlayers() {
 		// Count active players
 		int activeCount = 0;
-		for (int i : playerList)
-			if (playerList[i] == 1)
+		for (Player p : playerList)
+			if (p != null && p.getStatus() == 1)
 				activeCount++;
 
 		// Build a list of the ID's of all active players
 		int[] result = new int[activeCount];
 		int index = 0;
-		for (int i : playerList)
-			if (playerList[i] == 1)
-				result[index++] = i;
+		for (Player p : playerList)
+			if (p != null && p.getStatus() == 1)
+				result[index++] = p.getID();
 
 		return result;
 	}
@@ -467,9 +470,10 @@ public class Gamestate {
 			// 2. Players & Turns
 			Element playerNode = (Element)getNode("Players", root);
 			activePlayer = Integer.parseInt(playerNode.getAttribute("activePlayer"));
-			playerList = new int[numPlayers + 1]; // because player 0 = neutral
+			playerList = new Player[numPlayers + 1];
+			playerList[0] = null; // because player 0 = neutral
 			for (int i = 1; i <= numPlayers; i++)
-				playerList[i] = 1; // 1 = normal player; 0 = inactive player
+				playerList[i] = new Player(i);
 			turnNumber = Integer.parseInt(playerNode.getAttribute("turnNumber"));
 			cycleNumber = Integer.parseInt(playerNode.getAttribute("cycleNumber"));
 

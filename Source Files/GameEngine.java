@@ -14,17 +14,15 @@ import javax.xml.transform.TransformerException;
  */
 public class GameEngine {
 	/*** Fields ***/
-	private Gamestate gs,
-	originalGS;
+	private Gamestate gs, originalGS;
 	private GameChange change;
-	// For players, it's an <IP:ID, Player object> map
-	private TreeMap<String, Player> players;
+	// For players, it's an <IP:ID, ServerPlayer object> map
+	private TreeMap<String, ServerPlayer> players;
 	private CyclicBarrier roundBegin, roundEnd;
 	private boolean randomize = true; // Flag to disable RNG for testing
 
-	private int ID = -1;
-	
-	private int numPlayers = 0;
+	private int ID;
+	private int numPlayers;
 
 	//these are to figure out where we are in the game
 	//in order to know what to send players in the executeRequests() method
@@ -46,7 +44,7 @@ public class GameEngine {
 
 	/** Initialize (or reinitialize) the engine. */
 	private void init() {
-		players = new TreeMap<String, Player>();
+		players = new TreeMap<String, ServerPlayer>();
 		// Note that the engine is unusable until players are defined.
 	}
 
@@ -68,13 +66,14 @@ public class GameEngine {
 	 * @param IPandID   String like this: IP:ID
 	 * @return the Player object that was added; null otherwise
 	 */
-	public Player definePlayer(String IPandID, int status) {
+	public ServerPlayer definePlayer(String IPandID, int status) {
+		System.out.println("Attempting to add player "+IPandID+"...");
 		// Ignore duplicate entries
 		if (players.containsKey(IPandID)) return null;
 
 		// Otherwise, add a new Player. The new Player's ID is the next one in line.
 		int id = Integer.parseInt(IPandID.substring(IPandID.lastIndexOf(":")+1));
-		Player newP = new Player(id);
+		ServerPlayer newP = new ServerPlayer(id);
 		newP.setStatus(status);
 		players.put(IPandID, newP);
 		//Note that the player population is changed by HandleDefineGame
@@ -104,7 +103,7 @@ public class GameEngine {
 	 * @param ipAddress the address of the Player for which to search
 	 * @return the Player object if found; null otherwise
 	 */
-	public Player findPlayer(String IPandID) {
+	public ServerPlayer findPlayer(String IPandID) {
 		if (players.containsKey(IPandID))
 			return players.get(IPandID);
 		else
@@ -115,7 +114,7 @@ public class GameEngine {
 	 * @param idNum
 	 * @return
 	 */
-	public Player findPlayer(int idNum) {
+	public ServerPlayer findPlayer(int idNum) {
 		//if (players.size() > idNum) return null;
 
 		Set<String> keys = players.keySet();
@@ -319,7 +318,7 @@ public class GameEngine {
 	/** Checks all players to see if they should be eliminated. */
 	public void checkEliminations() {
 		for (int i = 1; i < players.size()+1; i++) {
-			Player p = findPlayer(i);
+			ServerPlayer p = findPlayer(i);
 			if ( !(p.getStatus() == 0) &&
 			    gs.checkPlayerStatus(i) == 0) {
 				gs.setPlayerInactive(i);
@@ -331,7 +330,7 @@ public class GameEngine {
 
 	/**
 	 * Process the request for a player, synchronizing with the other players in the round.
-	 * This is intended to be called only from Player.synchronizedRequest();
+	 * This is intended to be called only from (Server)Player.synchronizedRequest();
 	 * @throws Exception if something goes wrong with the synchronization
 	 */
 	protected void synchronizedRequest() throws Exception {
@@ -365,7 +364,7 @@ public class GameEngine {
 			
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
-				Player player = players.get(key);
+				ServerPlayer player = players.get(key);
 				if(player.getStatus() != 0) {
 					if(player.getID() != 1)
 						player.setResponse(player.getID() + "\n" + gs.writeToXML());
@@ -389,19 +388,13 @@ public class GameEngine {
 			}
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
-				Player player = players.get(key);
+				ServerPlayer player = players.get(key);
 
 				// Process the request for this player.
 				// This would be where we process the players' requests...
 				try {
 					if(player.getStatus() != 0)
 						player.setResponse(change.writeToXML());
-					// Check if the player was eliminated.
-					/*else {
-						server.removePlayerFromSession(playerIP+":"+player.getID()); //remove them from the game session
-						player.setResponse("eliminated"); //tell the player
-						System.out.println("Player "+player.getID()+" has been eliminated.");
-					}*/
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -411,7 +404,7 @@ public class GameEngine {
 		else { //the game must be over
 			for(Iterator<String> itKey=keys.iterator(); itKey.hasNext(); ) {
 				String key = itKey.next();
-				Player player = players.get(key);
+				ServerPlayer player = players.get(key);
 				if(player.getStatus() != 0)
 					player.setResponse("winner:" + winner); }
 		}
@@ -434,8 +427,9 @@ public class GameEngine {
 			stateOfGame = IN_PROGRESS; 
 
 		System.out.println("Turn complete. Player list:");
-		for(int p : gs.getPlayerList())
-			System.out.print(p + " ");
+		for(Player p : gs.getPlayerList())
+			if (p != null)
+				System.out.print(p.getStatus() + " ");
 		System.out.println("\n----------------------------------");
 	}
 

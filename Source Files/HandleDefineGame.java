@@ -103,7 +103,7 @@ public class HandleDefineGame implements HttpHandler {
 					
 					engine.changePlayerPopulation(humans+AIs); //this should make Engine wait for all players
 					
-					Player playerOne = engine.definePlayer(player1IP+":1", 1); //active status
+					ServerPlayer playerOne = engine.definePlayer(player1IP+":1", 1); //active status
 					server.addPlayerToSession(player1IP + ":" + playerOne.getID(), engine);
 					
 					//start up the AI processes with the given difficulties
@@ -111,6 +111,7 @@ public class HandleDefineGame implements HttpHandler {
 						new PythonStarter(diffs[i], engine.getID(),
 							server.getServerIP(), server.getServerPort());
 					}
+					System.out.println("Done defining game. Now we're about to do a synchronized request...");
 
 					playerOne.synchronizedRequest("gamestate", engine);
 					//Then the engine waits for the others to join before sending out Gamestate
@@ -121,7 +122,7 @@ public class HandleDefineGame implements HttpHandler {
 					OutputStream response = exchange.getResponseBody();	
 					response.write(playerOne.getResponse().getBytes());
 					response.close();
-					
+					System.out.println("Define game success!");
 				} catch (IOException ex) {
 					ex.printStackTrace();
 				}

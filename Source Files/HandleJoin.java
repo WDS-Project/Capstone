@@ -71,7 +71,7 @@ public class HandleJoin implements HttpHandler {
 
 				int id = engine.getNextPlayerID();
 				server.addPlayerToSession(nextPlayerIP + ":" + id, engine);
-				Player nextPlayer = engine.definePlayer(nextPlayerIP+":"+id, 1); //active status
+				ServerPlayer nextPlayer = engine.definePlayer(nextPlayerIP+":"+id, 1); //active status
 
 
 				try {

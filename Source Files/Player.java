@@ -1,6 +1,4 @@
 
-import java.util.concurrent.Semaphore;
-
 /**
  * This class is a representation of a Player to the Engine,
  * either human or AI.
@@ -8,13 +6,9 @@ import java.util.concurrent.Semaphore;
  */
 
 public class Player {
-
 	private int ID;
 	private int status;
-	private Semaphore requestSemaphore = new Semaphore(1);
-
-	private String request = "";  // Current request
-	private String response;      // Current response
+	private int[] cards = new int[4]; // card count per type
 
 	/**
 	 * Constructor for Player
@@ -22,31 +16,21 @@ public class Player {
 	 */
 	public Player(int id) {
 		ID = id;
+		status = 1; // Player is active by default
+		cards[0] = 0; // Wildcard card
+		cards[1] = 0; // Type 1 card
+		cards[2] = 0; // Type 2 card
+		cards[3] = 0; // Type 3 card
 	}
 
 	/**
 	 * Getters and setters 
 	 */
 	public int getID() { return ID; }
-	public String getRequest() {  return request;  }
-	public void setRequest(String req) {  request = req;  }
-	public String getResponse() {  return response;  }
-	public void setResponse(String resp) {  response = resp;  }
 	public int getStatus() { return status; }
-	public void setStatus(int i) { status = i; } // TODO: what if player is being eliminated?
-
-	/**
-	 * Give requests to Engine one at a time.
-	 * @param request     The request for the player at the time
-	 * @param round       The engine associated with the game
-	 * @throws Exception If something goes wrong with the synchronization
-	 */
-	public void synchronizedRequest(String request, GameEngine round) throws Exception {
-		System.out.println("Player " + ID + " synchronized request");
-		requestSemaphore.acquire(); //This Player gets the floor
-		setRequest(request); //The request that came in over the network is stored here
-		round.synchronizedRequest(); //Tell the engine this Player is waiting in line
-		requestSemaphore.release(); //Release control of the floor
-	}
+	public void setStatus(int i) { status = i; }
+	public void addCard(int type, int count) { cards[type] += count; }
+	public void removeCard(int type, int count) { cards[type] -= count; }
+	public int[] getCards() { return cards; }
 }
 
