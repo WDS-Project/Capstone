@@ -27,7 +27,7 @@ class AIClient:
     # self-explanatory constructor 
     def __init__(self, diff, sID, IPnPort):
         self.log = open('log'+str(diff)+'.txt', 'w')
-        #self.log = open('log1.txt', 'w')
+        self.state = 1 # i.e. choosing planets -- MODERATELY PRELIMINARY
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort
@@ -61,20 +61,25 @@ class AIClient:
     # a gamechange
     def go(self):
         self.log.write(str("Turn: " + str(self.gs.activePlayer) + " My ID: " + str(self.playerID) + "\n"))
-        if(int(self.gs.activePlayer) != int(self.playerID)):
+        if (int(self.gs.activePlayer) != int(self.playerID)):
             self.log.write("It's not our turn.\n")
             connection = http.client.HTTPConnection(self.serverIPandPort)
             connection.request("POST", "/gamechange/", self.playerID)
             self.log.write("Therefore I have sent a gamechange request.\n")
-        elif(int(self.gs.activePlayer) == int(self.playerID)):
+        elif (int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
-            if(self.difficulty == '0'):
-                self.log.write("AI type: random.\n")
-                m = RandomAI.getMove(self.gs, self.playerID)
-            #ADD ELIFS HERE AS AI'S progress
-            elif(self.difficulty == '2'):
-                self.log.write("AI type: prioritizing.\n")
-                m = PrioritizingAI.getMove(self.gs, self.playerID)
+            if (self.difficulty == '0'):
+                self.log.write("AI type: Random.\n")
+                m = RandomAI.getMove(self.gs, self.playerID, self.state)
+            elif (self.difficulty == '1'):
+                self.log.write("AI type: RandomBetter.\n")
+                m = RandomBetterAI.getMove(self.gs, self.playerID, self.state)
+            elif (self.difficulty == '2'):
+                self.log.write("AI type: Aggressive.\n")
+                m = AggressiveAI.getMove(self.gs, self.playerID, self.state)
+            elif (self.difficulty == '3'):
+                self.log.write("AI type: Prioritizing.\n")
+                m = PrioritizingAI.getMove(self.gs, self.playerID, self.state)
             else: #empty move
                 m = str(self.playerID) + "/"
                 
@@ -97,6 +102,15 @@ class AIClient:
             gc.loadXML(response)
             self.gs.update(gc)
 
+        if (self.state == 1):
+            # This is super hamfisted, but meh.
+            stillChoosing = False
+            for p in self.gs.pList:
+                if p.owner is 0:
+                    stillChoosing = True
+            if stillChoosing:
+                self.state == 3
+
     # yeah ... this doesnt tell us much
     def __str__(self):
         print("player ID: " + self.playerID + " session ID: " + sessionID)
@@ -106,7 +120,7 @@ def main(args):
     try:
         ai.connect()
         while(True):
-                ai.go()
+            ai.go()
     except Exception:
         traceback.print_exc(file=ai.log)
         ai.log.close()

@@ -9,11 +9,27 @@ import random
 import AIHelpers
 
 # Builds a move for a given player based on a Gamestate
-def getMove(gs, idNum):
+def getMove(gs, idNum, state):
+    if (state == 1): # i.e. choosing
+        return choosePlanet(gs, idNum)
+    # Otherwise, just return a move.
     gsLocal = gs.copy() # makes a local copy so we don't change the external gs
     result = Move(idNum)
     generateDeployments(gsLocal, result)
     generateMoves(gsLocal, result)
+    return result
+
+# Chooses a random unowned planet.
+def choosePlanet(gs, idNum):
+    result = Move(idNum)
+    unownedPlanets = []
+    for p in gs.pList:
+        if p is None: continue
+        if p.owner is 0:
+            unownedPlanets.append(p.idNum)
+        
+    target = random.choice(unownedPlanets)
+    result.addMove(0, 0, target)
     return result
 
 # Generates a set of random attacks based on owned planets

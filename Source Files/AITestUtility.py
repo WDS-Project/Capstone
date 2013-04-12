@@ -61,7 +61,7 @@ def playGame():
             #print("Player "+str(p)+" is moving.")
             
             # Gets a move from the AI
-            m = players[p][0](gs, p)
+            m = players[p][0](gs, p, 3)
             #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()
@@ -195,17 +195,29 @@ def checkWin():
     return active # return ID of remaining active player
 
 def distributePlanets():
+    # New fancy stuff!
+    count = len(gs.pList) - 1
+    pPtr = random.randint(1, len(players))
     minFleets = 5
-    plyr = random.choice(list(players.keys()))
-    planetList = list(gs.pList)
-    random.shuffle(planetList)
-    for p in planetList:
+    for p in gs.pList:
         if p is None: continue
-        p.owner = plyr
-        p.numFleets = minFleets
-        plyr = (plyr + 1) % len(players)
-        if(plyr == 0):
-            plyr = len(players)
+        p.owner = 0
+    
+    while count > 0:
+            # Gets a choice from the AI
+            m = players[pPtr][0](gs, pPtr, 1)
+            mini = m.next()
+            target = mini[2]
+
+            gs.pList[target].owner = pPtr
+            gs.pList[target].numFleets = minFleets
+
+            # INDEXING
+            pPtr -= 1
+            pPtr = (pPtr + 1) % len(players)
+            pPtr += 1
+
+            count -= 1
 
 def run(diffList, gsMap='RiskGS.xml', numGames=50,
         numPlanets=None, numRegions=None):
@@ -240,8 +252,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
         gs.loadXML(gsMap)
     
     # Run the games
-    #if True:
-    try:
+    if True:
+    #try:
         for i in range(1, int(numGames)+1):
             print("\nGame "+str(i), end=': ')
 
@@ -249,8 +261,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             setup(len(diffList), diffList)
             winner = playGame()
             stats.victories[winner] += 1
-    except:
-        pass # for allowing a keyboard interrupt
+    #except:
+    #    pass # for allowing a keyboard interrupt
 
     # Calculate final results
     totalTime = datetime.now() - startTime
@@ -313,7 +325,8 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 2, 2], numGames=10)
+    run([0, 1, 2], numGames=10)
+    #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
     

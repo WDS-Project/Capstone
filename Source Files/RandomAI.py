@@ -5,19 +5,36 @@
 
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
+import AIHelpers
 import random
 
 # Builds a move for a given player based on a Gamestate
-def getMove(gs, idNum):
+def getMove(gs, idNum, state):
+    if (state == 1): # i.e. choosing
+        return choosePlanet(gs, idNum)
+    # Otherwise, just return a move.
     gsLocal = gs.copy() # makes a local copy so we don't change the external gs
     result = Move(idNum)
     generateDeployments(gsLocal, result)
     generateMoves(gsLocal, result)
     return result
 
+# Chooses a random unowned planet.
+def choosePlanet(gs, idNum):
+    result = Move(idNum)
+    unownedPlanets = []
+    for p in gs.pList:
+        if p is None: continue
+        if p.owner is 0:
+            unownedPlanets.append(p.idNum)
+        
+    target = random.choice(unownedPlanets)
+    result.addMove(0, 0, target)
+    return result
+
 # Generates a set of random attacks based on owned planets
 def generateMoves(gsLocal, move):
-    ownedPlanets = getOwnedPlanets(gsLocal, move.playerID)
+    ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
 
     # Gets all possible moves
     connections = []
@@ -51,7 +68,7 @@ def generateMoves(gsLocal, move):
 
 # Generates a set of random deployments based on owned planets
 def generateDeployments(gsLocal, move):
-    ownedPlanets = getOwnedPlanets(gsLocal, move.playerID)
+    ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
     deployCount = gsLocal.getPlayerQuota(move.playerID)
     
     while (deployCount > 0 and len(ownedPlanets) > 0):
@@ -65,12 +82,4 @@ def generateDeployments(gsLocal, move):
         
     return
 
-# Returns a list of planets owned by the given player
-def getOwnedPlanets(gsLocal, idNum):
-    ownedPlanets = []
-    for p in gsLocal.pList:
-        if p is None:
-            continue
-        if p.owner is idNum:
-            ownedPlanets.append(p.idNum)
-    return ownedPlanets
+
