@@ -30,6 +30,7 @@ class AIClient:
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort
+        self.cards = [0, 0, 0, 0]
         self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
     # join a game given a session ID, also load gamestate and playerID
@@ -97,6 +98,16 @@ class AIClient:
             self.log.close()
             sys.exit(0)
         else:
+            # Track card information
+            if self.gs.activePlayer == self.playerID:
+                idx1 = response.find("#CARDS:") + 8
+                idx2 = response.rfind("]")
+                cardStrs = response[idx1:idx2].split(', ')
+                player = self.gs.playerList[self.playerID]
+                for i in range(4):
+                    player.cards[i] = int(cardStrs[i])
+
+            # Now load the gamechange
             gc = Gamechange()
             gc.loadXML(response)
             self.gs.update(gc)
