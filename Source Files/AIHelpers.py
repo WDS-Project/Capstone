@@ -98,27 +98,31 @@ def getOuterPlanetsInRegion(gs, region):
                 outers.add(p)
     return outers
 
+# Checks to see if cards contains a valid turnin.
 def checkCards(cards):
-    for i in range(1, 4):
+    # Check case for all the same
+    for i in range(len(cards)):
         if cards[i] >= 3:
-            cards[i] -= 3
-            move.addMove(-1, i, 0)
-            return True
-        elif cards[i] == 2 and cards[0] >= 1:
-            cards[i] -= 2
-            cards[0] -= 1
-            move.addMove(-1, i, 1)
-            return True
-        elif cards[i] == 1 and cards[0] >= 2:
-            cards[i] -= 1
-            cards[0] -= 2
-            move.addMove(-1, i, 2)
-            return True
-    if cards[0] >= 3: # All wildcards
-        cards[0] -= 3
-        move.addMove(-1, 1, 3)
-        return True
+            return i
+
+    # Check for all different
+    if cards[0] >= 1 and cards[1] >= 1 and cards[2] >= 1:
+        return 3
 
     # Otherwise, no pair is possible.
-    return False
-        
+    return -1
+
+def turninCards(cards, move, turninType):
+    if turninType < 3:
+        cards[turninType] -= 3
+        move.addMove(-1, 0, turninType)
+
+    elif turninType == 3:
+        cards[0] -= 1
+        cards[1] -= 1
+        cards[2] -= 1
+        move.addMove(-1, 0, 3)
+
+    else: # Shouldn't get here
+        raise Exception("Error: invalid card turnin type.")
+    

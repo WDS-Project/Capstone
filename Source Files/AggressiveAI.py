@@ -68,7 +68,10 @@ def generateDeployments(gsLocal, move, cards):
     deployCount = gsLocal.getPlayerQuota(move.playerID)
 
     # See if we can turn in some cards
-    
+    chk = AIHelpers.checkCards(cards)
+    if chk > -1:
+        AIHelpers.turninCards(cards, move, chk)
+        deployCount += 5 # TODO: Make this fancier
 
     # Make the move
     dest = random.choice(outerPlanets)

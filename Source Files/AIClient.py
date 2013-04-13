@@ -36,7 +36,7 @@ class AIClient:
     # join a game given a session ID, also load gamestate and playerID
     def connect(self):
         try:
-            self.log.write(str("Connecting to " + self.serverIPandPort + "... \n"))
+            self.log.write(str("Connecting to " + self.serverIPandPort + "... "))
             connection = http.client.HTTPConnection(self.serverIPandPort)
             self.log.write(str("Found the server. " + self.serverIPandPort + "\n"))
             req = "/join/"
@@ -51,7 +51,7 @@ class AIClient:
             self.playerID = response[:index-1]
             response = response[(index+1):]
             self.gs = Gamestate()
-            self.log.write("Loading gamestate ...\n")
+            self.log.write("Loading gamestate... ")
             self.gs.loadXML(response)
             self.log.write("Gamestate loaded.\n")
         except Exception:
@@ -99,13 +99,14 @@ class AIClient:
             sys.exit(0)
         else:
             # Track card information
-            if self.gs.activePlayer == self.playerID:
-                idx1 = response.find("#CARDS:") + 8
-                idx2 = response.rfind("]")
-                cardStrs = response[idx1:idx2].split(', ')
-                player = self.gs.playerList[self.playerID]
+            if int(self.gs.activePlayer) == int(self.playerID):
+                idx1 = str(response).find("#CARDS:") + 8
+                idx2 = str(response).rfind("]")
+                cardStrs = str(response)[idx1:idx2].split(', ')
                 for i in range(3):
-                    player.cards[i] = int(cardStrs[i])
+                    self.cards[i] = int(cardStrs[i])
+                self.log.write("New card info: " + str(self.cards))
+            # FYI, all of the casting to string is to combat encoding issues.
 
             # Now load the gamechange
             gc = Gamechange()
