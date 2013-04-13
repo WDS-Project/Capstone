@@ -8,7 +8,9 @@
 public class Player {
 	private int ID;
 	private int status;
+	private int cardCount = 0;
 	private int[] cards = new int[4]; // card count per type
+	public static final int MAX_CARDS = 5;
 
 	/**
 	 * Constructor for Player
@@ -23,14 +25,19 @@ public class Player {
 		cards[3] = 0; // Type 3 card
 	}
 
-	/**
-	 * Getters and setters 
-	 */
+	// Getters and setters 
 	public int getID() { return ID; }
 	public int getStatus() { return status; }
 	public void setStatus(int i) { status = i; }
-	public void addCards(int type, int count) { cards[type] += count; }
-	public void removeCards(int type, int count) { cards[type] -= count; }
+	public void addCards(int type, int num) {
+		cards[type] += num;
+		cardCount += num;
+	}
+	public void removeCards(int type, int num) {
+		cards[type] -= num;
+		cardCount -= num;
+	}
 	public int[] getCards() { return cards; }
+	public int getCardCount() { return cardCount; }
 }
 

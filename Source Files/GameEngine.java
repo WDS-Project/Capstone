@@ -349,9 +349,13 @@ public class GameEngine {
 
 		// Checks if the player won a card this turn.
 		if (hasConquered) {
-			Random rand = new Random();
-			int type = rand.nextInt(5); // random card type
-			sender.addCards(type, 1);
+			// Only add up to MAX_CARDS cards
+			if (sender.getCardCount() > Player.MAX_CARDS) {
+				Random rand = new Random();
+				int type = rand.nextInt(5); // random card type
+				// TODO add proper probability
+				sender.addCards(type, 1);
+			}
 		}
 		
 		// Store the new GameChange
