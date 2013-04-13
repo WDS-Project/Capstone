@@ -4,7 +4,7 @@
  * @author Alana
  */
 import java.io.*;
-
+import java.util.*;
 import com.sun.net.httpserver.*;
 
 public class HandleMove implements HttpHandler {
@@ -75,6 +75,9 @@ public class HandleMove implements HttpHandler {
 				if (engine.checkWin() == player.getID()) {
 					System.out.println("Player "+player.getID()+" has won!");
 					player.setResponse("winner:"+player.getID());
+				} else {
+					String cardStr = "<!-- #CARDS:" + Arrays.toString(player.getCards())+" -->";
+					player.setResponse(player.getResponse() + cardStr);
 				}
 				
 				exchange.sendResponseHeaders(200,0);

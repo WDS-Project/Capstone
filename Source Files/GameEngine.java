@@ -221,6 +221,8 @@ public class GameEngine {
 		}
 
 		int quota = gs.getPlayerQuota(move.getPlayerID());
+		boolean hasConquered = false; // flag for whether the player has
+					      // conquered at least one planet this turn
 
 		// loop through the mini Moves
 		while(move.hasNext()) {
@@ -330,6 +332,7 @@ public class GameEngine {
 			else {
 				int[] results = processAttack(numFleets, dest.getFleets(), randomize);
 				if(results[1] == 0) { // the attacker has won
+					hasConquered = true;
 					dest.setOwner(source.getOwner());
 					dest.setFleets(results[0]);
 					source.addFleets((-1)*numFleets);
@@ -344,6 +347,13 @@ public class GameEngine {
 			}
 		} // end miniMove loop
 
+		// Checks if the player won a card this turn.
+		if (hasConquered) {
+			Random rand = new Random();
+			int type = rand.nextInt(5); // random card type
+			sender.addCards(type, 1);
+		}
+		
 		// Store the new GameChange
 		change = gc;
 		// update the Gamestate
@@ -437,7 +447,7 @@ public class GameEngine {
 				// Process the request for this player.
 				// This would be where we process the players' requests...
 				try {
-					if(player.getStatus() != 0)
+					if (player.getStatus() != 0)
 						player.setResponse(change.writeToXML());
 				} catch (Exception e) {
 					e.printStackTrace();
