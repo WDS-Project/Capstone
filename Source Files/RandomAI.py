@@ -15,7 +15,7 @@ def getMove(gs, idNum, state):
     # Otherwise, just return a move.
     gsLocal = gs.copy() # makes a local copy so we don't change the external gs
     result = Move(idNum)
-    generateDeployments(gsLocal, result)
+    generateDeployments(gsLocal, result, cards)
     generateMoves(gsLocal, result)
     return result
 

@@ -9,13 +9,13 @@ import random
 import AIHelpers
 
 # Builds a move for a given player based on a Gamestate
-def getMove(gs, idNum, state):
+def getMove(gs, idNum, state, cards):
     if (state == 1): # i.e. choosing
         return choosePlanet(gs, idNum)
     # Otherwise, just return a move.
     gsLocal = gs.copy() # makes a local copy so we don't change the external gs
     result = Move(idNum)
-    generateDeployments(gsLocal, result)
+    generateDeployments(gsLocal, result, cards)
     generateMoves(gsLocal, result)
     return result
 
@@ -61,11 +61,16 @@ def generateMoves(gsLocal, move):
 
     return
 
-# Generates a random deployments to an outer planet
-def generateDeployments(gsLocal, move):
+# Generates a random deployment to an outer planet
+def generateDeployments(gsLocal, move, cards):
     outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
     if len(outerPlanets) < 1: return
     deployCount = gsLocal.getPlayerQuota(move.playerID)
+
+    # See if we can turn in some cards
+    
+
+    # Make the move
     dest = random.choice(outerPlanets)
     dest.numFleets += deployCount # update the local Gamestate
     move.addMove(0, dest.idNum, deployCount)

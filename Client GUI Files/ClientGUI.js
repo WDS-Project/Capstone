@@ -654,8 +654,8 @@ var Gamestate = function() {
 			self.playerList[i] = {};
 			self.playerList[i].color = colorList[i];
 			self.playerList[i].status = 1; // active
-			self.playerList[i].cards = [0, 0, 0, 0];
-			// Cards: [wildcards, type 1, type 2, type 3]
+			self.playerList[i].cards = [0, 0, 0];
+			// Cards: [type 0, type 1, type 2]
 		}
 		
 		self.updateRegions();
@@ -851,14 +851,14 @@ var Client = function() {
 		
 		// If it was previously our turn, looks for card info
 		// from the gamechange
-		// Format: <!-- #CARDS:[0, 0, 0, 0] -->
+		// Format: <!-- #CARDS:[0, 0, 0] -->
 		if (gs.activePlayer == self.playerID) {
 			var idx1 = res.indexOf("#CARDS:") + 8;
 			var idx2 = res.lastIndexOf("]");
 			var cardStrs = res.substring(idx1, idx2).split(", ");
 			var player = gs.playerList[self.playerID];
-			for (var i = 0; i < 4; i++)
-				player.cards[i] = cardStrs[i];
+			for (var i = 0; i < 3; i++)
+				player.cards[i] = Number(cardStrs[i]);
 		}
 		
 		var gc = new Gamechange();

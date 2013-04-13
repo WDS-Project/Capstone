@@ -9,7 +9,7 @@ public class Player {
 	private int ID;
 	private int status;
 	private int cardCount = 0;
-	private int[] cards = new int[4]; // card count per type
+	private int[] cards = new int[3]; // card count per type
 	public static final int MAX_CARDS = 5;
 
 	/**
@@ -19,10 +19,9 @@ public class Player {
 	public Player(int id) {
 		ID = id;
 		status = 1; // Player is active by default
-		cards[0] = 0; // Wildcard card
+		cards[0] = 0; // Type 0 card
 		cards[1] = 0; // Type 1 card
 		cards[2] = 0; // Type 2 card
-		cards[3] = 0; // Type 3 card
 	}
 
 	// Getters and setters 

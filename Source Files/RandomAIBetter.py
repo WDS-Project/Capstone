@@ -9,7 +9,7 @@ import random
 import AIHelpers
 
 # Builds a move for a given player based on a Gamestate
-def getMove(gs, idNum, state):
+def getMove(gs, idNum, state, cards):
     if (state == 1): # i.e. choosing
         return choosePlanet(gs, idNum)
     # Otherwise, just return a move.

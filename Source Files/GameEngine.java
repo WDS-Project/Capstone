@@ -256,32 +256,22 @@ public class GameEngine {
 			// Card turnins must be processed before the fleets they grant can be used.
 			if (miniMove[0] == -1) {
 				// Card turnins are special. They look like this:
-				// -1:<type>:<wildcards>
-				int type = miniMove[1]; // type: 1 => type 1, 2 => type 2, 3 => type 3, 4 => all 3
-				int wildcards = miniMove[2]; // wildcards: # of wildcards used, if any
+				// -1:0:<type>
+				int type = miniMove[2]; // type: 0 => type 0, 1 => type 1, 2 => type 2, 3 => all 3
 				
 				// Input validation
-				if (type < 1 || type > 4)
+				if (type < 1 || type > 3)
 					throw new RuntimeException("Invalid move: invalid card turnin type.");
-				if (wildcards < 0 || wildcards > 3)
-					throw new RuntimeException("Invalid move: invalid number of wildcards.");
-				if (wildcards > sender.getCards()[0])
-					throw new RuntimeException("Invalid move: insufficient wildcard cards for player "+
-						sender.getID());
-				if (type == 4 && wildcards > 0)
-					throw new RuntimeException("Invalid move: I don't want to deal with that. (wildcards in mixed turnin)");
 				
 				// Assuming that's good, actually process the request
-				if (type == 1 || type == 2 || type == 3) {
+				if (type == 0 || type == 1 || type == 2) {
 					quota += 5; // TODO make fancier
-					sender.removeCards(type, 3 - wildcards);
-					sender.removeCards(0, wildcards);
-				} else if (type == 4) {
-					// TODO For now, you can't use wildcards for this type 
+					sender.removeCards(type, 3);
+				} else if (type == 3) {
 					quota += 5; // TODO same thing
+					sender.removeCards(0, 1);
 					sender.removeCards(1, 1);
 					sender.removeCards(2, 1);
-					sender.removeCards(3, 1);
 				}
 			}
 			
@@ -352,7 +342,7 @@ public class GameEngine {
 			// Only add up to MAX_CARDS cards
 			if (sender.getCardCount() < Player.MAX_CARDS) {
 				Random rand = new Random();
-				int type = rand.nextInt(4); // random card type
+				int type = rand.nextInt(3); // random card type
 				// TODO add proper probability
 				sender.addCards(type, 1);
 			}

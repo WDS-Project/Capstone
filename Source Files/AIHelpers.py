@@ -97,3 +97,28 @@ def getOuterPlanetsInRegion(gs, region):
             if c not in region.members:
                 outers.add(p)
     return outers
+
+def checkCards(cards):
+    for i in range(1, 4):
+        if cards[i] >= 3:
+            cards[i] -= 3
+            move.addMove(-1, i, 0)
+            return True
+        elif cards[i] == 2 and cards[0] >= 1:
+            cards[i] -= 2
+            cards[0] -= 1
+            move.addMove(-1, i, 1)
+            return True
+        elif cards[i] == 1 and cards[0] >= 2:
+            cards[i] -= 1
+            cards[0] -= 2
+            move.addMove(-1, i, 2)
+            return True
+    if cards[0] >= 3: # All wildcards
+        cards[0] -= 3
+        move.addMove(-1, 1, 3)
+        return True
+
+    # Otherwise, no pair is possible.
+    return False
+        

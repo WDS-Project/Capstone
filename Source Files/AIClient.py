@@ -30,7 +30,7 @@ class AIClient:
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort
-        self.cards = [0, 0, 0, 0]
+        self.cards = [0, 0, 0]
         self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
     # join a game given a session ID, also load gamestate and playerID
@@ -76,10 +76,10 @@ class AIClient:
                 m = RandomAIBetter.getMove(self.gs, self.playerID, self.state)
             elif (self.difficulty == '2'):
                 self.log.write("AI type: Aggressive.\n")
-                m = AggressiveAI.getMove(self.gs, self.playerID, self.state)
+                m = AggressiveAI.getMove(self.gs, self.playerID, self.state, self.cards)
             elif (self.difficulty == '3'):
                 self.log.write("AI type: Prioritizing.\n")
-                m = PrioritizingAI.getMove(self.gs, self.playerID, self.state)
+                m = PrioritizingAI.getMove(self.gs, self.playerID, self.state, self.cards)
             else: #empty move
                 m = str(self.playerID) + "/"
                 
@@ -104,7 +104,7 @@ class AIClient:
                 idx2 = response.rfind("]")
                 cardStrs = response[idx1:idx2].split(', ')
                 player = self.gs.playerList[self.playerID]
-                for i in range(4):
+                for i in range(3):
                     player.cards[i] = int(cardStrs[i])
 
             # Now load the gamechange
