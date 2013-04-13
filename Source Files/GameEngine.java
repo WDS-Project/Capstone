@@ -258,6 +258,7 @@ public class GameEngine {
 				// Card turnins are special. They look like this:
 				// -1:0:<type>
 				int type = miniMove[2]; // type: 0 => type 0, 1 => type 1, 2 => type 2, 3 => all 3
+				System.out.println("\n\n\n\n\nCard turnin! Type = "+type+" for player "+sender.getID()+"\n\n\n");
 				
 				// Input validation
 				if (type < 1 || type > 3)
@@ -273,6 +274,7 @@ public class GameEngine {
 					sender.removeCards(1, 1);
 					sender.removeCards(2, 1);
 				}
+				continue;
 			}
 			
 			// Grab these two, but before we can get source, we have to check case #1
