@@ -95,7 +95,12 @@ def processMove(m):
                 raise Exception("Illegal move: invalid card turnin type.")
 
             # If we get here, the turnin is valid
-            quota += 5 # TODO make better
+            if (gs.turninCount < 6):
+                quota += (2 * gs.turninCount) + 5
+            else:
+                quota += (gs.turninCount - 2) * 5
+            gs.turninCount += 1
+	    
             # Note that removing the cards is handled by the AIs themselves
             players[m.playerID][3] -= 3 # decrease card count by 3
             stats.cardTurnins[m.playerID] += 1
