@@ -258,10 +258,9 @@ public class GameEngine {
 				// Card turnins are special. They look like this:
 				// -1:0:<type>
 				int type = miniMove[2]; // type: 0 => type 0, 1 => type 1, 2 => type 2, 3 => all 3
-				System.out.println("\n\n\n\n\nCard turnin! Type = "+type+" for player "+sender.getID()+"\n\n\n");
 				
 				// Input validation
-				if (type < 1 || type > 3)
+				if (type < 0 || type > 3)
 					throw new RuntimeException("Invalid move: invalid card turnin type.");
 				
 				// Assuming that's good, actually process the request
