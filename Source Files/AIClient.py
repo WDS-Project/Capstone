@@ -11,6 +11,7 @@ import sys      #for command-line arguments
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
 import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
+import RegionAI
 import traceback # for printing errors to the log
 # add more imports for different AI difficulty levels
 
@@ -81,6 +82,9 @@ class AIClient:
             elif (self.difficulty == '3'):
                 self.log.write("AI type: Prioritizing.\n")
                 m = PrioritizingAI.getMove(self.gs, self.playerID, self.state, self.cards)
+            elif (self.difficulty == '4'):
+                self.log.write("AI type: Region.\n")
+                m = RegionAI.getMove(self.gs, self.playerID, self.state, self.cards)
             else: #empty move
                 m = str(self.playerID) + "/"
                 

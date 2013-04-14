@@ -16,6 +16,7 @@ from datetime import datetime
 
 # Remember to import any AI scripts you want to use.
 import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
+import RegionAI
 
 # Returns a pointer to the getMove method of the specified AI type
 def findAIType(diff):
@@ -28,6 +29,8 @@ def findAIType(diff):
         move = AggressiveAI.getMove
     elif (diff == 3):
         move = PrioritizingAI.getMove
+    elif (diff == 4):
+        move = RegionAI.getMove
     else: # Undefined AI type
         raise Exception("Error: AI not found.")
     return move
