@@ -5,6 +5,7 @@
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
 import AIHelpers
+import random
 
 # Builds a move for a given player number based on a Gamestate
 def getMove(gs, idNum, state, cards):

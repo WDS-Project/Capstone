@@ -304,7 +304,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
     totalTime = datetime.now() - startTime
     for a in range(1, len(diffList)+1):
         stats.avgAttacks[a] /= i
-        stats.avgFleets[a] /= (stats.avgAttacks[a] * i)
+        if stats.avgAttacks[a] > 0:
+            stats.avgFleets[a] /= (stats.avgAttacks[a] * i)
         stats.cardTurnins[a] /= i
 
     # Print the final results
@@ -368,7 +369,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([0, 1, 2], numGames=50)
+    run([1, 4], numGames=10)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
