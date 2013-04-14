@@ -19,6 +19,7 @@ public class GameChange {
 
 	private int activePlayer = -1, turnNumber = - 1, cycleNumber = -1; //these should come from
 	//the GameEngine after it determines whose turn it is
+	private int cardCount = -1; // Should also come from the Engine
 	private ArrayList<ArrayList<Integer>> changes; //change matrix
 	private int numChanges; //place in the matrix for the next change to be added
 	private final int CHANGE_LENGTH = 3;    //the number of integers part of any one change
@@ -72,6 +73,7 @@ public class GameChange {
 		turnNumber = turn;
 		cycleNumber = cycle;
 	}
+	public void setCardCount(int count) { cardCount = count; }
 
 	/**
 	 * Creates a String representation of the GameChange
@@ -83,7 +85,9 @@ public class GameChange {
 		StringBuilder sb = new StringBuilder();
 		sb.append("ActivePlayer: " + activePlayer + "\n" +
 				"TurnNumber: " + turnNumber + "\n" +
-				"CycleNumber: " + cycleNumber + "\n" + "Changes:\n");
+				"CycleNumber: " + cycleNumber + "\n" + 
+				"CardCount: " + cardCount + "\n" +
+				"Changes:\n");
 
 		for(int i = 0; i < numChanges; i++) {
 			for(int j = 0; j < CHANGE_LENGTH; j++)
@@ -138,6 +142,7 @@ public class GameChange {
 		turn.setAttribute("activePlayer", ""+activePlayer);
 		turn.setAttribute("turnNumber", ""+turnNumber);
 		turn.setAttribute("cycleNumber", ""+cycleNumber);
+		turn.setAttribute("cardCount", ""+cardCount);
 		gameChange.appendChild(turn);   
 
 		Element planetList = doc.createElement("Planets");
