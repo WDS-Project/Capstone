@@ -14,6 +14,11 @@ import random
 import AIHelpers
 import math
 
+##Choosing planets:
+# Regions with higher values
+# Inner planets in regions, because they are easier to hold
+# planets not connected to ones I already have, to get a good random sampling
+
 # Builds a move for a given player based on a Gamestate
 def getMove(gs, idNum):
     gsLocal = gs.copy() # makes a local copy so we don't change the external gs
@@ -23,7 +28,6 @@ def getMove(gs, idNum):
     result = generateDeployments(gsLocal, result, mine)
     result = generateAttacks(gsLocal, result, theirs)
     return result
-
 
 ##reinforcements sent from higher priority to lower, but
 #it didn't work very well.
