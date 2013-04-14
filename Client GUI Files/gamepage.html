@@ -101,6 +101,16 @@
 	/*margin-bottom:.1em;*/
 }
 
+#cards input {
+	font-family:'Courier New', Helvetica, Serif;
+	font-size:1em;
+	font-weight:bold;
+}
+
+#cards tr div {
+	display:inline;
+}
+
 </style>
 <title>WDS Game Screen</title>
 
@@ -129,7 +139,24 @@
 	</div>
 	<div id="bottom" class="container" style="height:14em">
 		<div id = "footer"></div>
-		<div id = "cards">CARDS STUFF GOES HERE</div>
+		<div id = "cards">You have the following cards:
+			<table border="1">
+			<tr>
+			<td><div id="cardText0">0</div> Metal</td>
+			<td><div id="cardText1">0</div> Food</td>
+			<td><div id="cardText2">0</div> Wood</td>
+			</tr><tr>
+			<td><input type="submit" value="Type 0" id="cardButton0" disabled=true 
+				onclick="client.turninCards(0)"/></td>
+			<td><input type="submit" value="Type 1" id="cardButton1" disabled=true 
+				onclick="client.turninCards(1)"/></td>
+			<td><input type="submit" value="Type 2" id="cardButton2" disabled=true 
+				onclick="client.turninCards(2)"/></td>
+			<td><input type="submit" value="Type All" id="cardButton3" disabled=true 
+				onclick="client.turninCards(3)"/></td>
+			</tr>
+			</table>
+		</div>
 	</div>
 </body>
 <script src="ClientGUI.js"> </script>

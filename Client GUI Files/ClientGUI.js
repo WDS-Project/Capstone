@@ -576,6 +576,35 @@ var Gamestate = function() {
 		}
 	};
 	
+	self.updateCards = function() {
+		// Type 0
+		document.getElementById("cardText0").innerHTML = self.cards[0];
+		if (self.cards[0] >= 3)
+			document.getElementById("cardButton0").disabled = false;
+		else
+			document.getElementById("cardButton0").disabled = true;
+		
+		// Type 1
+		document.getElementById("cardText1").innerHTML = self.cards[1];
+		if (self.cards[1] >= 3)
+			document.getElementById("cardButton1").disabled = false;
+		else
+			document.getElementById("cardButton1").disabled = true;
+		
+		// Type 2
+		document.getElementById("cardText2").innerHTML = self.cards[2];
+		if (self.cards[2] >= 3)
+			document.getElementById("cardButton2").disabled = false;
+		else
+			document.getElementById("cardButton2").disabled = true;
+		
+		// And the special case of submitting all
+		if (self.cards[0] > 0 && self.cards[1] > 0 && self.cards[2] > 0)
+			document.getElementById("cardButton3").disabled = false;
+		else
+			document.getElementById("cardButton3").disabled = true;
+	};
+	
 	// Loads a Gamestate based on an XML string.
 	self.loadXML = function(xmlString) {
 		if (window.DOMParser) { // i.e. is it Firefox or Chrome
@@ -640,13 +669,16 @@ var Gamestate = function() {
 			self.playerList[i] = {};
 			self.playerList[i].color = colorList[i];
 			self.playerList[i].status = 1; // active
-			self.playerList[i].cards = [0, 0, 0];
-			// Cards: [type 0, type 1, type 2]
 		}
+		
+		// Cards stuff! Only for player 1.
+		self.cards = [0, 0, 0];
+		// Cards: [type 0, type 1, type 2]
 		
 		self.updateRegions();
 		self.updateConnections();
 		self.updatePlayers();
+		self.updateCards();
 	};
 	
 	// Sets the active player. Prints an error if the ID provided is invalid.
@@ -760,7 +792,7 @@ var Client = function() {
 		MOVING: 3
 	};
 	self.state = Client.states.PRE_GAME;
-	self.count = 0; //for counting up to quota
+	self.deployCount = 0; //for counting up to quota
 	self.currentMove = new Move(self.playerID);
 	self.skipMoves = true; // flag for skipping AI moves
 	self.turnDelay = 100; // delay between turns in ms
@@ -842,9 +874,9 @@ var Client = function() {
 			var idx1 = res.indexOf("#CARDS:") + 8;
 			var idx2 = res.lastIndexOf("]");
 			var cardStrs = res.substring(idx1, idx2).split(", ");
-			var player = gs.playerList[self.playerID];
 			for (var i = 0; i < 3; i++)
-				player.cards[i] = Number(cardStrs[i]);
+				gs.cards[i] = Number(cardStrs[i]);
+			gs.updateCards();
 		}
 		
 		var gc = new Gamechange();
@@ -884,6 +916,9 @@ var Client = function() {
 				"Click on another planet to deploy more fleets, " +
 				"or click End Deployment to move to attack phase. " +
 				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+				
+				// Allow card turnins, if applicable.
+				gs.updateCards();
 			} else if (self.state == Client.states.CHOOSING) {
 				// It's our turn, and we want a planet choice.
 				button.value = "Choose a planet";
@@ -900,7 +935,6 @@ var Client = function() {
 		self.request = new XMLHttpRequest();
 		self.request.open("POST", "http://" + self.serverIPandPort + "/move/", true)
 		var move = self.currentMove.toString();
-		
 		
 		// Reset display variables
 		selection = null;
@@ -929,29 +963,27 @@ var Client = function() {
 		if(planet.owner != self.playerID) 
 			return;
 		
-		//self.deployment is true; set this to false if quota expended or the user ends the phase
 		var quota = gs.getPlayerQuota(self.playerID);
 		
 		if(self.state == Client.states.DEPLOYMENT) { 
 			//display a pop-up and get number of fleets
 			var fleets = prompt("Enter number of fleets to deploy to " + planet.name);
 			
+			// Validate user input
 			if(fleets == null)
 				return;
-			
 			fleets = Number(fleets);
-			
 			if(isNaN(fleets)){
 				document.getElementById("footer").innerHTML = "Must enter a number.";
 				return;
 			}
-			
-			if(fleets > quota || fleets < 1) {
-				document.getElementById("footer").innerHTML = ("You must deploy between 1 and " + quota + " fleets.");
+			if(fleets > (quota - self.deployCount) || fleets < 1) {
+				document.getElementById("footer").innerHTML = ("You must deploy between 1 and " + (quota - self.deployCount) + " fleets.");
 				return;
 			}
 			
-			self.count += fleets;
+			// From here, we assume it's valid.
+			self.deployCount += fleets;
 			planet.numFleets += fleets;
 			
 			self.currentMove.addMove(0, source, fleets);
@@ -961,23 +993,52 @@ var Client = function() {
 			
 			document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
 			"or click End Deployment to move to attack phase. " +
-			"<br>Remaining fleets: " + (quota - self.count);
+			"<br>Remaining fleets: " + (quota - self.deployCount);
 		}
 		
-		if(self.count == quota)
+		if(self.deployCount == quota)
 			self.endDeploy();
 	}
 	
 	self.endDeploy = function() {
 		self.state = Client.states.MOVING;
-		self.count = 0;
+		self.deployCount = 0;
 		
 		document.getElementById("submitButton").value = "Submit Move";
 		document.getElementById("submitButton").onclick = client.submitMove;
 		
+		// Disallow card turnins after deployment phase.
+		document.getElementById("cardButton0").disabled = true;
+		document.getElementById("cardButton1").disabled = true;
+		document.getElementById("cardButton2").disabled = true;
+		document.getElementById("cardButton3").disabled = true;
+		
 		document.getElementById("footer").innerHTML = "Click on a planet you own to see connected planets.<br>" +
 		"Click on an arrow to attack.";
 	}
+	
+	self.turninCards = function(type) {
+		if (type < 3) {
+			gs.cards[type] -= 3;
+		}
+		else if (type == 3) {
+			gs.cards[0] -= 1;
+			gs.cards[1] -= 1;
+			gs.cards[2] -= 1;
+		}
+		self.currentMove.addMove(-1, 0, type);
+		
+		// Update stuff to reflect what's changed.
+		gs.updateCards();
+		self.deployCount -= 5;
+		
+		document.getElementById("move_list").innerHTML += 
+			("Turned in cards for bonus fleets.<br><br>");
+			
+		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
+			"or click End Deployment to move to attack phase. " +
+			"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID) - self.deployCount);
+	};
 	
 	self.addMove = function(connection) {			
 		var source, dest;
