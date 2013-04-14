@@ -27,6 +27,7 @@ class AIClient:
     def __init__(self, diff, sID, IPnPort):
         self.log = open('log'+str(diff)+'.txt', 'w')
         self.state = 1 # i.e. choosing planets -- MODERATELY PRELIMINARY
+        self.gs = None
         self.difficulty = diff
         self.sessionID = sID
         self.serverIPandPort = IPnPort

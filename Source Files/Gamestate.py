@@ -14,6 +14,7 @@ class Gamestate:
         self.activePlayer = 0
         self.turnNumber = 0
         self.cycleNumber = 0
+        self.turninCount = 0
         self.pList = [None]
         self.rList = [None]
         self.cList = set()
@@ -60,6 +61,7 @@ class Gamestate:
         gs_str += ("Turn Number: " + str(self.turnNumber) +
                    ", Cycle Number: " + str(self.cycleNumber) + "\n")
         gs_str += "Active Player: " + str(self.activePlayer) + "\n"
+        gs_str += "Turnin Count: " + str(self.turninCount) + "\n"
 
         # Then, planets...
         planet_str = ("\nList of Planets:\n" +
@@ -94,6 +96,7 @@ class Gamestate:
         self.turnNumber = change.turnNumber
         self.cycleNumber = change.cycleNumber
         self.activePlayer = change.activePlayer
+        self.turninCount = change.turninCount
         for c in change.changes:
             p = self.pList[c[0]]
             p.owner = c[1]

@@ -449,6 +449,7 @@ var Gamestate = function() {
 		gs_str += ("Turn Number: " + self.turnNumber +
 			", Cycle Number: " + self.cycleNumber + "\n");
 		gs_str += "Active Player: " + self.activePlayer + "\n";
+		gs_str += "Card Count: " + self.turninCount + "\n";
 		
 		// Then, planets...
 		var planet_str = ("\nList of Planets:\n" +
@@ -520,6 +521,7 @@ var Gamestate = function() {
 		self.turnNumber = change.turnNumber;
 		self.cycleNumber = change.cycleNumber;
 		self.activePlayer = change.activePlayer;
+		self.turninCount = change.turninCount;
 		for (var i = 0; i < change.changes.length; i++) {
 			var p = self.pList[change.changes[i][0]];
 			p.owner = change.changes[i][1];
@@ -673,6 +675,7 @@ var Gamestate = function() {
 		
 		// Cards stuff! Only for player 1.
 		self.cards = [0, 0, 0];
+		self.turninCount = -1;
 		// Cards: [type 0, type 1, type 2]
 		
 		self.updateRegions();
@@ -705,7 +708,8 @@ var Gamechange = function() {
 	self.toString = function() {
 		result = ("Gamechange:\n" + "-----------\n")
 		result += ("Turn Number: " + self.turnNumber + ", Cycle Number: " +
-			self.cycleNumber + "\nActive Player: " + self.activePlayer +"\n")
+			self.cycleNumber + "\nActive Player: " + self.activePlayer +
+			+ "\nCard Count: " + self.turninCount + "\n")
 		result += ("\nList of changes:\n"+ "----------------\n")
 		for (var i = 0; i < self.changes.length; i++)
 			result += self.changes[i] + "\n";
@@ -728,6 +732,7 @@ var Gamechange = function() {
 		self.activePlayer = Number(players.getAttribute("activePlayer"));
 		self.turnNumber = Number(players.getAttribute("turnNumber"));
 		self.cycleNumber = Number(players.getAttribute("cycleNumber"));
+		self.turninCount = Number(players.getAttribute("turninCount"));
 		
 		// ...and the change list.
 		var planetListEl = xmlDoc.getElementsByTagName("Planets")[0];

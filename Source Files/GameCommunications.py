@@ -20,6 +20,7 @@ class Gamechange:
         self.activePlayer = 0
         self.turnNumber = 0
         self.cycleNumber = 0
+        self.turninCount = 0
         self.changes = []
         return
 
@@ -28,7 +29,8 @@ class Gamechange:
                   "-----------\n")
         result += ("Turn Number: " + str(self.turnNumber) + ", Cycle Number: " +
                    str(self.cycleNumber) + "\nActive Player: " +
-                   str(self.activePlayer) +"\n")
+                   str(self.activePlayer) +"\nTurninCount: " +
+                   str(self.turninCount) + "\n")
         result += ("\nList of changes:\n" +
                    "----------------\n")
         for change in self.changes:
@@ -45,6 +47,7 @@ class Gamechange:
         self.activePlayer = int(players.getAttribute("activePlayer"))
         self.turnNumber = int(players.getAttribute("turnNumber"))
         self.cycleNumber = int(players.getAttribute("cycleNumber"))
+        self.turninCount = int(players.getAttribute("turninCount"))
         
         # Change list
         planetListEl = dom.getElementsByTagName("Planets")[0]

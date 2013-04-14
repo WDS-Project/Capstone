@@ -23,7 +23,7 @@ public class GameEngine {
 
 	private int ID;
 	private int numPlayers;
-	private int cardCount; // number of cards turned in so far
+	private int turninCount; // number of cards turned in so far
 
 	//these are to figure out where we are in the game
 	//in order to know what to send players in the executeRequests() method
@@ -40,7 +40,7 @@ public class GameEngine {
 		init();
 		ID = id;
 		numPlayers = 1;
-		cardCount = 0;
+		turninCount = 0;
 		System.out.println("This engine's ID number is " + id);
 	}
 
@@ -208,7 +208,7 @@ public class GameEngine {
 	public void processMove(Move move) {
 		System.out.println("Processing move.");
 		GameChange gc = new GameChange();
-		gc.setCardCount(cardCount);
+		gc.setTurninCount(turninCount);
 
 		// Check that the player who submitted the move is the active player.
 		// Then, as long as activePlayer is right, the playerID must be valid.
@@ -276,7 +276,7 @@ public class GameEngine {
 					sender.removeCards(1, 1);
 					sender.removeCards(2, 1);
 				}
-				cardCount++;
+				turninCount++;
 				continue;
 			}
 			
@@ -353,8 +353,8 @@ public class GameEngine {
 			}
 		}
 		
-		// Update cardCount in the Gamechange
-		gc.setCardCount(cardCount);
+		// Update turninCount in the Gamechange
+		gc.setTurninCount(turninCount);
 		// Store the new GameChange
 		change = gc;
 		// update the Gamestate
