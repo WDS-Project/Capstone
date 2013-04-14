@@ -567,27 +567,12 @@ var Gamestate = function() {
 	};
 	
 	self.updatePlayers = function() {
-		document.getElementById("key").innerHTML = "";
-	
-		//players
-		for(var i = 1; i < self.playerList.length; i++) {
-			if(self.playerList[i].status == 1) {
-				document.getElementById("key").innerHTML += 
-				" <div id = 'color_key' style = 'background-color:" 
-				+ self.playerList[i].color + ";' > Player " + i + " </div>";
-			} else {
-				document.getElementById("key").innerHTML += 
-				" <div id = 'color_key' style = 'background-color:" 
-				+ self.playerList[i].color + ";' > Player " + i + " <br> eliminated </div>";
+		for (var i = 1; i < self.playerList.length; i++) {
+			if (self.playerList[i].status == 0) {
+				var div = document.getElementById("playerDiv"+String(i));
+				div.style.setProperty("text-decoration", "line-through");
+				div.style.setProperty("color", "black");
 			}
-		}	
-		
-		//regions while we're at it
-		for(var i = 1; i < self.rList.length; i++) {
-			document.getElementById("key").innerHTML +=
-				" <div id = 'color_key' style = 'background-color:" 
-				+ self.rList[i].color + ";' > " + self.rList[i].name
-				+ "<br>Value: " + self.rList[i].value + " </div>";
 		}
 	};
 	
@@ -636,7 +621,8 @@ var Gamestate = function() {
 		
 		// 5. Set player colors - SOMEWHAT PRELIMINARY
 		var colorList = [null, 'cyan', 'orange', 'blue', 'magenta',
-				   'green', 'purple', 'yellow', 'pink'];
+				   'green', 'purple', 'yellow', 'pink',
+				   'red', 'brown', '#7fa'];
 		
 		// Handle player color choice (prevent duplicate colors)
 		playerColor = window.localStorage.getItem("playerColor");
@@ -919,8 +905,7 @@ var Client = function() {
 		// Reset display variables
 		selection = null;
 		self.currentMove.clear();	
-		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
-		"<b>_____________________________________</b><br><br>";
+		document.getElementById("move_list").innerHTML = "";
 		
 		self.request.send(move);
 		
@@ -1053,10 +1038,8 @@ var Client = function() {
 		// Reset display variables
 		selection = null;
 		self.state = Client.states.DEPLOYMENT; // i.e. deployment
-		self.currentMove.clear();	
-		document.getElementById("move_list").innerHTML = "<b>Player Controls</b> <br>" +
-		"<b>_____________________________________</b><br><br>";
-		
+		self.currentMove.clear();
+		document.getElementById("move_list").innerHTML = "";
 		self.request.send(move);
 		
 		self.request.onreadystatechange=function() {

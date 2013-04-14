@@ -3,12 +3,11 @@
 <html>
 <head>
 <style type = "text/css">
-
 #header {
 	font-size:3em;
 	font-family: Impact, "Courier New", Helvetica, Serif;
 	text-align:center;
-	margin:1em;
+	margin-top:.5em;
 	color:white;	
 }
 
@@ -16,41 +15,90 @@
 	float:left;
 	padding:1em;
 	border:3px solid blue;
-	margin:1em;
+	margin:0em;
+	margin-left:auto;
 	font-family: "Courier New", Helvetica, Serif;
 	font-size:18px;
 	text-align:center;
-	width:400px;
+	width:23em;
 	height:565px;
 	background-color:#878787;
 }
 #board {
-	float:left;
-	margin:1em;
+	float:right;
+	margin:0em;
+	margin-right:auto;
 }
 #footer {
 	clear:both;
 	padding:1em;
 	border:3px solid red;
-	margin:1em;
-	width:1250px;	
+	margin:0em;
+	width:62%;
+	height:4em;
 	font-family: "Courier New", Helvetica, Serif;
-	font-size:18px;
+	font-size:1.2em;
 	font-weight:bold;
 	background-color:#878787;
+	float:left;
 }
 
-#color_key {
+.color_key {
 	float:left;
-	padding:1em;
-	margin:1em;
-	width:10%;	
+	padding:.5em;
+	margin-left:.25em;
+	margin-right:.25em;
+	margin-top:.1em;
 	font-family: "Courier New", Helvetica, Serif;
-	font-size:18px;
+	font-size:1.5em;
 	font-weight:bold;
 	text-align:center;
 	color:white;
 	text-shadow:2px 2px 2px #000000;
+	border:.1em solid black;
+}
+
+#playerKey {
+	margin-left:auto;
+	margin-right:auto;
+}
+#playerKeyDiv div { /* all divs within #playerKeyDiv */
+	width:2em;
+	height:1.2em;
+}
+
+#regionKeyDiv div {
+	width:11em;
+	height:1.3em;
+}
+
+#cards {
+	padding:1em;
+	border:3px solid yellow;
+	width:30%;
+	height:4em;
+	font-family:"Courier New", Helvetica, Serif;
+	font-weight:bold;
+	font-size:1.2em;
+	background-color:#878787;
+	float:right;
+}
+
+.container {
+	width:80em;
+	margin-left:auto;
+	margin-right:auto;
+	/*background-color:#f1f1f1;
+	border:2px solid #f0f;*/
+	padding:0em;
+}
+
+.keyDiv {
+	width:80em;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:.1em;
+	/*margin-bottom:.1em;*/
 }
 
 </style>
@@ -58,23 +106,31 @@
 
 </head>
 <body background = "background3.jpg">  
-	<div id = "header"> World Domination Simulator </div>
-	<div id = "player_controls"> 
-		<div id = "move_list" >
-		<b>Player Controls</b> <br>
-		<b>_____________________________________</b><br><br>
+	<div id="header"> World Domination Simulator </div>
+	<div id="top" class="container" style="height:38em">
+		<div id = "player_controls"> 
+			<b>Player Controls</b> <br>
+			<b>_____________________________________</b><br><br>
+		
+			<div id = "button" style = " bottom: 0; text-align:center;">
+			<input type = "submit" value = "Choose a Planet" id = "submitButton"
+			style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
+			font-weight:bold;" disabled=true> </div>
+			<div id = "move_list" > </div>
 		</div>
-	
-		<div id = "button" style = " bottom: 0; text-align:center;">
-		<input type = "submit" value = "End Deployment" id = "submitButton"
-		style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
-		font-weight:bold; " onclick = "client.endDeploy();"> </div>
+		<div id = "board">
+			<canvas id="c" style="border: solid 3px green;"></canvas>  
+		</div>
 	</div>
-	<div id = "board">
-	<canvas id="c" style="border: solid 3px green;"></canvas>  
+	<div id="mid" class="container" style="height:10em">
+		<div id="playerKeyDiv" class="keyDiv"></div>
+		
+		<div id="regionKeyDiv" class="keyDiv"></div>
 	</div>
-	<div id = "key"> </div>
-	<div id = "footer"> </div>
+	<div id="bottom" class="container" style="height:14em">
+		<div id = "footer"></div>
+		<div id = "cards">CARDS STUFF GOES HERE</div>
+	</div>
 </body>
 <script src="ClientGUI.js"> </script>
 <script src="ClientGUICanvas.js"></script>
@@ -82,8 +138,33 @@
 	var gs = new Gamestate();
 	gs.loadXML(window.localStorage.getItem("gsString"));
 	
-	var client = new Client();
+	// Fill in player and region information
+	var playerKey = document.getElementById("playerKeyDiv");
+	var pKeyHeight = 4.1;
+	playerKey.style.height = String(pKeyHeight) + "em";
+	var pKeyWidth = (gs.playerList.length * 5) + 1;
+	playerKey.style.width = String(pKeyWidth) + "em";
+	for(var i = 1; i < gs.playerList.length; i++) {
+		document.getElementById("playerKeyDiv").innerHTML += 
+		" <div id='playerDiv"+i+"' class='color_key' style='background-color:" 
+		+ gs.playerList[i].color + ";' > P" + i + " </div>";
+	}
+	// Region height is dynamic
+	var regionKey = document.getElementById("regionKeyDiv");
+	var rKeyHeight = (Math.floor((gs.rList.length-1) / 4) + 1) * 4;
+	regionKey.style.height = String(rKeyHeight) + "em";
+	for(var i = 1; i < gs.rList.length; i++) {
+		document.getElementById("regionKeyDiv").innerHTML +=
+		" <div class='color_key' style='background-color:" 
+		+ gs.rList[i].color + ";' > " + gs.rList[i].name
+		+ " - " + gs.rList[i].value + " </div>";
+	}
+	// Also the middle div itself.
+	var midDiv = document.getElementById("mid");
+	midDiv.style.height = String(rKeyHeight + pKeyHeight + .1) + "em";
+	
 	// Prepare for start of game
+	var client = new Client();
 	client.state = Client.states.CHOOSING;
 	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
 		"or click End Deployment to move to attack phase. " +
