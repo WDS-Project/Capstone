@@ -112,6 +112,7 @@ def checkCards(cards):
     # Otherwise, no pair is possible.
     return -1
 
+# Adds a move to reflect turning in cards.
 def turninCards(cards, move, turninType):
     if turninType < 3:
         cards[turninType] -= 3
@@ -125,4 +126,10 @@ def turninCards(cards, move, turninType):
 
     else: # Shouldn't get here
         raise Exception("Error: invalid card turnin type.")
+# Returns the value of a given turnin
+def getTurninValue(turninCount):
+    if (turninCount < 6):
+        return (2 * turninCount) + 5;
+    else:
+        return (turninCount - 2) * 5;
     

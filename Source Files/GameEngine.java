@@ -268,13 +268,17 @@ public class GameEngine {
 				
 				// Assuming that's good, actually process the request
 				if (type == 0 || type == 1 || type == 2) {
-					quota += 5; // TODO make fancier
 					sender.removeCards(type, 3);
 				} else if (type == 3) {
-					quota += 5; // TODO same thing
 					sender.removeCards(0, 1);
 					sender.removeCards(1, 1);
 					sender.removeCards(2, 1);
+				}
+				// Calculate how many more troops the player gets
+				if (turninCount < 6) {
+					quota += (2 * turninCount) + 5;
+				} else {
+					quota += (turninCount - 2) * 5;
 				}
 				turninCount++;
 				continue;

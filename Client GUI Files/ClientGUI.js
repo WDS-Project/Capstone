@@ -1035,7 +1035,12 @@ var Client = function() {
 		
 		// Update stuff to reflect what's changed.
 		gs.updateCards();
-		self.deployCount -= 5;
+		if (gs.turninCount < 6) {
+			self.deployCount -= (2 * gs.turninCount) + 5;
+		} else {
+			self.deployCount -= (gs.turninCount - 2) * 5;
+		}
+		gs.turninCount++;
 		
 		document.getElementById("move_list").innerHTML += 
 			("Turned in cards for bonus fleets.<br><br>");
