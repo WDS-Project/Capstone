@@ -38,7 +38,8 @@ def findAIType(diff):
 def setup(numAIs, diffs):
     # Load AI players
     for i in range(numAIs):
-        players[i+1] = [None, True] # [getMove, status]
+        # Key: [getMove, status, cards, cardCount]
+        players[i+1] = [None, True, [0, 0, 0], 0]
         # This finds the getMove function for the given difficulty
         players[i+1][0] = findAIType(diffs[i])
 
@@ -61,7 +62,7 @@ def playGame():
             #print("Player "+str(p)+" is moving.")
             
             # Gets a move from the AI
-            m = players[p][0](gs, p, 3)
+            m = players[p][0](gs, p, 3, players[p][2])
             #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()
@@ -80,11 +81,25 @@ def playGame():
 def processMove(m):
     #print("Processing move: " + str(gs))
     quota = gs.getPlayerQuota(m.playerID)
+    hasWon = False # flag for whether the player has conquered a planet this move
     while(m.hasNext()):
         miniMove = m.next()
         dest = miniMove[1] 
         fleets = miniMove[2]
         source = miniMove[0]
+
+        # Card turnin
+        if (source == -1):
+            turninType = fleets
+            if turninType < 0 or turninType > 3:
+                raise Exception("Illegal move: invalid card turnin type.")
+
+            # If we get here, the turnin is valid
+            quota += 5 # TODO make better
+            # Note that removing the cards is handled by the AIs themselves
+            players[m.playerID][3] -= 3 # decrease card count by 3
+            stats.cardTurnins[m.playerID] += 1
+            continue
 
         # Deployment
         if (source == 0):
@@ -122,6 +137,7 @@ def processMove(m):
             results = processAttack(fleets, gs.pList[dest].numFleets)
             #attacker won
             if(results[1] == 0):
+                hasWon = True
                 gs.pList[dest].owner = gs.pList[source].owner
                 gs.pList[dest].numFleets += results[0]
                 gs.pList[source].numFleets -= fleets
@@ -129,6 +145,17 @@ def processMove(m):
             else:
                 gs.pList[source].numFleets += (results[0] - fleets)
                 gs.pList[dest].numFleets = results[1]
+
+    # Check if the player gets a card
+    if hasWon and players[m.playerID][3] < 5:
+        # Pick a random card type...
+        randType = random.randint(0, 2)
+        # ... and increment it by 1.
+        players[m.playerID][2][randType] += 1
+        # Also increment the card counter by 1.
+        players[m.playerID][3] += 1
+
+    return
 
 # This method for testing purposes only
 def processAttackNonRandom(sourceFleets, destFleets):
@@ -205,7 +232,7 @@ def distributePlanets():
     
     while count > 0:
             # Gets a choice from the AI
-            m = players[pPtr][0](gs, pPtr, 1)
+            m = players[pPtr][0](gs, pPtr, 1, None)
             mini = m.next()
             target = mini[2]
 
@@ -232,6 +259,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
         stats.elimOrder.append([])
         for d2 in range(1, len(diffList)):
             stats.elimOrder[d].append(0)
+        stats.cardTurnins.append(0)
     startTime = datetime.now()
 
     # Selects whether to load a map or make a new one
@@ -269,6 +297,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
     for a in range(1, len(diffList)+1):
         stats.avgAttacks[a] /= i
         stats.avgFleets[a] /= (stats.avgAttacks[a] * i)
+        stats.cardTurnins[a] /= i
 
     # Print the final results
     print("\n\nSimulations completed: "+str(i),
@@ -299,21 +328,27 @@ class Statistics:
         self.avgFleets = [None] # avg num fleets per attack
         self.avgAttacks = [None] # avg num of attacks per game
         self.elimOrder = [None] # record of time eliminated per player
+        self.cardTurnins = [None] # avg number of card turnins per game
 
     def printStats(self):
+        rng = range(1, len(self.avgFleets))
         print("Victories: " + str(self.victories))
         print("-----------------------------------")
         print("Avg fleets per attack:")
-        for i in range(1, len(self.avgFleets)):
+        for i in rng:
             print("Player "+str(i)+": %.2f" % self.avgFleets[i])
         print("-----------------------------------")
         print("Avg attacks per game:")
-        for i in range(1, len(self.avgAttacks)):
+        for i in rng:
             print("Player "+str(i)+": %.1f" % self.avgAttacks[i])
         print("-----------------------------------")
         print("Elimination order:")
-        for i in range(1, len(self.avgAttacks)):
+        for i in rng:
             print("Player "+str(i)+": "+str(self.elimOrder[i]))
+        print("-----------------------------------")
+        print("Avg card turnins per game:")
+        for i in rng:
+            print("Player "+str(i)+": "+str(self.cardTurnins[i]))
         print("-----------------------------------")
 
 # These global variables are used by all methods. This way they can be
@@ -325,7 +360,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([0, 1, 2], numGames=10)
+    run([0, 1, 2], numGames=50)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     

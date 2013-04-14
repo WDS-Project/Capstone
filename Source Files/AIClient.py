@@ -70,10 +70,10 @@ class AIClient:
             self.log.write("It's our turn.\n")
             if (self.difficulty == '0'):
                 self.log.write("AI type: Random.\n")
-                m = RandomAI.getMove(self.gs, self.playerID, self.state)
+                m = RandomAI.getMove(self.gs, self.playerID, self.state, self.cards)
             elif (self.difficulty == '1'):
                 self.log.write("AI type: RandomBetter.\n")
-                m = RandomAIBetter.getMove(self.gs, self.playerID, self.state)
+                m = RandomAIBetter.getMove(self.gs, self.playerID, self.state, self.cards)
             elif (self.difficulty == '2'):
                 self.log.write("AI type: Aggressive.\n")
                 m = AggressiveAI.getMove(self.gs, self.playerID, self.state, self.cards)
@@ -105,7 +105,7 @@ class AIClient:
                 cardStrs = str(response)[idx1:idx2].split(', ')
                 for i in range(3):
                     self.cards[i] = int(cardStrs[i])
-                self.log.write("New card info: " + str(self.cards))
+                self.log.write("New card info: " + str(self.cards)+"\n")
             # FYI, all of the casting to string is to combat encoding issues.
 
             # Now load the gamechange
