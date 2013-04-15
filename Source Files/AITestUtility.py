@@ -55,11 +55,13 @@ def playGame():
     winner = 0
     rounds = 0
     currElim = 0
+    turnOrder = list(range(1, len(players)+1))
+    random.shuffle(turnOrder) # Players take turns in random order
     
     while (winner == 0):
         rounds += 1
         #print("Round " + str(rounds) + "...")
-        for p in players:
+        for p in turnOrder:
             # If player is not active, ignore it
             if not players[p][1]: continue
             #print("Player "+str(p)+" is moving.")
@@ -371,7 +373,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 4], numGames=100)
+    run([2, 4], numGames=100)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
