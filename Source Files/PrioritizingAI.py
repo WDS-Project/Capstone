@@ -25,13 +25,13 @@ class PrioritizingAI:
     
     # Builds a move for a given player based on a Gamestate
     def getMove(self, gs, idNum, state, cards):
+        gsLocal = gs.copy()
         if(state == 1):
-            self.prioritizeAllPlanets(gs)
-            return self.choosePlanet(gs, idNum)
-        gsLocal = gs.copy() # makes a local copy so we don't change the external gs
+            self.prioritizeAllPlanets(gsLocal)
+            return self.choosePlanet(gsLocal, idNum)
         result = Move(idNum)
-        self.prioritizeMyPlanets(gs, int(idNum))
-        self.prioritizeTheirPlanets(gs, int(idNum))
+        self.prioritizeMyPlanets(gsLocal, int(idNum))
+        self.prioritizeTheirPlanets(gsLocal, int(idNum))
         result = self.generateDeployments(gsLocal, result)
         result = self.generateAttacks(gsLocal, result)
         self.moveCount += 1
@@ -83,7 +83,7 @@ class PrioritizingAI:
     #it didn't work very well.
 
     def prioritizeMyPlanets(self, myGS, playerID):
-
+        self.myPlanets = dict()
         # map planetIDs to prioritized values
         for p in AIHelpers.getOwnedPlanets(myGS, playerID):
             if myGS.pList[p].owner == playerID:
@@ -225,14 +225,14 @@ class PrioritizingAI:
             for i in source:
                 sm += (myGS.pList[i].numFleets - 1)
             if sm > needed:
-                print("Sum: " + str(sm) + " Needed: " + str(needed))
-                print(str(source))
+                #print("Sum: " + str(sm) + " Needed: " + str(needed))
+                #print(str(source))
                 j = 0
-                while(used <= needed and j < len(source)):
-                    print("Used: " + str(used) + " Needed: " + str(needed))
+                while(used < needed and j < len(source)):
+                    #print("Used: " + str(used) + " Needed: " + str(needed))
                     if(myGS.pList[source[j]].numFleets > 1):
-                        print(str(source[j]) + ", who has " + str(myGS.pList[source[j]].numFleets) + " is attacking " + str(dest)
-                              + ", who has " + str(myGS.pList[dest].numFleets) + " fleets with " + str(min(myGS.pList[source[j]].numFleets -1, (needed-used))) + " fleets.\n")
+                        #print(str(source[j]) + ", who has " + str(myGS.pList[source[j]].numFleets) + " is attacking " + str(dest)
+                        #      + ", who has " + str(myGS.pList[dest].numFleets) + " fleets with " + str(min(myGS.pList[source[j]].numFleets -1, (needed-used))) + " fleets.\n")
                         move.addMove(source[j], dest, min(myGS.pList[source[j]].numFleets -1, (needed-used)))
                         used += myGS.pList[source[j]].numFleets -1
                         myGS.pList[source[j]].numFleets = 1
