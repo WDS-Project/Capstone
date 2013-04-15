@@ -10,10 +10,9 @@ from http import client #for HTTP connections
 import sys      #for command-line arguments
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Gamechange, Move
-import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
-import RegionAI
+import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI, RegionAI
 import traceback # for printing errors to the log
-# add more imports for different AI difficulty levels
+import sys
 
 #command line args: playerID, difficulty, sessionID, serverIPaddr:port
 #global variables: difficulty, sessionID, serverIPandPort, gs
@@ -33,7 +32,8 @@ class AIClient:
         self.sessionID = sID
         self.serverIPandPort = IPnPort
         self.cards = [0, 0, 0]
-        self.aiScript = findScript(diff)
+        self.script = self.findScript(diff)
+        #self.aiScript = findScript(diff)
         self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
     # join a game given a session ID, also load gamestate and playerID
@@ -116,25 +116,26 @@ class AIClient:
     def __str__(self):
         print("player ID: " + self.playerID + " session ID: " + sessionID)
 
-# Finds the AI script associated with the specified difficulty
-def findScript(diff):
-    if (self.difficulty == '0'):
-        self.log.write("AI type: Random.\n")
-        self.script = RandomAI()
-    elif (self.difficulty == '1'):
-        self.log.write("AI type: RandomBetter.\n")
-        self.script = RandomAIBetter()
-    elif (self.difficulty == '2'):
-        self.log.write("AI type: Aggressive.\n")
-        self.script = AggressiveAI()
-    elif (self.difficulty == '3'):
-        self.log.write("AI type: Prioritizing.\n")
-        self.script = PrioritizingAI()
-    elif (self.difficulty == '4'):
-        self.log.write("AI type: Region.\n")
-        self.script = RegionAI()
-    else: # Problem!
-        raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
+    # Finds the AI script associated with the specified difficulty
+    def findScript(self, diff):
+        if (self.difficulty == '0'):
+            script = RandomAI.RandomAI()
+            self.log.write("AI type: Random.\n")
+        elif (self.difficulty == '1'):
+            script = RandomAIBetter.RandomAIBetter()
+            self.log.write("AI type: RandomBetter.\n")
+        elif (self.difficulty == '2'):
+            script = AggressiveAI.AggressiveAI()
+            self.log.write("AI type: Aggressive.\n")
+        elif (self.difficulty == '3'):
+            script = PrioritizingAI.PrioritizingAI()
+            self.log.write("AI type: Prioritizing.\n")
+        elif (self.difficulty == '4'):
+            script = RegionAI.RegionAI()
+            self.log.write("AI type: Region.\n")
+        else: # Problem!
+            raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
+        return script
 
 def main(args):
     ai = AIClient(args[1], args[2], args[3])
