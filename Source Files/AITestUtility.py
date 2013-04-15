@@ -47,8 +47,8 @@ def setup(numAIs, diffs):
         players[i+1][0] = findAIType(diffs[i])
 
     # Setup gamestate
-    distributePlanets()
     gs.updateRegions()
+    distributePlanets()
 
 def playGame():
     print("Started!")
@@ -237,6 +237,7 @@ def distributePlanets():
     for p in gs.pList:
         if p is None: continue
         p.owner = 0
+    gs.updateRegions() # Must be called whenever planet ownership changes
     
     while count > 0:
             # Gets a choice from the AI
@@ -253,6 +254,7 @@ def distributePlanets():
             pPtr += 1
 
             count -= 1
+            gs.updateRegions()
 
 def run(diffList, gsMap='RiskGS.xml', numGames=50,
         numPlanets=None, numRegions=None):
@@ -369,7 +371,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([0, 1, 2], numGames=10)
+    run([1, 4], numGames=100)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
