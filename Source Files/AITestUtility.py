@@ -22,17 +22,17 @@ import RegionAI
 def findAIType(diff):
     # List of AIs matched with difficulties.
     if (diff == 0):
-        move = RandomAI.getMove
+        script = RandomAI()
     elif (diff == 1):
-        move = RandomAIBetter.getMove
+        script = RandomAIBetter()
     elif (diff == 2):
-        move = AggressiveAI.getMove
+        script = AggressiveAI()
     elif (diff == 3):
-        move = PrioritizingAI.getMove
+        script = PrioritizingAI()
     elif (diff == 4):
-        move = RegionAI.getMove
+        script = RegionAI()
     else: # Undefined AI type
-        raise Exception("Error: AI not found.")
+        raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
     return move
 
 # Prepares to simulate a game.
@@ -41,9 +41,9 @@ def findAIType(diff):
 def setup(numAIs, diffs):
     # Load AI players
     for i in range(numAIs):
-        # Key: [getMove, status, cards, cardCount]
+        # Key: [script, status, cards, cardCount]
         players[i+1] = [None, True, [0, 0, 0], 0]
-        # This finds the getMove function for the given difficulty
+        # This returns an object of the given difficulty
         players[i+1][0] = findAIType(diffs[i])
 
     # Setup gamestate
@@ -65,7 +65,7 @@ def playGame():
             #print("Player "+str(p)+" is moving.")
             
             # Gets a move from the AI
-            m = players[p][0](gs, p, 3, players[p][2])
+            m = players[p][0].getMove(gs, p, 3, players[p][2])
             #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()

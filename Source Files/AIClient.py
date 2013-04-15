@@ -33,6 +33,7 @@ class AIClient:
         self.sessionID = sID
         self.serverIPandPort = IPnPort
         self.cards = [0, 0, 0]
+        self.aiScript = findScript(diff)
         self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
     # join a game given a session ID, also load gamestate and playerID
@@ -70,24 +71,7 @@ class AIClient:
             self.log.write(" Sending gamechange request...\n")
         elif (int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
-            if (self.difficulty == '0'):
-                self.log.write("AI type: Random.\n")
-                m = RandomAI.getMove(self.gs, self.playerID, self.state, self.cards)
-            elif (self.difficulty == '1'):
-                self.log.write("AI type: RandomBetter.\n")
-                m = RandomAIBetter.getMove(self.gs, self.playerID, self.state, self.cards)
-            elif (self.difficulty == '2'):
-                self.log.write("AI type: Aggressive.\n")
-                m = AggressiveAI.getMove(self.gs, self.playerID, self.state, self.cards)
-            elif (self.difficulty == '3'):
-                self.log.write("AI type: Prioritizing.\n")
-                m = PrioritizingAI.getMove(self.gs, self.playerID, self.state, self.cards)
-            elif (self.difficulty == '4'):
-                self.log.write("AI type: Region.\n")
-                m = RegionAI.getMove(self.gs, self.playerID, self.state, self.cards)
-            else: #empty move
-                m = str(self.playerID) + "/"
-                
+            m = self.script.getMove(self.gs, self.playerID, self.state, self.cards)
             move = str(m)
             self.log.write(str("Move: " + move + " \n"))
             connection = http.client.HTTPConnection(self.serverIPandPort)
@@ -131,6 +115,26 @@ class AIClient:
     # yeah ... this doesnt tell us much
     def __str__(self):
         print("player ID: " + self.playerID + " session ID: " + sessionID)
+
+# Finds the AI script associated with the specified difficulty
+def findScript(diff):
+    if (self.difficulty == '0'):
+        self.log.write("AI type: Random.\n")
+        self.script = RandomAI()
+    elif (self.difficulty == '1'):
+        self.log.write("AI type: RandomBetter.\n")
+        self.script = RandomAIBetter()
+    elif (self.difficulty == '2'):
+        self.log.write("AI type: Aggressive.\n")
+        self.script = AggressiveAI()
+    elif (self.difficulty == '3'):
+        self.log.write("AI type: Prioritizing.\n")
+        self.script = PrioritizingAI()
+    elif (self.difficulty == '4'):
+        self.log.write("AI type: Region.\n")
+        self.script = RegionAI()
+    else: # Problem!
+        raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
 
 def main(args):
     ai = AIClient(args[1], args[2], args[3])
