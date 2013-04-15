@@ -22,18 +22,18 @@ import RegionAI
 def findAIType(diff):
     # List of AIs matched with difficulties.
     if (diff == 0):
-        script = RandomAI()
+        script = RandomAI.RandomAI()
     elif (diff == 1):
-        script = RandomAIBetter()
+        script = RandomAIBetter.RandomAIBetter()
     elif (diff == 2):
-        script = AggressiveAI()
+        script = AggressiveAI.AggressiveAI()
     elif (diff == 3):
-        script = PrioritizingAI()
+        script = PrioritizingAI.PrioritizingAI()
     elif (diff == 4):
-        script = RegionAI()
+        script = RegionAI.RegionAI()
     else: # Undefined AI type
         raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
-    return move
+    return script
 
 # Prepares to simulate a game.
 # - numAIs: number of AI players
@@ -240,7 +240,7 @@ def distributePlanets():
     
     while count > 0:
             # Gets a choice from the AI
-            m = players[pPtr][0](gs, pPtr, 1, None)
+            m = players[pPtr][0].getMove(gs, pPtr, 1, None)
             mini = m.next()
             target = mini[2]
 
@@ -369,7 +369,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 4], numGames=10)
+    run([0, 1, 2], numGames=10)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     

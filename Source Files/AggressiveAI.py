@@ -9,15 +9,20 @@ import random
 import AIHelpers
 
 class AggressiveAI:
+    def __init__(self):
+        # Random-family AIs don't really need to remember anything.
+        # They're kinda terrible.
+        return
+    
     # Builds a move for a given player based on a Gamestate
     def getMove(self, gs, idNum, state, cards):
         if (state == 1): # i.e. choosing
-            return choosePlanet(gs, idNum)
+            return self.choosePlanet(gs, idNum)
         # Otherwise, just return a move.
         gsLocal = gs.copy() # makes a local copy so we don't change the external gs
         result = Move(idNum)
-        generateDeployments(gsLocal, result, cards)
-        generateMoves(gsLocal, result)
+        self.generateDeployments(gsLocal, result, cards)
+        self.generateMoves(gsLocal, result)
         return result
 
     # Chooses a random unowned planet.
