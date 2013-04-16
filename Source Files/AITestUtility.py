@@ -38,7 +38,7 @@ def findAIType(diff):
 # Prepares to simulate a game.
 # - numAIs: number of AI players
 # - diffs: array containing difficulties of each AI
-def setup(numAIs, diffs):
+def setup(numAIs, diffs, baseGS):
     # Load AI players
     for i in range(numAIs):
         # Key: [script, status, cards, cardCount]
@@ -46,7 +46,9 @@ def setup(numAIs, diffs):
         # This returns an object of the given difficulty
         players[i+1][0] = findAIType(diffs[i])
 
-    # Setup gamestate
+    # Setup gamestate.
+    global gs
+    gs = baseGS.copy() # Reset Gamestate completely
     gs.updateRegions()
     distributePlanets()
 
@@ -57,6 +59,7 @@ def playGame():
     currElim = 0
     turnOrder = list(range(1, len(players)+1))
     random.shuffle(turnOrder) # Players take turns in random order
+    #print("TurnOrder: "+str(turnOrder)+"; players = "+str(players))
     
     while (winner == 0):
         rounds += 1
@@ -239,6 +242,7 @@ def distributePlanets():
     for p in gs.pList:
         if p is None: continue
         p.owner = 0
+        p.numFleets = 0
     gs.updateRegions() # Must be called whenever planet ownership changes
     
     while count > 0:
@@ -286,10 +290,10 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             numRegions = math.ceil(numPlanets / 5) # ~5 planets per region
         m.generate(numPlanets, numRegions)
         print("Map generation complete.")
-        gs.loadXML(m.out.toxml())
+        baseGS.loadXML(m.out.toxml())
         print("----------------------------")
     else:
-        gs.loadXML(gsMap)
+        baseGS.loadXML(gsMap)
     
     # Run the games
     if True:
@@ -298,7 +302,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             print("\nGame "+str(i), end=': ')
 
             # Play the game & store the results
-            setup(len(diffList), diffList)
+            setup(len(diffList), diffList, baseGS)
             winner = playGame()
             stats.victories[winner] += 1
     #except:
@@ -373,7 +377,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([2, 4], numGames=100)
+    run([1, 3], numGames=30)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
