@@ -33,8 +33,8 @@ class PrioritizingAI:
         self.prioritizeMyPlanets(gsLocal, int(idNum))
         self.prioritizeTheirPlanets(gsLocal, int(idNum))
         result = self.generateDeployments(gsLocal, result)
+        #result = self.generateReinforcements(gsLocal, result)
         result = self.generateAttacks(gsLocal, result)
-        result = self.generateReinforcements(gsLocal, result)
         self.moveCount += 1
         return result
 
