@@ -34,14 +34,17 @@ class PrioritizingAI:
         self.prioritizeTheirPlanets(gsLocal, int(idNum))
         result = self.generateDeployments(gsLocal, result)
         result = self.generateAttacks(gsLocal, result)
+        result = self.generateReinforcements(gsLocal, result)
         self.moveCount += 1
         return result
 
-    ##Choosing planets:
-    # Regions with higher values
-    # Inner planets in regions, because they are easier to hold
-    # planets in regions with fewer outside connections
-    # planets not connected to ones I already have, to get a good random sampling
+
+    ############################################    
+    ##      Prioritizing methods              ##
+    ############################################
+    
+
+    # prioritize all planets for choosing at the beginning
     def prioritizeAllPlanets(self, myGS):
         #initialize all planets to 0 value
         for p in myGS.pList:
@@ -65,37 +68,19 @@ class PrioritizingAI:
                 self.allPlanets[p] += len(regions)*2
             regions.pop(lowestKey)
 
-    #choose the planet with the highest value
-    def choosePlanet(self, myGS, playerID):
-        move = Move(playerID)
-        newDict = dict()
-        for p in self.allPlanets.keys():
-            newDict[p] = self.allPlanets[p]
-        while(len(newDict) > 0):
-            planet = max(newDict, key = newDict.get)
-            if(int(myGS.pList[planet].owner) == 0):
-                move.addMove(0,0,planet)
-                break
-            newDict.pop(planet)
-        return move
-
-    ##reinforcements sent from higher priority to lower, but
-    #it didn't work very well.
-
     def prioritizeMyPlanets(self, myGS, playerID):
         self.myPlanets = dict()
         # map planetIDs to prioritized values
         for p in AIHelpers.getOwnedPlanets(myGS, playerID):
             if myGS.pList[p].owner == playerID:
                 self.myPlanets[p] = 0
-
         # prioritize outer planets in regions
         for r in myGS.rList:
             if r is not None:
                 for p in AIHelpers.getOuterPlanetsInRegion(myGS, r):
                     if p in self.myPlanets.keys():
                         self.myPlanets[p] += 1
-        
+
         # prioritize planets with more hostile connections
         # for key, value in myPlanets.iteritems():
         for p in self.myPlanets.keys():
@@ -143,11 +128,52 @@ class PrioritizingAI:
                     if p in r.members:
                         self.theirPlanets[p] += r.value
 
+    #######################################
+    ##      Methods for making moves     ##
+    #######################################
+
+    #choose the planet with the highest value
+    def choosePlanet(self, myGS, playerID):
+        move = Move(playerID)
+        newDict = dict()
+        for p in self.allPlanets.keys():
+            newDict[p] = self.allPlanets[p]
+        while(len(newDict) > 0):
+            planet = max(newDict, key = newDict.get)
+            if(int(myGS.pList[planet].owner) == 0):
+                move.addMove(0,0,planet)
+                break
+            newDict.pop(planet)
+        return move
+
+
+    def generateReinforcements(self, myGS, move):
+        myPriorities = dict()
+        for i in self.myPlanets.keys():
+            myPriorities[i] = self.myPlanets[i]
+
+        while(len(myPriorities) > 0):
+            highestKey = max(myPriorities, key = myPriorities.get)
+            highestValue = myPriorities[highestKey]
+            myPriorities.pop(highestKey)
+
+            for i in myPriorities.keys():
+                #print("Highest priority fleets: " + str(highestValue) + " We're looking at: " + str(myGS.pList[i].numFleets))
+                if myGS.pList[i].numFleets > highestValue:
+                    #make sure they're connected
+                    if(myGS.isConnected(i, highestKey)):
+                        fleets = myGS.pList[i].numFleets - highestValue
+                        print("Sending " + str(fleets) + " fleets from " + str(i) + ", who has " + str(myGS.pList[i].numFleets) + " fleets.")
+                        move.addMove(i, highestKey, myGS.pList[i].numFleets - highestValue)
+                        myGS.pList[highestValue].numFleets += fleets
+                        myGS.pList[i].numFleets -= fleets
+        return move
+
     # Generates a random deployment; higher priorities get them first
     def generateDeployments(self, myGS, move):
         myPriorities = dict()
         for p in self.myPlanets.keys():
-            myPriorities[p] = self.allPlanets[p]
+            myPriorities[p] = self.myPlanets[p]
         
         quota = myGS.getPlayerQuota(move.playerID)
 
@@ -193,19 +219,19 @@ class PrioritizingAI:
             source = -1
             dest = -1
             fleets = -1
-        #get the highest priority one
+            #get the highest priority one
             highestKey = max(theirPriorities, key = theirPriorities.get)
             theirPriorities.pop(highestKey)
 
             #are we connected to it?
             for p in hostiles:
                 if str(highestKey) in hostiles[p]:
-                    #do we have enough fleets to win?  FIGURE OUT HOW MANY WE NEED TO USE
+                    #do we have enough fleets to win?
                     source = int(p)
                     dest = int(highestKey)
-                    if(myGS.pList[source].numFleets > (myGS.pList[dest].numFleets + 1)):
+                    if(myGS.pList[source].numFleets > myGS.pList[dest].numFleets+1):
                         #let's do it!
-                        fleets = min(myGS.pList[dest].numFleets+2, myGS.pList[source].numFleets - 1)
+                        fleets = min(myGS.pList[dest].numFleets+1, myGS.pList[source].numFleets - 1)
                         #print(str(source) + ", who has " + str(myGS.pList[source].numFleets) + " is attacking " + str(dest) + ", who has " + str(myGS.pList[dest].numFleets) + "fleets with " + str(fleets) + " fleets.\n")
                         move.addMove(source, dest, fleets)
                         alreadyDefeated.append(dest)
@@ -220,7 +246,7 @@ class PrioritizingAI:
         for dest in toAttack.keys():
             source = toAttack[dest]
             sm = 0
-            needed = myGS.pList[dest].numFleets+2
+            needed = myGS.pList[dest].numFleets+1
             used = 0
             for i in source:
                 sm += (myGS.pList[i].numFleets - 1)
@@ -233,26 +259,27 @@ class PrioritizingAI:
                     if(myGS.pList[source[j]].numFleets > 1):
                         #print(str(source[j]) + ", who has " + str(myGS.pList[source[j]].numFleets) + " is attacking " + str(dest)
                         #      + ", who has " + str(myGS.pList[dest].numFleets) + " fleets with " + str(min(myGS.pList[source[j]].numFleets -1, (needed-used))) + " fleets.\n")
-                        move.addMove(source[j], dest, min(myGS.pList[source[j]].numFleets -1, (needed-used)))
-                        used += myGS.pList[source[j]].numFleets -1
-                        myGS.pList[source[j]].numFleets = 1
+                        fleets = min(myGS.pList[source[j]].numFleets -1, (needed-used))
+                        move.addMove(source[j], dest, fleets)
+                        used += fleets
+                        myGS.pList[source[j]].numFleets -= fleets
                     j += 1
                 
         return move
      
-#def distributePlanets():
-#    minFleets = 5
-#    players = gs.playerList
-#    plyr = random.choice(gs.playerList)
-#    planetList = list(gs.pList)
-#    random.shuffle(planetList)
-#    for p in planetList:
-#        if p is None: continue
-#        p.owner = plyr
-#        p.numFleets = minFleets
-#        plyr = (plyr + 1) % len(players)
-#        if(plyr == 0):
-#            plyr = len(players)
+def distributePlanets():
+    minFleets = 5
+    players = gs.playerList
+    plyr = random.choice(gs.playerList)
+    planetList = list(gs.pList)
+    random.shuffle(planetList)
+    for p in planetList:
+        if p is None: continue
+        p.owner = plyr
+        p.numFleets = minFleets
+        plyr = (plyr + 1) % len(players)
+        if(plyr == 0):
+            plyr = len(players)
 
 def setupPlanets(myGS):
     for p in myGS.pList:
@@ -264,18 +291,17 @@ def setupPlanets(myGS):
 #gs = Gamestate()
 #pa = PrioritizingAI()
 #gs.loadXML("DemoGS.xml")
-#setupPlanets(gs)
 #gs.playerList.append(True)
+#distributePlanets()
 #cds = []
 #m = Move(1)
-#m = pa.getMove(gs, 1, 1, cds)
+#m = pa.getMove(gs, 1, 0, cds)
 #m = generateDeployments(gs, m, mine)
 #m = generateAttacks(gs, m, theirs)
 #print(str(gs))
 #print(str(m))
-#gs.pList[7].owner = 1
-#m = pa.getMove(gs, 1, 1, cds)
-#print(str(m))
-#gs.pList[10].owner = 1
-#m = pa.getMove(gs, 1, 1, cds)
+#m = pa.getMove(gs, 1, 0, cds)
+#m = generateDeployments(gs, m, mine)
+#m = generateAttacks(gs, m, theirs)
+#print(str(gs))
 #print(str(m))
