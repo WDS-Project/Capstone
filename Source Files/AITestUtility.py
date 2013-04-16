@@ -377,7 +377,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 3], numGames=30)
+    run([2, 3], numGames=10)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     

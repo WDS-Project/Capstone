@@ -21,6 +21,7 @@ class PrioritizingAI:
         self.myPlanets = {}
         self.theirPlanets = {}
         self.moveCount = 0
+        self.cards = []
 
     
     # Builds a move for a given player based on a Gamestate
@@ -32,7 +33,7 @@ class PrioritizingAI:
         result = Move(idNum)
         self.prioritizeMyPlanets(gsLocal, int(idNum))
         self.prioritizeTheirPlanets(gsLocal, int(idNum))
-        result = self.generateDeployments(gsLocal, result)
+        result = self.generateDeployments(gsLocal, result, cards)
         #result = self.generateReinforcements(gsLocal, result)
         result = self.generateAttacks(gsLocal, result)
         self.moveCount += 1
@@ -170,12 +171,20 @@ class PrioritizingAI:
         return move
 
     # Generates a random deployment; higher priorities get them first
-    def generateDeployments(self, myGS, move):
+    def generateDeployments(self, myGS, move, cards):
+        quota = myGS.getPlayerQuota(move.playerID)
+        
+        #turn in cards if possible
+        if(self.moveCount % 3 == 0):
+            cardCheck = AIHelpers.checkCards(cards)
+            if cardCheck > -1:
+                AIHelpers.turninCards(cards, move, cardCheck)
+                quota += AIHelpers.getTurninValue(myGS.turninCount)
+                myGS.turninCount += 1
+        
         myPriorities = dict()
         for p in self.myPlanets.keys():
             myPriorities[p] = self.myPlanets[p]
-        
-        quota = myGS.getPlayerQuota(move.playerID)
 
         top = sum(myPriorities.values())
 
