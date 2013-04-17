@@ -38,6 +38,7 @@ def findAIType(diff):
 # Prepares to simulate a game.
 # - numAIs: number of AI players
 # - diffs: array containing difficulties of each AI
+# - baseGS: initial gamestate to load
 def setup(numAIs, diffs, baseGS):
     # Load AI players
     for i in range(numAIs):
@@ -62,6 +63,8 @@ def playGame():
     #print("TurnOrder: "+str(turnOrder)+"; players = "+str(players))
     
     while (winner == 0):
+        if rounds > 100:
+            break # cap num rounds at 100
         rounds += 1
         #print("Round " + str(rounds) + "...")
         for p in turnOrder:
@@ -83,7 +86,10 @@ def playGame():
         winner = checkWin()
         #input("WINNER = "+str(winner)+"; PRESS ENTER TO CONTINUE...")
     
-    print("Game over: "+str(rounds)+" rounds elapsed.")
+    if winner is not 0:
+        print("Game finished: "+str(rounds)+" rounds elapsed.")
+    else:
+        print("Game stalemated! "+str(rounds)+" rounds elapsed.")
     return winner
 
 def processMove(m):
@@ -303,7 +309,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             # Play the game & store the results
             setup(len(diffList), diffList, baseGS)
             winner = playGame()
-            stats.victories[winner] += 1
+            if winner is not 0:
+                stats.victories[winner] += 1
     except KeyboardInterrupt:
         pass # for allowing a keyboard interrupt
 
