@@ -9,25 +9,26 @@ import random, math
 import AIHelpers
 
 class AggressiveAI:
-    def __init__(self):
+    def __init__(self, idNum):
         # Random-family AIs don't really need to remember anything.
         # They're kinda terrible.
+        self.idNum = idNum
         return
     
     # Builds a move for a given player based on a Gamestate
-    def getMove(self, gs, idNum, state, cards):
+    def getMove(self, gs, state, cards):
+        gsLocal = gs.copy() # don't change the external gs
         if (state == 1): # i.e. choosing
-            return self.choosePlanet(gs, idNum)
+            return self.choosePlanet(gsLocal)
         # Otherwise, just return a move.
-        gsLocal = gs.copy() # makes a local copy so we don't change the external gs
-        result = Move(idNum)
+        result = Move(self.idNum)
         self.generateDeployments(gsLocal, result, cards)
         self.generateMoves(gsLocal, result)
         return result
 
     # Chooses a random unowned planet.
-    def choosePlanet(self, gs, idNum):
-        result = Move(idNum)
+    def choosePlanet(self, gs):
+        result = Move(self.idNum)
         unownedPlanets = []
         for p in gs.pList:
             if p is None: continue
@@ -41,9 +42,9 @@ class AggressiveAI:
     # Generates a set of random attacks based on owned planets
     def generateMoves(self, gsLocal, move):
         # Gets all vaguely useful moves
-        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
-        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
-        connections = AIHelpers.getAllHostileConnections(gsLocal, move.playerID)
+        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, self.idNum)
+        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, self.idNum)
+        connections = AIHelpers.getAllHostileConnections(gsLocal, self.idNum)
 
         moveCount = (len(ownedPlanets) / 3) + 1 # minimum of one move
         while (moveCount > 0 and len(connections) > 0):
@@ -71,7 +72,7 @@ class AggressiveAI:
 
     # Generates a random deployment to an outer planet
     def generateDeployments(self, gsLocal, move, cards):
-        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
+        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, self.idNum)
         if len(outerPlanets) < 1: return
         deployCount = gsLocal.getPlayerQuota(move.playerID)
 

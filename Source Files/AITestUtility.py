@@ -19,18 +19,18 @@ import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
 import RegionAI
 
 # Returns a pointer to the getMove method of the specified AI type
-def findAIType(diff):
+def findAIType(diff, idNum):
     # List of AIs matched with difficulties.
     if (diff == 0):
-        script = RandomAI.RandomAI()
+        script = RandomAI.RandomAI(idNum)
     elif (diff == 1):
-        script = RandomAIBetter.RandomAIBetter()
+        script = RandomAIBetter.RandomAIBetter(idNum)
     elif (diff == 2):
-        script = AggressiveAI.AggressiveAI()
+        script = AggressiveAI.AggressiveAI(idNum)
     elif (diff == 3):
-        script = PrioritizingAI.PrioritizingAI()
+        script = PrioritizingAI.PrioritizingAI(idNum)
     elif (diff == 4):
-        script = RegionAI.RegionAI()
+        script = RegionAI.RegionAI(idNum)
     else: # Undefined AI type
         raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
     return script
@@ -45,7 +45,7 @@ def setup(numAIs, diffs, baseGS):
         # Key: [script, status, cards, cardCount]
         players[i+1] = [None, True, [0, 0, 0], 0]
         # This returns an object of the given difficulty
-        players[i+1][0] = findAIType(diffs[i])
+        players[i+1][0] = findAIType(diffs[i], i+1)
 
     # Setup gamestate.
     global gs
@@ -73,7 +73,7 @@ def playGame():
             #print("Player "+str(p)+" is moving.")
             
             # Gets a move from the AI
-            m = players[p][0].getMove(gs, p, 3, players[p][2])
+            m = players[p][0].getMove(gs, 3, players[p][2])
             #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()
@@ -253,7 +253,7 @@ def distributePlanets():
     
     while count > 0:
             # Gets a choice from the AI
-            m = players[pPtr][0].getMove(gs, pPtr, 1, None)
+            m = players[pPtr][0].getMove(gs, 1, None)
             mini = m.next()
             target = mini[2]
 
@@ -383,7 +383,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([3, 4], numGames=10)
+    run([1, 4], numGames=50)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     

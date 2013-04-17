@@ -32,7 +32,7 @@ class AIClient:
         self.sessionID = sID
         self.serverIPandPort = IPnPort
         self.cards = [0, 0, 0]
-        self.script = self.findScript(diff)
+        self.script = None
         #self.aiScript = findScript(diff)
         self.log.write(str("AI created. Difficulty: " + self.difficulty + "\n"))
 
@@ -57,6 +57,9 @@ class AIClient:
             self.log.write("Loading gamestate... ")
             self.gs.loadXML(response)
             self.log.write("Gamestate loaded.\n")
+            self.log.write("Finding AI script... ")
+            self.script = findScript(diff, self.playerID)
+            self.log.write(" Script found.\n")
         except Exception:
             traceback.print_exc(file=self.log)
 
@@ -117,22 +120,22 @@ class AIClient:
         print("player ID: " + self.playerID + " session ID: " + sessionID)
 
     # Finds the AI script associated with the specified difficulty
-    def findScript(self, diff):
+    def findScript(self, diff, idNum):
         if (self.difficulty == '0'):
-            script = RandomAI.RandomAI()
-            self.log.write("AI type: Random.\n")
+            script = RandomAI.RandomAI(idNum)
+            self.log.write("AI type: Random.")
         elif (self.difficulty == '1'):
-            script = RandomAIBetter.RandomAIBetter()
-            self.log.write("AI type: RandomBetter.\n")
+            script = RandomAIBetter.RandomAIBetter(idNum)
+            self.log.write("AI type: RandomBetter.")
         elif (self.difficulty == '2'):
-            script = AggressiveAI.AggressiveAI()
-            self.log.write("AI type: Aggressive.\n")
+            script = AggressiveAI.AggressiveAI(idNum)
+            self.log.write("AI type: Aggressive.")
         elif (self.difficulty == '3'):
-            script = PrioritizingAI.PrioritizingAI()
-            self.log.write("AI type: Prioritizing.\n")
+            script = PrioritizingAI.PrioritizingAI(idNum)
+            self.log.write("AI type: Prioritizing.")
         elif (self.difficulty == '4'):
-            script = RegionAI.RegionAI()
-            self.log.write("AI type: Region.\n")
+            script = RegionAI.RegionAI(idNum)
+            self.log.write("AI type: Region.")
         else: # Problem!
             raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
         return script

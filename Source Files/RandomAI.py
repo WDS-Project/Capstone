@@ -9,25 +9,26 @@ import AIHelpers
 import random
 
 class RandomAI:
-    def __init__(self):
+    def __init__(self, idNum):
         # Random-family AIs don't really need to remember anything.
         # They're kinda terrible.
+        self.idNum = idNum
         return
     
     # Builds a move for a given player based on a Gamestate
-    def getMove(self, gs, idNum, state, cards):
+    def getMove(self, gs, state, cards):
+        gsLocal = gs.copy() # don't change the external gs
         if (state == 1): # i.e. choosing
-            return self.choosePlanet(gs, idNum)
+            return self.choosePlanet(gsLocal)
         # Otherwise, just return a move.
-        gsLocal = gs.copy() # makes a local copy so we don't change the external gs
-        result = Move(idNum)
+        result = Move(self.idNum)
         self.generateDeployments(gsLocal, result)
         self.generateMoves(gsLocal, result)
         return result
 
     # Chooses a random unowned planet.
-    def choosePlanet(self, gs, idNum):
-        result = Move(idNum)
+    def choosePlanet(self, gs):
+        result = Move(self.idNum)
         unownedPlanets = []
         for p in gs.pList:
             if p is None: continue
@@ -40,7 +41,7 @@ class RandomAI:
 
     # Generates a set of random attacks based on owned planets
     def generateMoves(self, gsLocal, move):
-        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
+        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, self.idNum)
 
         # Gets all possible moves
         connections = []
@@ -74,8 +75,8 @@ class RandomAI:
 
     # Generates a set of random deployments based on owned planets
     def generateDeployments(self, gsLocal, move):
-        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
-        deployCount = gsLocal.getPlayerQuota(move.playerID)
+        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, self.idNum)
+        deployCount = gsLocal.getPlayerQuota(self.idNum)
         
         while (deployCount > 0 and len(ownedPlanets) > 0):
             temp = random.randint(0, len(ownedPlanets)-1)
