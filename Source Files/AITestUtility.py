@@ -106,7 +106,7 @@ def processMove(m):
             if (gs.turninCount < 6):
                 quota += (2 * gs.turninCount) + 5
             else:
-                quota += (gs.turninCount - 2) * 5
+                quota += 15 + gs.turninCount
             gs.turninCount += 1
 	    
             # Note that removing the cards is handled by the AIs themselves
@@ -296,8 +296,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
         baseGS.loadXML(gsMap)
     
     # Run the games
-    if True:
-    #try:
+    try:
         for i in range(1, int(numGames)+1):
             print("\nGame "+str(i), end=': ')
 
@@ -305,8 +304,8 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             setup(len(diffList), diffList, baseGS)
             winner = playGame()
             stats.victories[winner] += 1
-    #except:
-    #    pass # for allowing a keyboard interrupt
+    except KeyboardInterrupt:
+        pass # for allowing a keyboard interrupt
 
     # Calculate final results
     totalTime = datetime.now() - startTime
@@ -377,7 +376,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([2, 3], numGames=10)
+    run([3, 4], numGames=10)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
