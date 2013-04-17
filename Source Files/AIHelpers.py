@@ -131,5 +131,5 @@ def getTurninValue(turninCount):
     if (turninCount < 6):
         return (2 * turninCount) + 5;
     else:
-        return (turninCount - 2) * 5;
+        return 15 + turninCount;
     
