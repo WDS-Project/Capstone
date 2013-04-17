@@ -5,7 +5,7 @@
 
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
-import random
+import random, math
 import AIHelpers
 
 class AggressiveAI:
@@ -60,8 +60,10 @@ class AggressiveAI:
                 connections.pop(start)
                 continue
 
-            move.addMove(source.idNum, dest.idNum, source.numFleets - 1)
-            source.numFleets = 1
+            # Sends 75%(ish) of the available fleets
+            numFleets = math.ceil(source.numFleets * .75) - 1
+            move.addMove(source.idNum, dest.idNum, numFleets)
+            source.numFleets -= numFleets
             moveCount -= 1
             connections.pop(start)
 
