@@ -158,7 +158,7 @@ def processMove(m):
             if(results[1] == 0):
                 hasWon = True
                 gs.pList[dest].owner = gs.pList[source].owner
-                gs.pList[dest].numFleets += results[0]
+                gs.pList[dest].numFleets = results[0]
                 gs.pList[source].numFleets -= fleets
             #attacker retreated or took the ultimate stand
             else:
