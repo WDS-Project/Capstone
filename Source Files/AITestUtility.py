@@ -66,7 +66,7 @@ def playGame():
         if rounds > 100:
             break # cap num rounds at 100
         rounds += 1
-        #print("Round " + str(rounds) + "...")
+        print("Round " + str(rounds) + "...")
         for p in turnOrder:
             # If player is not active, ignore it
             if not players[p][1]: continue
@@ -74,7 +74,7 @@ def playGame():
             
             # Gets a move from the AI
             m = players[p][0].getMove(gs, 3, players[p][2])
-            #print("Player " + str(p) + "'s move is: " + str(m))
+            print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()
 
@@ -309,8 +309,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
             # Play the game & store the results
             setup(len(diffList), diffList, baseGS)
             winner = playGame()
-            if winner is not 0:
-                stats.victories[winner] += 1
+            stats.victories[winner] += 1 # Note that 0 => Stalemate
     except KeyboardInterrupt:
         pass # for allowing a keyboard interrupt
 
@@ -347,7 +346,7 @@ After games have been run, view the results in the following variables:
 # Class for storing the results of a series of games
 class Statistics:
     def __init__(self):
-        self.victories = [None] # total number of victories
+        self.victories = [0] # total number of victories
         self.avgFleets = [None] # avg num fleets per attack
         self.avgAttacks = [None] # avg num of attacks per game
         self.elimOrder = [None] # record of time eliminated per player
@@ -383,7 +382,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([1, 4], numGames=50)
+    run([2, 2, 4], numGames=1)
     #run([0, 1, 2], numGames=10)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
