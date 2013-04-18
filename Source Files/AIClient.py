@@ -58,7 +58,7 @@ class AIClient:
             self.gs.loadXML(response)
             self.log.write("Gamestate loaded.\n")
             self.log.write("Finding AI script... ")
-            self.script = findScript(diff, self.playerID)
+            self.script = self.findScript(self.difficulty, self.playerID)
             self.log.write(" Script found.\n")
         except Exception:
             traceback.print_exc(file=self.log)
@@ -74,7 +74,7 @@ class AIClient:
             self.log.write(" Sending gamechange request...\n")
         elif (int(self.gs.activePlayer) == int(self.playerID)):
             self.log.write("It's our turn.\n")
-            m = self.script.getMove(self.gs, self.playerID, self.state, self.cards)
+            m = self.script.getMove(self.gs, self.state, self.cards)
             move = str(m)
             self.log.write(str("Move: " + move + " \n"))
             connection = http.client.HTTPConnection(self.serverIPandPort)
