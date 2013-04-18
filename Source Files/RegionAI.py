@@ -5,7 +5,11 @@
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
 import AIHelpers
-import random
+import random, queue
+
+# Problems:
+# - Submitting deploys with fleets = 0
+
 
 class RegionAI:
     def __init__(self, idNum):
@@ -17,23 +21,26 @@ class RegionAI:
         self.totalVals = None
         self.externalConnects = None
         self.regionConnects = None
+        self.allConnects = None
         self.idNum = idNum
         return
     
     # Builds a move based on a Gamestate
     def getMove(self, gs, state, cards):
         gsLocal = gs.copy() # Leave external GS alone
+
+        # Calculate connections only if we haven't already.
         if self.externalConnects is None:
             self.calculateRegionConnects(gsLocal)
         rVals = self.evaluateRegions(gsLocal)
+
+        # Now that we know region values, we can make moves.
         if state == 1: # i.e. we're choosing planets
-            #print("\nInside RegionAI:\n"+str(gs))
             return self.choosePlanet(gsLocal)
 
         # Otherwise, build & return a normal move.
         result = Move(self.idNum)
-        self.generateDeployments(gsLocal, result, cards)
-        self.generateMoves(gsLocal, result)
+        self.generateMoves(gsLocal, result, cards)
         return result
 
     # Chooses a planet to own.
@@ -65,57 +72,75 @@ class RegionAI:
         return result
 
     # Generates a set of attacks seeking to control regions.
-    def generateMoves(self, gsLocal, move):
+    def generateMoves(self, gsLocal, move, cards):
         # TODO implement
-        # Gets all vaguely useful moves
-        ownedPlanets = AIHelpers.getOwnedPlanets(gsLocal, move.playerID)
-        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
-        connections = AIHelpers.getAllHostileConnections(gsLocal, move.playerID)
 
-        moveCount = (len(ownedPlanets) / 3) + 1 # minimum of one move
-        while (moveCount > 0 and len(connections) > 0):
-            start = int(random.choice(list(connections))) # random source planet ID
-            end = int(random.choice(connections[start])) # random hostile target
-            source = gsLocal.pList[start]
-            dest = gsLocal.pList[end]
-
-            # Checks if this is a valid source planet
-            if (source not in outerPlanets):
-                connections.pop(start)
-                continue # only make one move per planet
-            if(source.numFleets == 1):
-                connections.pop(start)
-                continue
-
-            move.addMove(source.idNum, dest.idNum, source.numFleets - 1)
-            source.numFleets = 1
-            moveCount -= 1
-            connections.pop(start)
-
-        return
-        return
-
-    # Deploys fleets to planets, prioritizing controlling regions
-    # and holding regions already owned.
-    def generateDeployments(self, gsLocal, move, cards):
-        # TODO implement
-        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, move.playerID)
-        if len(outerPlanets) < 1: return
-        deployCount = gsLocal.getPlayerQuota(move.playerID)
+        # 1. Figure out how many fleets we have to work with.
+        # ---------------------------------------------------
+        quota = gsLocal.getPlayerQuota(self.idNum)
+        deployCount = 0
 
         # See if we can turn in some cards
         chk = AIHelpers.checkCards(cards)
         if chk > -1:
             AIHelpers.turninCards(cards, move, chk)
-            deployCount += AIHelpers.getTurninValue(gsLocal.turninCount)
+            quota += AIHelpers.getTurninValue(gsLocal.turninCount)
             gsLocal.turninCount += 1
 
-        # Make the move
-        dest = random.choice(outerPlanets)
-        dest.numFleets += deployCount # update the local Gamestate
-        move.addMove(0, dest.idNum, deployCount)
+        # 2. Make sure all the regions we hold are defended.
+        # --------------------------------------------------
+        for r in gsLocal.rList:
+            if r is None or r.owner is not self.idNum:
+                continue # ignore regions we don't control
+            regionOuters = AIHelpers.getOuterPlanetsInRegion(gsLocal, r)
+            for rIdx in regionOuters:
+                rPlanet = gsLocal.pList[rIdx]
+                if rPlanet.numFleets < 5: # TODO make this dynamic (somehow)
+                    toDeploy = min((quota - deployCount), (5 - rPlanet.numFleets))
+                    deployCount += toDeploy
+                    rPlanet.numFleets += toDeploy
+                    move.addMove(0, rPlanet.idNum, toDeploy)
+
+        # 3. Make some attacks.
+        # ---------------------
+        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, self.idNum)
+        numAttacks = 0
+        threshold = 7 # TODO make this dynamic (somehow)
+        while numAttacks is 0 and threshold > 3:
+            for oPlanet in outerPlanets: # Pick an outer planet...
+                if oPlanet.numFleets > threshold: # With enough fleets...
+                    for con in self.allConnects[oPlanet.idNum]: # Pick a target...
+                        if gsLocal.pList[con].owner is not self.idNum: # That's hostile...
+
+                            # If we have deployments left, use them
+                            if deployCount < quota:
+                                oPlanet.numFleets += (quota - deployCount)
+                                move.addMove(0, oPlanet.idNum, quota - deployCount)
+                                deployCount = quota
+
+                            # Then just attack whatever.
+                            # TODO make actually deliberate
+                            numFleets = oPlanet.numFleets - threshold + 3
+                            #print("Making move: source planet = {"+ str(oPlanet)+"} dest planet = {"+str(gsLocal.pList[con])+"}; numFleets = "+str(numFleets))
+                            move.addMove(oPlanet.idNum, gsLocal.pList[con].idNum, numFleets)
+                            numAttacks += 1
+                            break
+            # We'd really like to make an attack so that we can get a card.
+            # If we haven't made one already, lower our standards and try again.
+            if numAttacks is 0:
+                threshold -= 1
+            # It's possible that we won't get any attacks, even with this
+            # system. If that happens, it's because we have very few fleets to
+            # spare on outer planets, and there's nothing we can do about
+            # that; however, this should never happen because of deployments.
+
+        # 4. Move fleets away from inner planets.
+        # ---------------------------------------
+        self.vacateInnerPlanets(gsLocal, move)
+
         return
 
+    # Determines which regions are connected to each other.
     def calculateRegionConnects(self, gs):
         self.externalConnects = [None]
         for i in range(1, len(gs.rList)):
@@ -143,6 +168,16 @@ class RegionAI:
         # Finally, strip out internal connections from externalConnects
         for i in range(1, len(gs.rList)):
             self.externalConnects[i].difference_update(gs.rList[i].members)
+
+        # And because I need it, figure out all connections for all planets
+        self.allConnects = {}
+        for p in gs.pList:
+            if p is None: continue
+            consStr = gs.getConnections(p.idNum)
+            cons = set()
+            for c in consStr:
+                cons.add(int(c))
+            self.allConnects[p.idNum] = cons
 
     # Assigns a score to each region based on size, value, number of
     # owned planets, and other things I think up
@@ -198,6 +233,64 @@ class RegionAI:
             
         #self.printVals()
         return
+
+    # Moves fleets toward the front line.
+    def vacateInnerPlanets(self, gs, move):
+        # Similar to AIHelpers.getOuterPlanets, but does both at once.
+        innerPlanets = set()
+        outerPlanets = set()
+        for planet in gs.pList:
+            if planet is None: continue
+            if planet.owner is self.idNum:
+                if AIHelpers.isOuterPlanet(gs, planet):
+                    outerPlanets.add(planet)
+                else:
+                    innerPlanets.add(planet)
+        if len(innerPlanets) < 1:
+            return # No inner planets, so we're done here
+
+        # Otherwise, it's time for fancy calculations.
+        dists = [None]
+        for i in range(1, len(gs.pList)):
+            dists.append(None)
+        q = queue.Queue()
+        outers = AIHelpers.getOuterPlanets(gs, self.idNum)
+        for o in outers: # Seed the queue
+            dists[o.idNum] = 0 # distances from any outer planet
+            q.put(o.idNum)
+
+        # This searches each planet in turn, updates the connections
+        # of that planet according to that planet's distance, and
+        # puts any planets that haven;t been checked already in the queue.
+        while not q.empty():
+            nextP = q.get()
+            for c in self.allConnects[nextP]:
+                if gs.pList[c].owner is not self.idNum:
+                    continue
+                if dists[c] is None: # i.e. not yet checked
+                    q.put(c)
+                    dists[c] = dists[nextP] + 1
+                else:
+                    dists[c] = min(dists[c], dists[nextP]+1)
+
+        # Loop through non-frontline planets...
+        for planet in innerPlanets:
+            if planet.numFleets > 1: # ...with extra fleets...
+                # ... And move those fleets toward outer planets.
+                minDist = dists[planet.idNum]
+                minIdx = planet.idNum
+                for c in self.allConnects[planet.idNum]:
+                    if dists[c] < minDist:
+                        minDist = dists[c]
+                        minIdx = c
+
+                # BLUH DONE
+                if minIdx is not None:
+                    move.addMove(planet.idNum, minIdx, planet.numFleets - 1)
+                planet.numFleets = 1
+                
+        return
+                
 
     # Prints the static, dynamic, and total region values
     def printVals(self):
