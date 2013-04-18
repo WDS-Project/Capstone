@@ -8,33 +8,43 @@
 # Attack if odds are greater than 1/2
 # Move fleets to higher priority planets
 
+"""
+Improvements to make:
+Deploy more to planets with hostile connections
+After a certain number of rounds, switch strategy
+Path reinforcements
+
+"""
+
 from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
 import random
 import AIHelpers
 import math
+from collections import deque
 
 class PrioritizingAI:
     
-    def __init__(self):
+    def __init__(self, playerID):
         self.allPlanets = {}
         self.myPlanets = {}
         self.theirPlanets = {}
         self.moveCount = 0
         self.cards = []
+        self.myID = int(playerID)
 
     
     # Builds a move for a given player based on a Gamestate
-    def getMove(self, gs, idNum, state, cards):
+    def getMove(self, gs, state, cards):
         gsLocal = gs.copy()
+        self.prioritizeAllPlanets(gsLocal)
         if(state == 1):
-            self.prioritizeAllPlanets(gsLocal)
-            return self.choosePlanet(gsLocal, idNum)
-        result = Move(idNum)
-        self.prioritizeMyPlanets(gsLocal, int(idNum))
-        self.prioritizeTheirPlanets(gsLocal, int(idNum))
+            return self.choosePlanet(gsLocal)
+        result = Move(self.myID)
+        self.prioritizeMyPlanets(gsLocal)
+        self.prioritizeTheirPlanets(gsLocal)
         result = self.generateDeployments(gsLocal, result, cards)
-        #result = self.generateReinforcements(gsLocal, result)
+        result = self.generateReinforcements(gsLocal, result)
         result = self.generateAttacks(gsLocal, result)
         self.moveCount += 1
         return result
@@ -43,7 +53,7 @@ class PrioritizingAI:
     ############################################    
     ##      Prioritizing methods              ##
     ############################################
-    
+
 
     # prioritize all planets for choosing at the beginning
     def prioritizeAllPlanets(self, myGS):
@@ -66,15 +76,17 @@ class PrioritizingAI:
         while(len(regions) > 0):
             lowestKey = min(regions, key = regions.get)
             for p in lowestKey.members:
-                self.allPlanets[p] += len(regions)*2
-            regions.pop(lowestKey)
+                self.allPlanets[p] += len(regions)*5
+            regions.pop(lowestKey)            
 
-    def prioritizeMyPlanets(self, myGS, playerID):
+
+    def prioritizeMyPlanets(self, myGS):
         self.myPlanets = dict()
         # map planetIDs to prioritized values
-        for p in AIHelpers.getOwnedPlanets(myGS, playerID):
-            if myGS.pList[p].owner == playerID:
-                self.myPlanets[p] = 0
+        for p in AIHelpers.getOwnedPlanets(myGS, self.myID):
+            if myGS.pList[p].owner == self.myID:
+                self.myPlanets[p] = self.allPlanets[p]
+                
         # prioritize outer planets in regions
         for r in myGS.rList:
             if r is not None:
@@ -85,24 +97,22 @@ class PrioritizingAI:
         # prioritize planets with more hostile connections
         # for key, value in myPlanets.iteritems():
         for p in self.myPlanets.keys():
-            self.myPlanets[p] += len(AIHelpers.getHostileConnections(myGS,myGS.pList[p]))*2
+            self.myPlanets[p] += len(AIHelpers.getHostileConnections(myGS,myGS.pList[p]))*5
 
-        # prioritize planets in regions with higher values
-        # unless we own the region already
+        # take away value from regions we already own
         for r in myGS.rList:
             if r is not None:
-                for p in self.myPlanets.keys():
-                    if p in r.members:
-                        self.myPlanets[p] += r.value
+                if(int(r.owner) == int(self.myID)):
+                    for p in r.members:
+                        self.myPlanets[p] -= int(r.value/2)                        
 
-    def prioritizeTheirPlanets(self, myGS, playerID):
-
+    def prioritizeTheirPlanets(self, myGS):
         # map planetIDs to prioritized values
         self.theirPlanets = {}
         for p in myGS.pList:
             if p is not None:
-                if p.owner is not playerID:
-                    self.theirPlanets[p.idNum] = 0
+                if int(p.owner) is not self.myID:
+                    self.theirPlanets[p.idNum] = self.allPlanets[p.idNum]
 
         # prioritize inner planets in regions
         for r in myGS.rList:
@@ -110,7 +120,8 @@ class PrioritizingAI:
                 for p in r.members:
                     if p not in AIHelpers.getOuterPlanetsInRegion(myGS, r) and p in self.theirPlanets.keys():
                         self.theirPlanets[p] += 1
-        
+
+        """ This really doesn't help because I'm going to attack anyway
         # prioritize planets with more hostile connections (that is, connections to me)
         # this is how to use a dict --> for key, value in myPlanets.iteritems():
         mine = AIHelpers.getOwnedPlanets(myGS, playerID)
@@ -120,22 +131,16 @@ class PrioritizingAI:
             for c in conns:
                 if c in mine:
                     count += 1
-            self.theirPlanets[p] += count
-
-        # prioritize planets in regions with higher values
-        for r in myGS.rList:
-            if r is not None:
-                for p in self.theirPlanets.keys():
-                    if p in r.members:
-                        self.theirPlanets[p] += r.value
+            self.theirPlanets[p] += count*2
+        """
 
     #######################################
     ##      Methods for making moves     ##
     #######################################
 
     #choose the planet with the highest value
-    def choosePlanet(self, myGS, playerID):
-        move = Move(playerID)
+    def choosePlanet(self, myGS):
+        move = Move(self.myID)
         newDict = dict()
         for p in self.allPlanets.keys():
             newDict[p] = self.allPlanets[p]
@@ -149,6 +154,40 @@ class PrioritizingAI:
 
 
     def generateReinforcements(self, myGS, move):
+
+        """
+        Get the front lines
+        Move all troops one up on the path to them
+        If the front lines never change, eventually they will all get there
+        Have a done array
+        """
+
+        #Get the front lines
+        frontLines = AIHelpers.getOuterPlanets(myGS, self.myID)
+        #for f in frontLines:
+        #    print(str(f.idNum))
+
+        done = []
+
+        #Loop through the paths
+        for planet in frontLines:
+            paths = findPaths(planet.idNum, self.myPlanets.keys(), myGS)
+            #print(str(paths))
+            for trail in paths:
+                if paths[trail] is not None:
+                    for p in range(len(paths[trail])-3):
+                        #if this planet isn't a frontLine too
+                        source = paths[trail][p]
+                        if myGS.pList[source] not in frontLines and source not in done:
+                            done.append(source)
+                            dest = paths[trail][p+1]
+                            fleets = myGS.pList[source].numFleets - 1
+                            if fleets > 0:
+                                move.addMove(source, dest, fleets)
+                                myGS.pList[source].numFleets -= fleets
+                                myGS.pList[dest].numFleets += fleets
+                        
+        """
         myPriorities = dict()
         for i in self.myPlanets.keys():
             myPriorities[i] = self.myPlanets[i]
@@ -164,16 +203,18 @@ class PrioritizingAI:
                     #make sure they're connected
                     if(myGS.isConnected(i, highestKey)):
                         fleets = myGS.pList[i].numFleets - highestValue
-                        print("Sending " + str(fleets) + " fleets from " + str(i) + ", who has " + str(myGS.pList[i].numFleets) + " fleets.")
+                        #print("Sending " + str(fleets) + " fleets from " + str(i) + ", who has " + str(myGS.pList[i].numFleets) + " fleets.")
                         move.addMove(i, highestKey, myGS.pList[i].numFleets - highestValue)
-                        myGS.pList[highestValue].numFleets += fleets
+                        myGS.pList[highestKey].numFleets += fleets
                         myGS.pList[i].numFleets -= fleets
+        """
+        
         return move
 
-    # Generates a random deployment; higher priorities get them first
+    # Generates deployments; higher priorities get them first
     def generateDeployments(self, myGS, move, cards):
-        quota = myGS.getPlayerQuota(move.playerID)
-        
+        quota = myGS.getPlayerQuota(self.myID)
+
         #turn in cards if possible
         if(self.moveCount % 3 == 0):
             cardCheck = AIHelpers.checkCards(cards)
@@ -219,7 +260,7 @@ class PrioritizingAI:
         
         toAttack = dict()  #this is a map of hostile planets to planets that we could potentially attack with
         alreadyDefeated = list()
-        hostiles = AIHelpers.getAllHostileConnections(myGS, move.playerID)
+        hostiles = AIHelpers.getAllHostileConnections(myGS, self.myID)
         for i in theirPriorities:
             i = int(i)
             toAttack[i] = list()
@@ -246,71 +287,111 @@ class PrioritizingAI:
                         alreadyDefeated.append(dest)
                         #update ourselves
                         myGS.pList[source].numFleets -= fleets
-                        myGS.pList[dest].numFleets = 1
                     #otherwise, let's add it to what we can do later
                     else:
                         toAttack[dest].append(source)
 
         #all right, now find out who we can attack from two places that we couldn't from 1
         for dest in toAttack.keys():
-            source = toAttack[dest]
-            sm = 0
-            needed = myGS.pList[dest].numFleets+1
-            used = 0
-            for i in source:
-                sm += (myGS.pList[i].numFleets - 1)
-            if sm > needed:
-                #print("Sum: " + str(sm) + " Needed: " + str(needed))
-                #print(str(source))
-                j = 0
-                while(used < needed and j < len(source)):
-                    #print("Used: " + str(used) + " Needed: " + str(needed))
-                    if(myGS.pList[source[j]].numFleets > 1):
-                        #print(str(source[j]) + ", who has " + str(myGS.pList[source[j]].numFleets) + " is attacking " + str(dest)
-                        #      + ", who has " + str(myGS.pList[dest].numFleets) + " fleets with " + str(min(myGS.pList[source[j]].numFleets -1, (needed-used))) + " fleets.\n")
-                        fleets = min(myGS.pList[source[j]].numFleets -1, (needed-used))
-                        move.addMove(source[j], dest, fleets)
-                        used += fleets
-                        myGS.pList[source[j]].numFleets -= fleets
-                    j += 1
-                
+            if dest not in alreadyDefeated:
+                source = toAttack[dest]
+                sm = 0
+                needed = myGS.pList[dest].numFleets+1
+                used = 0
+                for i in source:
+                    sm += (myGS.pList[i].numFleets - 1)
+                if sm > needed:
+                    #print("Sum: " + str(sm) + " Needed: " + str(needed))
+                    #print(str(source))
+                    j = 0
+                    while(used < needed and j < len(source)):
+                        #print("Used: " + str(used) + " Needed: " + str(needed))
+                        if(myGS.pList[source[j]].numFleets > 1):
+                            #print(str(source[j]) + ", who has " + str(myGS.pList[source[j]].numFleets) + " is attacking " + str(dest)
+                            #      + ", who has " + str(myGS.pList[dest].numFleets) + " fleets with " + str(min(myGS.pList[source[j]].numFleets -1, (needed-used))) + " fleets.\n")
+                            fleets = min(myGS.pList[source[j]].numFleets -1, (needed-used))
+                            move.addMove(source[j], dest, fleets)
+                            used += fleets
+                            myGS.pList[source[j]].numFleets -= fleets
+                        j += 1
         return move
      
 def distributePlanets():
     minFleets = 5
-    players = gs.playerList
-    plyr = random.choice(gs.playerList)
-    planetList = list(gs.pList)
+    players = newGs.playerList
+    plyr = random.choice(newGs.playerList)
+    planetList = list(newGs.pList)
     random.shuffle(planetList)
     for p in planetList:
-        if p is None: continue
-        p.owner = plyr
-        p.numFleets = minFleets
-        plyr = (plyr + 1) % len(players)
-        if(plyr == 0):
-            plyr = len(players)
+        if p is not None:
+            p.owner = plyr
+            p.numFleets = minFleets
+            plyr = (plyr + 1) % len(players)
+            if(plyr == 0):
+                plyr = len(players)
 
 def setupPlanets(myGS):
     for p in myGS.pList:
         if p is not None:
             p.owner = 0
-
     myGS.updateRegions()
 
-#gs = Gamestate()
-#pa = PrioritizingAI()
-#gs.loadXML("DemoGS.xml")
-#gs.playerList.append(True)
+#pass in the targest planetID and a list of planet IDs that you own
+def findPaths(target, myPlanets, gs):
+    #print("we own: " + str(myPlanets))
+    
+    visited = {}
+    for p in myPlanets:
+        visited[p] = False
+
+    paths = {}
+    sumP = {}
+    for p in myPlanets:
+        paths[p] = list([gs.pList[p].numFleets])
+
+    q = deque()
+    q.append(target)
+
+    while(len(q) > 0):
+        current = q.popleft()
+        #print("Current = " + str(current))
+        visited[current] = True
+        conns = gs.getConnections(current)
+        #print("Connected to: " + str(conns))
+        for p in myPlanets:
+            if str(p) in conns and visited[p] is False:
+                #print(str(p) + " is connected to it and it hasn't been visited.")
+                q.append(p)
+                #print("Appended: " + str(q))
+                total = paths[p][0] + paths[current][len(paths[current])-1]
+                paths[p] = list([current]) + paths[current][:(len(paths[current])-1)] + list([total])
+                #print("Path from " + str(p) + " to " + str(target) + ": " + str(paths[p]))
+
+    for v in visited:
+        if(visited[v] == False):
+            paths[v] = None
+
+    return paths
+        
+    
+
+#newGs = Gamestate()
+#pa = PrioritizingAI(1)
+#newGs.loadXML("RiskGS.xml")
+#newGs.playerList.append(True)
 #distributePlanets()
-#cds = []
+#newGs.updateRegions()
+#print(str(newGs))
+#pa.prioritizeAllPlanets(newGs)
+#pa.prioritizeMyPlanets(newGs)
+#paths = findPaths(32, pa.myPlanets.keys(), newGs)
+#print(str(paths))
+
+#cds = [0,0,0]
 #m = Move(1)
-#m = pa.getMove(gs, 1, 0, cds)
-#m = generateDeployments(gs, m, mine)
-#m = generateAttacks(gs, m, theirs)
-#print(str(gs))
-#print(str(m))
-#m = pa.getMove(gs, 1, 0, cds)
-#m = generateDeployments(gs, m, mine)
+#m = pa.getMove(newGs, 0, cds)
+#m = pa.generateDeployments(newGs, m)
+#m = generateReinforcements(newGs, m) 
 #m = generateAttacks(gs, m, theirs)
 #print(str(gs))
 #print(str(m))
