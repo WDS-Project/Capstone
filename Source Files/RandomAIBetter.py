@@ -12,7 +12,7 @@ class RandomAIBetter:
     def __init__(self, idNum):
         # Random-family AIs don't really need to remember anything.
         # They're kinda terrible.
-        self.idNum = idNum
+        self.idNum = int(idNum)
         return
     
     # Builds a move for a given player based on a Gamestate
