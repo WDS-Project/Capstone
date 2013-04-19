@@ -1,4 +1,5 @@
 # This AI script focuses on taking and holding regions.
+# It took some doing, but it's pretty awesome.
 #
 # author: Josh Polkinghorn
 
@@ -6,10 +7,6 @@ from Gamestate import Gamestate, Planet, Region
 from GameCommunications import Move
 import AIHelpers
 import random, queue, math
-
-# Problems:
-# - Submitting deploys with fleets = 0
-
 
 class RegionAI:
     def __init__(self, idNum):
@@ -23,7 +20,7 @@ class RegionAI:
         self.regionConnects = None
         self.allConnects = None
         self.idNum = int(idNum)
-        self.changeList = set()
+        #self.changeList = set()
         return
     
     # Builds a move based on a Gamestate
@@ -82,20 +79,14 @@ class RegionAI:
         quota = int(gsLocal.getPlayerQuota(self.idNum))
         deployCount = 0
         ownedPlanets = set(AIHelpers.getOwnedPlanets(gsLocal, self.idNum))
-        outerPlanets = AIHelpers.getOuterPlanets(gsLocal, self.idNum)
+        outerPlanets = set(AIHelpers.getOuterPlanets(gsLocal, self.idNum))
         critVal = math.floor(len(ownedPlanets) / 5) + 5 # Critical number of fleets
         # TODO possibly change to look at adjacent enemy-owned fleets as well?
         #print("Changes since last round: ")
-        #print("Lost planets "+ str(self.changeList.difference(ownedPlanets))+ \
+        #print("--Lost planets "+ str(self.changeList.difference(ownedPlanets))+ \
         #      "; gained planets " + str(ownedPlanets.difference(self.changeList)))
-        #for p in self.changeList.difference(ownedPlanets):
-        #    print(str(gsLocal.pList[p]))
-        #print("ownedPlanets: " + str(list(ownedPlanets)))
-        #print("self.changeList: " + str(list(self.changeList)) + " (this should be ownedPlanets for the last round)")
-        print("critVal = " + str(critVal) + ", quota = " + str(quota), end='')
-
-        
-        self.changeList = ownedPlanets
+        #print("critVal = " + str(critVal) + ", quota = " + str(quota), end='')
+        #self.changeList = ownedPlanets
 
 
         # See if we can turn in some cards
@@ -112,73 +103,103 @@ class RegionAI:
         # TODO Is there more to do here? Do we want to be more deliberate
         # about where we move fleets to?
 
-        # 3. Make sure all the regions we hold are defended.
-        # --------------------------------------------------
-        print(" ||| Regions owned: ", end='')
-        for r in gsLocal.rList:
-            if r is None or r.owner is not self.idNum:
-                continue # ignore regions we don't control
-            print(str(r.idNum) + " ", end='')
-            regionOuters = AIHelpers.getOuterPlanetsInRegion(gsLocal, r)
-            regionOuters = regionOuters.intersection(outerPlanets)
-            for rIdx in regionOuters:
-                rPlanet = gsLocal.pList[rIdx]
-                if rPlanet.numFleets < critVal:
-                    toDeploy = min((quota - deployCount), (critVal - rPlanet.numFleets))
+        # 3. Make deployments based in region priorities.
+        # -----------------------------------------------
+        # Creates a dictionary where each region ID maps to a set of
+        # the planets in that region we could deploy to
+        allRegions = dict.fromkeys(range(1, len(gsLocal.rList)))
+        for p in outerPlanets:
+            for r in gsLocal.rList:
+                if r is not None and p.idNum in r.members:
+                    if allRegions[r.idNum] is None:
+                        allRegions[r.idNum] = set()
+                    allRegions[r.idNum].add(p.idNum)
+
+        # This gets a list of tuples like so (regionID, value) sorted by value
+        orderedVals = sorted(self.totalVals.items(), key=lambda x: x[1], reverse=True)
+        # Start with the highest valued region
+        for val in orderedVals:
+            toReinforce = allRegions[val[0]]
+            if toReinforce is None: continue
+
+            # Then reinforce all the planets in that region.
+            for pID in toReinforce:
+                planet = gsLocal.pList[pID]
+                if planet.numFleets < critVal:
+                    toDeploy = min((quota - deployCount), (critVal - planet.numFleets))
                     deployCount += toDeploy
-                    rPlanet.numFleets += toDeploy
-                    move.addMove(0, rPlanet.idNum, toDeploy)
+                    planet.numFleets += toDeploy
+                    move.addMove(0, planet.idNum, toDeploy)
                 if deployCount == quota:
                     break
             if deployCount == quota:
                     break
-        print()
-        #gsLocal.printShort()
-        self.printVals()
 
-        # 4. Make some attacks.
-        # ---------------------
+        # 4. Make some attacks based on those fancy region values.
+        # --------------------------------------------------------
         numAttacks = 0
-        threshold = critVal + 2
-        while numAttacks is 0 and threshold > 3:
-            for oPlanet in outerPlanets: # Pick an outer planet...
-                if oPlanet.numFleets > threshold: # With enough fleets...
-                    for con in self.allConnects[oPlanet.idNum]: # Pick a target...
-                        if gsLocal.pList[con].owner is not self.idNum: # That's hostile...
+        attackLimit = math.ceil(critVal / 2)
+        orderedVals = sorted(self.totalVals.items(), key=lambda x: x[1], reverse=True)
+        while numAttacks < attackLimit and len(orderedVals) > 0:
+            # Pick the best region we don't already own
+            for val in orderedVals:
+                rID = val[0]
+                if gsLocal.rList[rID].owner is not self.idNum and \
+                   canAccessRegion(gsLocal, self.idNum, rID):
+                    break
+            targetRegion = gsLocal.rList[rID]
+            orderedVals.remove((rID, self.totalVals[rID]))
 
-                            # If we have deployments left, use them
-                            if deployCount < quota:
-                                oPlanet.numFleets += (quota - deployCount)
-                                move.addMove(0, oPlanet.idNum, quota - deployCount)
-                                deployCount = quota
+            # Skip regions we own.
+            if targetRegion.owner is self.idNum:
+                continue                
+            
+            # Figure out how many planets in this region we can hit
+            allAccessible = set()
+            for pID in ownedPlanets:
+                for con in self.allConnects[int(pID)]:
+                    allAccessible.add(con)
+            allAccessible.difference_update(ownedPlanets)
+            # Now we have a list of all planets we can hit that we don't own.
+            targets = targetRegion.members.intersection(allAccessible)
+            # ...And now it's just planets in the region we can hit.
 
-                            # Then just attack whatever.
-                            # TODO make actually deliberate
-                            numFleets = math.floor(oPlanet.numFleets / 2)
-                            #print("Making move: source planet = {"+ str(oPlanet)+"} dest planet = {"+str(gsLocal.pList[con])+"}; numFleets = "+str(numFleets))
-                            move.addMove(oPlanet.idNum, gsLocal.pList[con].idNum, numFleets)
+            # If there are no targets, we can't do anything more.
+            if len(targets) <= 0:
+                continue
 
-                            # This ensures that we only count moves on the first try
-                            if threshold == critVal+2:
-                                numAttacks += 1
-                            else:
-                                numAttacks = critVal # i.e. we're done
-                            break # done with this planet
-                if numAttacks > (critVal / 2):
-                    return
-            # We'd really like to make an attack so that we can get a card.
-            # If we haven't made one already, lower our standards and try again.
-            if numAttacks is 0:
-                threshold -= 1
-            # It's possible that we won't get any attacks, even with this
-            # system. If that happens, it's because we have very few fleets to
-            # spare on outer planets, and there's nothing we can do about
-            # that; however, this should never happen because of deployments.
+            # Now we want to make some attacks.
+            while len(targets) > 0 and numAttacks < attackLimit:
+                # Assuming that all went okay, we need to pick a planet to attack.
+                # For now, let's just pick one at random.
+                targetPlanet = random.choice(list(targets))
+                #print("Target planet:", gsLocal.pList[targetPlanet])
 
-        # Let's try another approach. Maybe one that, y'know, actually uses
-        # those fancy region values we computed earlier?
+                # Then we can attack it with our biggest planet.
+                source = None
+                sourceFleets = 0
+                for pID in self.allConnects[targetPlanet]:
+                    if gsLocal.pList[pID].owner is self.idNum and \
+                       sourceFleets < gsLocal.pList[pID].numFleets:
+                        source = pID
+                        sourceFleets = gsLocal.pList[pID].numFleets
 
-        
+                # If there are enough fleets on the planet, attack.
+                if sourceFleets > 1:
+                    # Add any leftover fleets
+                    if deployCount < quota:
+                        toDeploy = (quota - deployCount)
+                        deployCount += toDeploy
+                        sourceFleets += toDeploy
+                        move.addMove(0, source, toDeploy)
+                        
+                    toSend = math.floor(sourceFleets * .80)
+                    move.addMove(source, targetPlanet, toSend)
+                    gsLocal.pList[source].numFleets -= toSend
+                    numAttacks += 1
+                # Regardless, we don't need to look at that planet again.
+                targets.remove(targetPlanet)
+                
         return
 
     # Determines which regions are connected to each other.
@@ -225,6 +246,8 @@ class RegionAI:
     # Assigns a score to each region based on size, value, number of
     # owned planets, and other things I think up
     def evaluateRegions(self, gs):
+        # SUBJECT TO CHANGE AT A MOMENT'S NOTICE
+        
         # Setup the lists, if they aren't already.
         if self.staticVals is None:
             self.staticVals = [None]
@@ -235,7 +258,7 @@ class RegionAI:
                 self.dynamicVals.append(0)
                 self.totalVals[i] = 0
 
-        # Reassess the region values
+        # Assess the region values
         for i in range(1, len(gs.rList)):
             r = gs.rList[i]
 
@@ -244,31 +267,43 @@ class RegionAI:
                 # Static Value
                 # ------------
                 # Components:
-                # > -2 for each external connection
-                # > +(2*value) for the value of the region
+                # > -n^2 for total external connection
+                # > +(3*value) for the value of the region
                 # > -1 for each member of the region
                 self.staticVals[i] = 0
-                self.staticVals[i] -= len(self.regionConnects[i]) * 2
-                self.staticVals[i] += r.value * 2 # Region value also factors in
+                self.staticVals[i] -= len(self.externalConnects[i]) ** 2
+                self.staticVals[i] += r.value * 3 # Region value also factors in
                 self.staticVals[i] -= len(r.members) # num planets in region
+                self.staticVals[i] *= 2
 
             # Dynamic Value
             # -------------
             # Components:
-            # > +1 for friendly fleets in the region
-            # > -1 for enemy fleets in the region
             # > +3 for each self owned planet
             # > -3 for each enemy owned planet
+            # > -1 for each enemy fleet that's a threat to this region
+            # > * percentage of planet in the region we own squared
+            # (This used to factor in how many fleets each player owned in the
+            # region, but that produced behavior I didn't like.)
             self.dynamicVals[i] = 0
+            ownedCount = 0
             for pID in r.members:
                 if gs.pList[pID].owner is self.idNum:
+                    ownedCount += 1
                     self.dynamicVals[i] += 3
-                    self.dynamicVals[i] += gs.pList[pID].numFleets
+                    #self.dynamicVals[i] += math.floor(gs.pList[pID].numFleets / 3)
                 elif gs.pList[pID].owner is 0:
                     pass # ignore unowned planets
                 else:
                     self.dynamicVals[i] -= 3
-                    self.dynamicVals[i] -= gs.pList[pID].numFleets
+                    #self.dynamicVals[i] -= math.floor(gs.pList[pID].numFleets / 3)
+            # Dynamic value changes depending on what percentage of the planets
+            # in the region we own
+            ownedPercent = ((ownedCount+1) / len(r.members)) ** 2
+            self.dynamicVals[i] = math.floor(self.dynamicVals[i] * ownedPercent * 5)
+            # It is also reduced by the number of fleets that could attack
+            # our planets in this region
+            self.dynamicVals[i] -= countHostileBorderFleets(gs, i, self.idNum)
 
             # Total Value
             # -----------
@@ -329,7 +364,7 @@ class RegionAI:
                         minDist = dists[c]
                         minIdx = c
 
-                # BLUH DONE
+                # Finally, add the move
                 if minIdx is not None:
                     move.addMove(planet.idNum, minIdx, planet.numFleets - 1)
                 planet.numFleets = 1
@@ -346,4 +381,48 @@ class RegionAI:
                   + ", "+str(self.dynamicVals[i]) + ", "
                   + str(self.totalVals[i]) + "]")
 
+# -------------------------------
+# Helper Methods and other stuff!
+# -------------------------------
+
+# Returns the number of hostile fleets adjacent to planets owned
+# by a player in a region. It's useful, trust me.
+def countHostileBorderFleets(gs, regionID, playerID):
+    # First, find which planets the player owns.
+    region = gs.rList[regionID]
+    owned = set()
+    for m in region.members:
+        if gs.pList[m].owner is playerID:
+            owned.add(m)
+
+    # Next, build a set of all planets connected to the owned set.
+    borderPlanets = set()
+    for pID in owned:
+        for c in gs.getConnections(pID):
+            borderPlanets.add(c)
+
+    # Finally, sum all the fleets on those planets that are hostile.
+    hostileCount = 0
+    for borderID in borderPlanets:
+        planet = gs.pList[int(borderID)]
+        if planet.owner is not playerID:
+            hostileCount += planet.numFleets
+
+    return hostileCount
+
+# There are an awful lot of functions like this that we need.
+def canAccessRegion(gs, playerID, regionID):
+    # First, find which planets the player owns.
+    region = gs.rList[regionID]
+    owned = AIHelpers.getOwnedPlanets(gs, playerID)
+
+    # Next, build a set of all planets connected to the owned set.
+    accessiblePlanets = set()
+    for planetID in owned:
+        for c in gs.getConnections(planetID):
+            accessiblePlanets.add(int(c))
+
+    # Finally, determine if we can access any of the planets
+    # in the given region.
+    return len(region.members.intersection(accessiblePlanets)) > 0
 

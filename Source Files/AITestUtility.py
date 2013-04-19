@@ -66,7 +66,7 @@ def playGame():
         if rounds > 100:
             break # cap num rounds at 100
         rounds += 1
-        print("Round " + str(rounds) + "...")
+        #print("\nRound " + str(rounds) + "...")
         for p in turnOrder:
             # If player is not active, ignore it
             if not players[p][1]: continue
@@ -74,7 +74,7 @@ def playGame():
             
             # Gets a move from the AI
             m = players[p][0].getMove(gs, 3, players[p][2])
-            print("Player " + str(p) + "'s move is: " + str(m))
+            #print("Player " + str(p) + "'s move is: " + str(m))
             processMove(m)
             gs.updateRegions()
 
@@ -87,7 +87,7 @@ def playGame():
         #input("WINNER = "+str(winner)+"; PRESS ENTER TO CONTINUE...")
     
     if winner is not 0:
-        print("Game finished: "+str(rounds)+" rounds elapsed.")
+        print("Game finished: "+str(rounds)+" rounds elapsed. Winner: "+str(winner))
     else:
         print("Game stalemated! "+str(rounds)+" rounds elapsed.")
     return winner
@@ -148,7 +148,7 @@ def processMove(m):
         if(m.playerID == gs.pList[dest].owner):
             gs.pList[source].numFleets -= fleets
             gs.pList[dest].numFleets += fleets
-            
+
         # Attack
         else:
             stats.avgAttacks[m.playerID] += 1
@@ -164,6 +164,7 @@ def processMove(m):
             else:
                 gs.pList[source].numFleets += (results[0] - fleets)
                 gs.pList[dest].numFleets = results[1]
+            #print(" Result: " + str(results))
 
     # Check if the player gets a card
     if hasWon and players[m.playerID][3] < 5:
@@ -326,6 +327,7 @@ def run(diffList, gsMap='RiskGS.xml', numGames=50,
           "Elapsed time: "+str(totalTime),
           "Average time per game: "+str(totalTime / i),
           "Wins: "+str(stats.victories)+"\n", sep='\n')
+    stats.printStats()
 
 def printInstructions():
     print("""-----------------------------
@@ -382,8 +384,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([2, 2, 4], numGames=1)
-    #run([0, 1, 2], numGames=10)
+    run([4, 4, 4, 4], numGames=200)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
     
