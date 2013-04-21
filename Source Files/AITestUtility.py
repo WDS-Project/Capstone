@@ -16,7 +16,7 @@ from datetime import datetime
 
 # Remember to import any AI scripts you want to use.
 import RandomAI, RandomAIBetter, AggressiveAI, PrioritizingAI
-import RegionAI
+import RegionAI, RegionAIAlt
 
 # Returns a pointer to the getMove method of the specified AI type
 def findAIType(diff, idNum):
@@ -31,6 +31,8 @@ def findAIType(diff, idNum):
         script = PrioritizingAI.PrioritizingAI(idNum)
     elif (diff == 4):
         script = RegionAI.RegionAI(idNum)
+    #elif (diff == 404):
+    #    script = RegionAIAlt.RegionAI(idNum)
     else: # Undefined AI type
         raise Exception("Error: AI script not found. (diff = "+str(diff)+")")
     return script
@@ -63,8 +65,8 @@ def playGame():
     #print("TurnOrder: "+str(turnOrder)+"; players = "+str(players))
     
     while (winner == 0):
-        if rounds > 100:
-            break # cap num rounds at 100
+        if rounds > (80 + len(players) * 10):
+            break # cap num rounds according to how many players there are
         rounds += 1
         #print("\nRound " + str(rounds) + "...")
         for p in turnOrder:
@@ -384,7 +386,7 @@ stats = Statistics()
 
 if __name__ == '__main__':
     printInstructions()
-    run([4, 4, 4, 4], numGames=200)
+    run([1,1,2,2,3,3,4], numGames=50)
     #run([1, 2, 2], gsMap=None, numGames=10)
     
     
