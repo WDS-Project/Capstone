@@ -19,8 +19,6 @@ var 	canvas = document.getElementById('c'), // Canvas variable
 	connectionSelect, //connection object selected by user currently
 	moves = [], // planned moves
 	mouseDown = false; // is the mouse held down right now?
-
-// ****** Note: eventually, the size of view & world will need to be determinet from XML
 	
 // Defines the viewport and sets the canvas to be that size
 var view = {
@@ -187,15 +185,16 @@ var clear = function() {
 //	ctx.fillStyle = '#eee';
 //	ctx.fillRect(0, 0, view.width, view.height);
 	
-	bgmove = (bgmove + 1) % 100;
+	//bgmove = (bgmove + 1) % 100;
 
 	try {  
 		var img = new Image();   // Create new img element
-		img.src = 'starfield.jpg'; // Set source path
-		ctx.drawImage(img, -bgmove, 0);
-        } catch (err) { // If the image isn't found, color everything red.
+		img.src = 'starfield2.jpg'; // Set source path
+		//ctx.drawImage(img, -bgmove, 0);
+		ctx.drawImage(img, -view.offsetX / 3, -view.offsetY / 3);
+        } catch (err) { // If the image isn't found, color everything black.
         	// *** DOES NOT WORK IN CHROME ***
-        	ctx.fillStyle = '#f00';
+        	ctx.fillStyle = '#000';
         	ctx.fillRect(0, 0, c.width, c.height);
         }
 
