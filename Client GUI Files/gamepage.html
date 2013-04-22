@@ -126,7 +126,7 @@
 			<input type = "submit" value = "Choose a Planet" id = "submitButton"
 			style = "font-family: 'Courier New', Helvetica, Serif; font-size:18px; padding:.5em;
 			font-weight:bold;" disabled=true> </div>
-			<div id = "move_list" > </div>
+			<div id = "move_list" style = "height:470px; overflow:scroll;"> </div>
 		</div>
 		<div id = "board">
 			<canvas id="c" style="border: solid 3px green;"></canvas>  
@@ -142,9 +142,9 @@
 		<div id = "cards">You have the following cards:
 			<table border="1">
 			<tr>
-			<td><div id="cardText0">0</div> Metal</td>
+			<td><div id="cardText0">0</div> Power</td>
 			<td><div id="cardText1">0</div> Food</td>
-			<td><div id="cardText2">0</div> Wood</td>
+			<td><div id="cardText2">0</div> Ships</td>
 			</tr><tr>
 			<td><input type="submit" value="Type 0" id="cardButton0" disabled=true 
 				onclick="client.turninCards(0)"/></td>
@@ -193,9 +193,7 @@
 	// Prepare for start of game
 	var client = new Client();
 	client.state = Client.states.CHOOSING;
-	document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-		"or click End Deployment to move to attack phase. " +
-		"<br>Remaining fleets: " + (gs.getPlayerQuota(1));
+	document.getElementById("footer").innerHTML = "Click on an unowned planet to claim it.";
 	
 	var drawLoop;
 	var DrawLoop = function() {

@@ -895,8 +895,12 @@ var Client = function() {
 				if (gs.pList[i].owner == 0)
 					stillChoosing = true;
 			}
-			if (!stillChoosing)
+			if (!stillChoosing) {
 				self.state = Client.states.DEPLOYMENT;
+				document.getElementById("footer").innerHTML = "Click on a planet you own to deploy fleets. " +
+					"<br>If you have 3 of the same type of card, you may turn it in for more fleets to deploy." +
+					"<br>Remaining fleets: " + (gs.getPlayerQuota(1) - self.deployCount);
+			}
 		}
 		
 		//if it's not our turn, send a gamechange request
@@ -917,10 +921,9 @@ var Client = function() {
 				button.value = "End Deployment";
 				button.onclick = client.endDeploy;
 				button.disabled = false;
-				document.getElementById("footer").innerHTML =
-				"Click on another planet to deploy more fleets, " +
-				"or click End Deployment to move to attack phase. " +
-				"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID));
+				document.getElementById("footer").innerHTML = "Click on a planet you own to deploy fleets. " +
+					"<br>If you have 3 of the same type of card, you may turn it in for more fleets to deploy." +
+					"<br>Remaining fleets: " + (gs.getPlayerQuota(1) - self.deployCount);
 				
 				// Allow card turnins, if applicable.
 				gs.updateCards();
@@ -933,6 +936,12 @@ var Client = function() {
 	}
 	
 	self.choose = function(target) {
+		//check to see if target is already owned
+		if(gs.pList[target].owner !== 0) {
+			document.getElementById("footer").innerHTML = gs.pList[target].name + " is already owned.";
+			return;
+		}
+		
 		// Chooses an available planet. Target is assumed to be unowned.
 		self.currentMove.addMove(0, 0, target);
 		
@@ -996,9 +1005,9 @@ var Client = function() {
 			document.getElementById("move_list").innerHTML += 
 			("Deployed " + fleets + " fleets to " + planet.name + "<br><br>");
 			
-			document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-			"or click End Deployment to move to attack phase. " +
-			"<br>Remaining fleets: " + (quota - self.deployCount);
+			document.getElementById("footer").innerHTML = "Click on a planet you own to deploy fleets. " +
+					"<br>If you have 3 of the same type of card, you may turn it in for more fleets to deploy." +
+					"<br>Remaining fleets: " + (quota - self.deployCount);
 		}
 		
 		if(self.deployCount == quota)
@@ -1019,7 +1028,7 @@ var Client = function() {
 		document.getElementById("cardButton3").disabled = true;
 		
 		document.getElementById("footer").innerHTML = "Click on a planet you own to see connected planets.<br>" +
-		"Click on an arrow to attack.";
+		"Click on a green arrow to reinforce, or a red one to attack.";
 	}
 	
 	self.turninCards = function(type) {
@@ -1045,9 +1054,9 @@ var Client = function() {
 		document.getElementById("move_list").innerHTML += 
 			("Turned in cards for bonus fleets.<br><br>");
 			
-		document.getElementById("footer").innerHTML = "Click on another planet to deploy more fleets, " +
-			"or click End Deployment to move to attack phase. " +
-			"<br>Remaining fleets: " + (gs.getPlayerQuota(self.playerID) - self.deployCount);
+		document.getElementById("footer").innerHTML = "Click on a planet you own to deploy fleets. " +
+					"<br>If you have 3 of the same type of card, you may turn it in for more fleets to deploy." +
+					"<br>Remaining fleets: " + (gs.getPlayerQuota(1) - self.deployCount);
 	};
 	
 	self.addMove = function(connection) {			
@@ -1082,6 +1091,9 @@ var Client = function() {
 		
 		if(fleets >= gs.pList[source].numFleets) {
 			document.getElementById("footer").innerHTML = "Not enough fleets on " + gs.pList[source].name;
+			return;
+		} else if (fleets <= 0) {
+			document.getElementById("footer").innerHTML = "You must attack with at least 1 fleet.";	
 			return;
 		} else
 			gs.pList[source].numFleets -= fleets;
