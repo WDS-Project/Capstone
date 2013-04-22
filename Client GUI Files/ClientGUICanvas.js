@@ -17,7 +17,8 @@ var 	canvas = document.getElementById('c'), // Canvas variable
 	ctx = canvas.getContext('2d'), // drawing context of the canvas
 	selection, // ID of currently selected planet
 	connectionSelect, //connection object selected by user currently
-	moves = []; // planned moves
+	moves = [], // planned moves
+	mouseDown = false; // is the mouse held down right now?
 
 // ****** Note: eventually, the size of view & world will need to be determinet from XML
 	
@@ -69,6 +70,7 @@ var getMousePosition = function(e) {
 
 // When the mouse is clicked, the camera starts following it.
 canvas.onmousedown = function(e) {
+	mouseDown = true;
 	mouse = getMousePosition(e);
 	canvas.mX = mouse.x;
 	canvas.mY = mouse.y;
@@ -121,6 +123,13 @@ canvas.onclick = function(e) {
 
 // This function runs while the mouse is held down and moving.
 function goMouse(e) {
+	// If this function is being called and the mouse isn't held down,
+	// something weird is going on. Stop it.
+	if (!mouseDown) {
+		canvas.onmousemove = function() {};
+		return;
+	}
+	
 	mouse = getMousePosition(e);
 	view.offsetX += c.mX - mouse.x;
 	view.offsetY += c.mY - mouse.y;
@@ -139,9 +148,32 @@ function goMouse(e) {
 		view.offsetY = 0;
 }
 
-// When the mouse is let up, the camera stops following it.
+// When the mouse is let up or leaves the canvas, the camera stops following it.
 canvas.onmouseup = function(e) {
 	canvas.onmousemove = function() {}; // i.e. do nothing
+};
+canvas.onmouseout = function(e) {
+	canvas.onmousemove = function() {}; // i.e. do nothing
+};
+
+// This bit prevents some weird errors that occur when you've selected something
+// outside the canvas and try to drag into the canvas itself.
+document.onmousedown = function(e) { mouseDown = true; };
+document.onmouseup = function(e) { mouseDown = false; };
+canvas.onmouseover = function(e) {
+	// If the mouse is currently being held down...
+	if (mouseDown) {
+		// ... act like we just clicked that spot.
+		mouse = getMousePosition(e);
+		canvas.mX = mouse.x;
+		canvas.mY = mouse.y;
+		canvas.hasMoved = false; // preserves selection if camera is dragged
+		
+		// Start tracking
+		canvas.onmousemove = function(e) { goMouse(e); };
+	} else { // Otherwise, do nothing.
+		canvas.onmousemove = function() {};
+	}
 };
 
 // ==================================================
